@@ -34,7 +34,20 @@
       "mcp__supabase__apply_migration",
       "mcp__supabase__generate_typescript_types",
       "Bash(supabase db push --linked)",
-      "Bash(pnpm type-check)"
+      "Bash(pnpm type-check)",
+      "mcp__shadcn__get_project_registries",
+      "mcp__chrome-devtools__list_pages",
+      "Bash(pnpm dev)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__new_page",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_close",
+      "mcp__supabase__execute_sql",
+      "mcp__playwright__browser_wait_for"
     ]
   },
   "enableAllProjectMcpServers": true,
