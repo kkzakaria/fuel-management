@@ -1,7 +1,24 @@
 {
-  "enabledMcpjsonServers": [
-    "shadcn",
-    "chrome-devtools"
-  ],
-  "enableAllProjectMcpServers": true
+  "permissions": {
+    "allow": [
+      "Bash(pnpm :*)",
+      "Bash(git :*)",
+      "Bash(supabase :*)",
+      "Bash(echo :*)",
+      "Bash(find :*)",
+      "Bash(ls :*)",
+      "Bash(cat :*)",
+      "Bash(curl :*)",
+      "Bash(npx :*)",
+      "Bash(wget :*)",
+      "Bash(rm :*)",
+      "Bash(mv :*)",
+      "Bash(cp :*)",
+      "Bash(mkdir :*)",
+      "Bash(touch :*)",
+      "Bash(chmod :*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["shadcn", "chrome-devtools"]
 }
