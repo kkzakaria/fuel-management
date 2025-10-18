@@ -303,7 +303,7 @@ export function TrajetForm({ defaultValues, mode = "create", onSuccess }: Trajet
               name="localite_arrivee_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Localité d'arrivée *</FormLabel>
+                  <FormLabel>Localité d&apos;arrivée *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

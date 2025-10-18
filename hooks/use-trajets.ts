@@ -4,9 +4,10 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchTrajetsClient } from "@/lib/supabase/trajet-queries-client";
 import type { TrajetFilters } from "@/lib/validations/trajet";
+import type { TrajetListItem } from "@/components/trajets/trajet-table";
 
 interface UseTrajetsOptions {
   initialFilters?: TrajetFilters;
@@ -15,7 +16,7 @@ interface UseTrajetsOptions {
 }
 
 export function useTrajets(options?: UseTrajetsOptions) {
-  const [trajets, setTrajets] = useState<any[]>([]);
+  const [trajets, setTrajets] = useState<TrajetListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [filters, setFilters] = useState<TrajetFilters>(options?.initialFilters || {});
@@ -24,7 +25,7 @@ export function useTrajets(options?: UseTrajetsOptions) {
   const [count, setCount] = useState(0);
   const pageSize = options?.pageSize || 20;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -42,12 +43,12 @@ export function useTrajets(options?: UseTrajetsOptions) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, page, pageSize]);
 
   // Charger les données initiales et quand les filtres/page changent
   useEffect(() => {
     fetchData();
-  }, [filters, page]);
+  }, [fetchData]);
 
   // Auto-refresh si configuré
   useEffect(() => {
@@ -55,7 +56,7 @@ export function useTrajets(options?: UseTrajetsOptions) {
 
     const interval = setInterval(fetchData, options.autoRefresh);
     return () => clearInterval(interval);
-  }, [options?.autoRefresh, filters, page]);
+  }, [options?.autoRefresh, fetchData]);
 
   const updateFilters = (newFilters: Partial<TrajetFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));

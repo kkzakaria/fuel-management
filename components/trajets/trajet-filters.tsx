@@ -31,8 +31,8 @@ interface TrajetFiltersProps {
   onFiltersChange: (filters: Partial<TrajetFilters>) => void;
   onClearFilters: () => void;
   chauffeurs?: Array<{ id: string; nom: string; prenom: string }>;
-  vehicules?: Array<{ id: string; immatriculation: string; marque?: string }>;
-  localites?: Array<{ id: string; nom: string; region?: string }>;
+  vehicules?: Array<{ id: string; immatriculation: string; marque?: string | null }>;
+  localites?: Array<{ id: string; nom: string; region?: string | null }>;
 }
 
 export function TrajetFilters({
@@ -224,7 +224,7 @@ export function TrajetFilters({
           <Select
             value={filters.statut || "all"}
             onValueChange={(value) =>
-              onFiltersChange({ statut: value === "all" ? undefined : (value as any) })
+              onFiltersChange({ statut: value === "all" ? undefined : (value as "en_cours" | "termine" | "annule") })
             }
           >
             <SelectTrigger id="statut">

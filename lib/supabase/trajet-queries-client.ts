@@ -226,8 +226,25 @@ export async function fetchTrajetsStatsClient(options?: {
   }
 
   // Calculer les statistiques
+  interface StatsAccumulator {
+    totalTrajets: number;
+    totalKm: number;
+    totalLitres: number;
+    totalCoutCarburant: number;
+    totalPeage: number;
+    totalAutresFrais: number;
+  }
+
+  interface TrajetStats {
+    parcours_total?: number | null;
+    litrage_station?: number | null;
+    prix_litre?: number | null;
+    frais_peage?: number | null;
+    autres_frais?: number | null;
+  }
+
   const stats = (data || []).reduce(
-    (acc: any, trajet: any) => {
+    (acc: StatsAccumulator, trajet: TrajetStats) => {
       acc.totalTrajets += 1;
       acc.totalKm += trajet.parcours_total || 0;
       acc.totalLitres += trajet.litrage_station || 0;

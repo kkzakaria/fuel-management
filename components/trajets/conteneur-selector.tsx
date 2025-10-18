@@ -131,7 +131,7 @@ export function ConteneurSelector({
                       value={conteneur.statut_livraison}
                       onValueChange={(value) =>
                         handleUpdateConteneur(index, {
-                          statut_livraison: value as any,
+                          statut_livraison: value as "en_cours" | "livre" | "retour",
                         })
                       }
                     >
@@ -177,7 +177,7 @@ export function ConteneurSelector({
               <SelectContent>
                 {typeConteneurs.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
-                    {type.nom} ({type.taille_pieds}')
+                    {type.nom} ({type.taille_pieds}&apos;)
                   </SelectItem>
                 ))}
               </SelectContent>

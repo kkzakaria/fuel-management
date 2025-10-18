@@ -81,15 +81,12 @@ export const createTrajetSchema = z.object({
     .nullable(),
 
   frais_peage: z.number()
-    .nonnegative("Les frais de péage ne peuvent pas être négatifs")
-    .default(0),
+    .nonnegative("Les frais de péage ne peuvent pas être négatifs"),
 
   autres_frais: z.number()
-    .nonnegative("Les autres frais ne peuvent pas être négatifs")
-    .default(0),
+    .nonnegative("Les autres frais ne peuvent pas être négatifs"),
 
-  statut: z.enum(["en_cours", "termine", "annule"])
-    .default("en_cours"),
+  statut: z.enum(["en_cours", "termine", "annule"]),
 
   observations: z.string()
     .max(1000, "Les observations ne peuvent pas dépasser 1000 caractères")
@@ -175,6 +172,27 @@ export const updateTrajetSchema = z.object({
 });
 
 /**
+ * Schéma pour la suppression d'un trajet
+ */
+export const deleteTrajetSchema = z.object({
+  trajetId: z.string({
+    required_error: "L'ID du trajet est requis",
+  }).uuid("ID de trajet invalide"),
+});
+
+/**
+ * Schéma pour la mise à jour des conteneurs d'un trajet
+ */
+export const updateConteneursSchema = z.object({
+  trajetId: z.string({
+    required_error: "L'ID du trajet est requis",
+  }).uuid("ID de trajet invalide"),
+  conteneurs: z.array(conteneurSchema)
+    .min(1, "Au moins un conteneur est requis")
+    .max(20, "Maximum 20 conteneurs par trajet"),
+});
+
+/**
  * Schéma pour les filtres de recherche de trajets
  */
 export const trajetFiltersSchema = z.object({
@@ -198,6 +216,8 @@ export const trajetFiltersSchema = z.object({
  */
 export type CreateTrajetInput = z.infer<typeof createTrajetSchema>;
 export type UpdateTrajetInput = z.infer<typeof updateTrajetSchema>;
+export type DeleteTrajetInput = z.infer<typeof deleteTrajetSchema>;
+export type UpdateConteneursInput = z.infer<typeof updateConteneursSchema>;
 export type TrajetFilters = z.infer<typeof trajetFiltersSchema>;
 export type ConteneurInput = z.infer<typeof conteneurSchema>;
 

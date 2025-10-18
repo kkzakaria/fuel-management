@@ -15,8 +15,8 @@ import type {
 // Create browser client
 function getClient() {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
   );
 }
 
@@ -41,7 +41,7 @@ export async function getActiveAlerts(limit: number = 10): Promise<Alert[]> {
 
   // Sort by creation date (most recent first)
   return alerts
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, limit);
 }
 
@@ -75,10 +75,8 @@ export async function getFuelVarianceAlerts(
   if (!data) return [];
 
   return data.map((trip) => {
-    // @ts-expect-error - chauffeur and vehicule are joined
-    const chauffeur = trip.chauffeur;
-    // @ts-expect-error - vehicule is joined
-    const vehicule = trip.vehicule;
+    const chauffeur = Array.isArray(trip.chauffeur) ? trip.chauffeur[0] : trip.chauffeur;
+    const vehicule = Array.isArray(trip.vehicule) ? trip.vehicule[0] : trip.vehicule;
 
     const variance = Math.abs(trip.ecart_litrage || 0);
     const severity: "critical" | "warning" =
@@ -86,10 +84,11 @@ export async function getFuelVarianceAlerts(
 
     return {
       id: `fuel-variance-${trip.id}`,
-      type: "fuel_variance",
+      type: "fuel_variance" as const,
       severity,
       title: `Écart carburant détecté: ${variance.toFixed(1)}L`,
-      message: `Le véhicule ${vehicule?.immatriculation || "N/A"} conduit par ${chauffeur?.nom || "N/A"} ${chauffeur?.prenom || "N/A"} présente un écart de ${variance.toFixed(1)}L entre le litrage prévu et acheté.`,
+      description: `Le véhicule ${vehicule?.immatriculation || "N/A"} conduit par ${chauffeur?.nom || "N/A"} ${chauffeur?.prenom || "N/A"} présente un écart de ${variance.toFixed(1)}L entre le litrage prévu et acheté.`,
+      date: trip.created_at || new Date().toISOString(),
       data: {
         tripId: trip.id,
         chauffeur: `${chauffeur?.nom || ""} ${chauffeur?.prenom || ""}`.trim(),
@@ -98,8 +97,6 @@ export async function getFuelVarianceAlerts(
         actualLiters: trip.litrage_station || 0,
         variance: trip.ecart_litrage || 0,
       },
-      createdAt: new Date(trip.created_at),
-      relatedId: trip.id,
     };
   });
 }
@@ -155,19 +152,18 @@ export async function getAbnormalConsumptionAlerts(
 
       alerts.push({
         id: `abnormal-consumption-${trip.id}`,
-        type: "abnormal_consumption",
+        type: "abnormal_consumption" as const,
         severity: percentageAbove > 50 ? "critical" : "warning",
         title: `Consommation anormale: ${consumption.toFixed(2)} L/100km`,
-        message: `Le véhicule ${vehicle.immatriculation} a une consommation de ${consumption.toFixed(2)} L/100km, soit ${percentageAbove.toFixed(0)}% au-dessus de sa moyenne (${avgConsumption.toFixed(2)} L/100km).`,
+        description: `Le véhicule ${vehicle.immatriculation} a une consommation de ${consumption.toFixed(2)} L/100km, soit ${percentageAbove.toFixed(0)}% au-dessus de sa moyenne (${avgConsumption.toFixed(2)} L/100km).`,
+        date: trip.created_at || new Date().toISOString(),
         data: {
           tripId: trip.id,
-          vehicule: `${vehicle.marque} ${vehicle.modele} (${vehicle.immatriculation})`,
+          vehicule: `${vehicle.marque || ""} ${vehicle.modele || ""}`.trim() || vehicle.immatriculation,
           consumption,
           averageConsumption: avgConsumption,
           percentageAbove,
         },
-        createdAt: new Date(trip.created_at),
-        relatedId: trip.id,
       });
     });
 
@@ -205,8 +201,7 @@ export async function getPendingPaymentAlerts(
   if (!data) return [];
 
   return data.map((mission) => {
-    // @ts-expect-error - sous_traitant is joined
-    const sousTraitant = mission.sous_traitant;
+    const sousTraitant = Array.isArray(mission.sous_traitant) ? mission.sous_traitant[0] : mission.sous_traitant;
 
     // Calculate days since mission
     const missionDate = new Date(mission.date_programmation);
@@ -220,18 +215,17 @@ export async function getPendingPaymentAlerts(
 
     return {
       id: `pending-payment-${mission.id}`,
-      type: "pending_payment",
+      type: "pending_payment" as const,
       severity,
       title: `Paiement 10% en attente`,
-      message: `Le solde de ${mission.reste_10_pourcent?.toFixed(0)} FCFA pour ${sousTraitant?.nom_entreprise || "Sous-traitant"} est en attente depuis ${daysOverdue} jours.`,
+      description: `Le solde de ${mission.reste_10_pourcent?.toFixed(0)} FCFA pour ${sousTraitant?.nom_entreprise || "Sous-traitant"} est en attente depuis ${daysOverdue} jours.`,
+      date: mission.created_at || new Date().toISOString(),
       data: {
         missionId: mission.id,
         sousTraitant: sousTraitant?.nom_entreprise || "Inconnu",
         remainingAmount: mission.reste_10_pourcent || 0,
         daysOverdue,
       },
-      createdAt: new Date(mission.created_at),
-      relatedId: mission.id,
     };
   });
 }

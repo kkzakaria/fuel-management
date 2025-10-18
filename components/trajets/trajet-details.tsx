@@ -21,8 +21,65 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 
+// Type complet pour les détails d'un trajet avec toutes les relations
+interface TrajetDetails {
+  id: string;
+  date_trajet: string;
+  km_debut: number;
+  km_fin: number;
+  parcours_total?: number | null;
+  litrage_prevu: number | null;
+  litrage_station: number | null;
+  ecart_litrage: number | null;
+  prix_litre: number | null;
+  consommation_au_100: number | null;
+  frais_peage: number | null;
+  autres_frais: number | null;
+  statut: string | null;
+  observations?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  chauffeur?: {
+    id: string;
+    nom: string;
+    prenom: string;
+    telephone?: string | null;
+    statut: string;
+  } | null;
+  vehicule?: {
+    id: string;
+    immatriculation: string;
+    marque?: string | null;
+    modele?: string | null;
+    type_carburant?: string | null;
+    statut: string;
+  } | null;
+  localite_depart?: {
+    id: string;
+    nom: string;
+    region?: string | null;
+  } | null;
+  localite_arrivee?: {
+    id: string;
+    nom: string;
+    region?: string | null;
+  } | null;
+  conteneurs?: Array<{
+    id: string;
+    numero_conteneur?: string | null;
+    quantite?: number | null;
+    statut_livraison?: string | null;
+    type_conteneur?: {
+      id: string;
+      nom: string;
+      taille_pieds: number;
+      description?: string | null;
+    } | null;
+  }> | null;
+}
+
 interface TrajetDetailsProps {
-  trajet: any; // Type complet avec relations
+  trajet: TrajetDetails;
 }
 
 export function TrajetDetails({ trajet }: TrajetDetailsProps) {
@@ -36,7 +93,8 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
     }).format(amount);
   };
 
-  const getStatutBadge = (statut: string) => {
+  const getStatutBadge = (statut: string | null) => {
+    if (!statut) return <Badge variant="outline">Inconnu</Badge>;
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       en_cours: "secondary",
       termine: "default",
@@ -208,7 +266,7 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Écart</p>
-              <p className={`text-lg font-semibold ${trajet.ecart_litrage && Math.abs(trajet.ecart_litrage) > 10 ? "text-destructive" : ""}`}>
+              <p className={`text-lg font-semibold ${trajet.ecart_litrage !== null && Math.abs(trajet.ecart_litrage) > 10 ? "text-destructive" : ""}`}>
                 {trajet.ecart_litrage !== null ? `${trajet.ecart_litrage.toFixed(1)} L` : "-"}
               </p>
             </div>
@@ -285,7 +343,7 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {trajet.conteneurs.map((c: any, index: number) => (
+              {trajet.conteneurs?.map((c, index: number) => (
                 <div
                   key={index}
                   className="flex items-center justify-between rounded-lg border p-3"
@@ -346,18 +404,24 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
       )}
 
       {/* Métadonnées */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>
-              Créé le {format(new Date(trajet.created_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
-            </span>
-            <span>
-              Modifié le {format(new Date(trajet.updated_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      {(trajet.created_at || trajet.updated_at) && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              {trajet.created_at && (
+                <span>
+                  Créé le {format(new Date(trajet.created_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                </span>
+              )}
+              {trajet.updated_at && (
+                <span>
+                  Modifié le {format(new Date(trajet.updated_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -28,25 +28,54 @@ import { Badge } from "@/components/ui/badge";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 import { TrajetDeleteDialog } from "./trajet-delete-dialog";
 
+// Type pour les trajets dans le tableau
+export interface TrajetListItem {
+  id: string;
+  date_trajet: string;
+  km_debut: number;
+  km_fin: number;
+  parcours_total?: number | null;
+  litrage_prevu?: number | null;
+  litrage_station?: number | null;
+  ecart_litrage?: number | null;
+  consommation_au_100?: number | null;
+  prix_litre?: number | null;
+  statut: string | null;
+  chauffeur?: {
+    id: string;
+    nom: string;
+    prenom: string;
+  } | null;
+  vehicule?: {
+    id: string;
+    immatriculation: string;
+    marque?: string | null;
+    modele?: string | null;
+    type_carburant?: string | null;
+  } | null;
+  localite_depart?: {
+    id: string;
+    nom: string;
+    region?: string | null;
+  } | null;
+  localite_arrivee?: {
+    id: string;
+    nom: string;
+    region?: string | null;
+  } | null;
+}
+
 interface TrajetTableProps {
-  trajets: any[];
+  trajets: TrajetListItem[];
   loading?: boolean;
 }
 
 export function TrajetTable({ trajets, loading }: TrajetTableProps) {
   const [trajetToDelete, setTrajetToDelete] = useState<string | null>(null);
 
-  const formatCurrency = (amount: number | null) => {
-    if (amount === null) return "-";
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "XOF",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const getStatutBadge = (statut: string | null) => {
+    if (!statut) return <Badge variant="outline">Inconnu</Badge>;
 
-  const getStatutBadge = (statut: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       en_cours: "secondary",
       termine: "default",
@@ -163,7 +192,14 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
                       {trajet.consommation_au_100.toFixed(1)} L/100km
                     </div>
                   )}
-                  <TrajetAlertBadge trajet={trajet} />
+                  <TrajetAlertBadge
+                    trajet={{
+                      ecart_litrage: trajet.ecart_litrage ?? null,
+                      consommation_au_100: trajet.consommation_au_100 ?? null,
+                      litrage_station: trajet.litrage_station ?? null,
+                      prix_litre: trajet.prix_litre ?? null,
+                    }}
+                  />
                 </TableCell>
                 <TableCell>{getStatutBadge(trajet.statut)}</TableCell>
                 <TableCell className="text-right">
