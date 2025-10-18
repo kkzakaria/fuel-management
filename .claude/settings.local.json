@@ -33,12 +33,10 @@
       "mcp__context7__get-library-docs",
       "mcp__supabase__apply_migration",
       "mcp__supabase__generate_typescript_types",
-      "Bash(supabase db push --linked)"
+      "Bash(supabase db push --linked)",
+      "Bash(pnpm type-check)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "shadcn",
-    "chrome-devtools"
-  ]
+  "enabledMcpjsonServers": ["shadcn", "chrome-devtools"]
 }
