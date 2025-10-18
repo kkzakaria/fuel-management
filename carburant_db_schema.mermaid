@@ -1,0 +1,110 @@
+erDiagram
+    CHAUFFEUR ||--o{ TRAJET : effectue
+    VEHICULE ||--o{ TRAJET : utilise
+    LOCALITE ||--o{ TRAJET : "point_depart"
+    LOCALITE ||--o{ TRAJET : "point_arrivee"
+    TRAJET ||--o{ CONTENEUR_TRAJET : transporte
+    TYPE_CONTENEUR ||--o{ CONTENEUR_TRAJET : definit
+    SOUS_TRAITANT ||--o{ MISSION_SOUS_TRAITANCE : realise
+    
+    CHAUFFEUR {
+        int id_chauffeur PK
+        string nom
+        string prenom
+        string telephone
+        string email
+        boolean actif
+        date date_embauche
+    }
+    
+    VEHICULE {
+        int id_vehicule PK
+        string immatriculation UK
+        string marque
+        string modele
+        int annee
+        string type_carburant
+        float kilometrage_actuel
+        date date_acquisition
+        boolean actif
+        text commentaire
+    }
+    
+    LOCALITE {
+        int id_localite PK
+        string nom_ville UK
+        string region
+        float latitude
+        float longitude
+    }
+    
+    TYPE_CONTENEUR {
+        int id_type_conteneur PK
+        string taille UK "20, 40, 45"
+        string unite "pieds"
+        text description
+    }
+    
+    TRAJET {
+        int id_trajet PK
+        int id_chauffeur FK
+        int id_vehicule FK
+        int id_localite_depart FK
+        int id_localite_destination FK
+        date date_trajet
+        int km_depart
+        int km_retour
+        int parcours_total
+        float litrage_prevu
+        float litrage_station
+        float ecart_litrage
+        float montant_litrage
+        float prix_litre_calcule
+        float frais_route
+        float consommation_au_100
+        string motif_mission
+        string etat_retour "Charge, Retour_Vide"
+        text commentaire
+        float litrage_vivo
+        float montant_vivo
+        boolean compliment
+    }
+    
+    CONTENEUR_TRAJET {
+        int id_conteneur_trajet PK
+        int id_trajet FK
+        int id_type_conteneur FK
+        int quantite
+        string numero_conteneur
+        string statut_livraison "Livre, En_transit, Retourne"
+        datetime date_heure_chargement
+        datetime date_heure_livraison
+        text remarques
+    }
+    
+    SOUS_TRAITANT {
+        int id_sous_traitant PK
+        string nom_entreprise UK
+        string contact
+        string telephone
+        string email
+        text adresse
+        boolean actif
+    }
+    
+    MISSION_SOUS_TRAITANCE {
+        int id_mission PK
+        int id_sous_traitant FK
+        date date_mission
+        date date_programmation
+        int nb_conteneur_20
+        int nb_conteneur_40
+        int nb_conteneur_45
+        float cout_transport
+        float montant_90_pourcent
+        float reste_10_pourcent
+        string statut_paiement
+        string retour_eir_vide
+        string retour_caisse
+        text commentaire
+    }
