@@ -1,15 +1,30 @@
 /**
- * Database Types for Transport Manager
+ * Database Types Helpers
  *
- * NOTE: These types are manually defined based on the migration schemas.
- * After applying migrations to Supabase, run `pnpm supabase gen types typescript --local`
- * to generate types automatically from the database schema.
+ * Ce fichier réexporte les types générés automatiquement depuis database.types.ts
+ * avec des noms plus simples pour faciliter l'utilisation.
  *
- * For now, these types serve as a reference and will be replaced with auto-generated types.
+ * Les types sont générés via: pnpm supabase gen types typescript --linked
  */
 
-export type UserRole = "admin" | "gestionnaire" | "chauffeur" | "personnel";
+import type { Database } from "./database.types";
 
+// Tables Row types (lecture)
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type Chauffeur = Database["public"]["Tables"]["chauffeur"]["Row"];
+export type Vehicule = Database["public"]["Tables"]["vehicule"]["Row"];
+export type Trajet = Database["public"]["Tables"]["trajet"]["Row"];
+export type Localite = Database["public"]["Tables"]["localite"]["Row"];
+export type TypeConteneur = Database["public"]["Tables"]["type_conteneur"]["Row"];
+export type ConteneurTrajet = Database["public"]["Tables"]["conteneur_trajet"]["Row"];
+export type SousTraitant = Database["public"]["Tables"]["sous_traitant"]["Row"];
+export type MissionSousTraitance = Database["public"]["Tables"]["mission_sous_traitance"]["Row"];
+
+// Enums (from database)
+export type UserRole = Database["public"]["Enums"]["user_role"];
+
+// Enums (inferred from database constraints - not PostgreSQL ENUMs)
+// Ces types sont basés sur les contraintes CHECK dans la base de données
 export type StatutChauffeur = "actif" | "inactif" | "suspendu";
 export type StatutVehicule = "actif" | "maintenance" | "inactif" | "vendu";
 export type StatutSousTraitant = "actif" | "inactif" | "blackliste";
@@ -18,157 +33,27 @@ export type StatutLivraison = "en_cours" | "livre" | "retour";
 export type StatutMission = "en_cours" | "terminee" | "annulee";
 export type TypeCarburant = "gasoil" | "essence" | "hybride" | "electrique";
 
-export interface Profile {
-  id: string;
-  email: string;
-  role: UserRole;
-  nom: string | null;
-  prenom: string | null;
-  telephone: string | null;
-  chauffeur_id: string | null;
-  is_active: boolean;
-  last_login: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Insert types (pour les créations)
+export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
+export type ChauffeurInsert = Database["public"]["Tables"]["chauffeur"]["Insert"];
+export type VehiculeInsert = Database["public"]["Tables"]["vehicule"]["Insert"];
+export type TrajetInsert = Database["public"]["Tables"]["trajet"]["Insert"];
+export type LocaliteInsert = Database["public"]["Tables"]["localite"]["Insert"];
+export type TypeConteneurInsert = Database["public"]["Tables"]["type_conteneur"]["Insert"];
+export type ConteneurTrajetInsert = Database["public"]["Tables"]["conteneur_trajet"]["Insert"];
+export type SousTraitantInsert = Database["public"]["Tables"]["sous_traitant"]["Insert"];
+export type MissionSousTraitanceInsert = Database["public"]["Tables"]["mission_sous_traitance"]["Insert"];
 
-export interface Localite {
-  id: string;
-  nom: string;
-  region: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Update types (pour les modifications)
+export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+export type ChauffeurUpdate = Database["public"]["Tables"]["chauffeur"]["Update"];
+export type VehiculeUpdate = Database["public"]["Tables"]["vehicule"]["Update"];
+export type TrajetUpdate = Database["public"]["Tables"]["trajet"]["Update"];
+export type LocaliteUpdate = Database["public"]["Tables"]["localite"]["Update"];
+export type TypeConteneurUpdate = Database["public"]["Tables"]["type_conteneur"]["Update"];
+export type ConteneurTrajetUpdate = Database["public"]["Tables"]["conteneur_trajet"]["Update"];
+export type SousTraitantUpdate = Database["public"]["Tables"]["sous_traitant"]["Update"];
+export type MissionSousTraitanceUpdate = Database["public"]["Tables"]["mission_sous_traitance"]["Update"];
 
-export interface TypeConteneur {
-  id: string;
-  nom: string;
-  taille_pieds: 20 | 40 | 45;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Chauffeur {
-  id: string;
-  nom: string;
-  prenom: string;
-  telephone: string | null;
-  numero_permis: string | null;
-  date_embauche: string | null;
-  statut: StatutChauffeur;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Vehicule {
-  id: string;
-  immatriculation: string;
-  marque: string | null;
-  modele: string | null;
-  annee: number | null;
-  type_carburant: TypeCarburant;
-  kilometrage_actuel: number;
-  statut: StatutVehicule;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface SousTraitant {
-  id: string;
-  nom_entreprise: string;
-  contact_principal: string | null;
-  telephone: string | null;
-  email: string | null;
-  adresse: string | null;
-  statut: StatutSousTraitant;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Trajet {
-  id: string;
-  date_trajet: string;
-  chauffeur_id: string;
-  vehicule_id: string;
-  localite_depart_id: string;
-  localite_arrivee_id: string;
-  km_debut: number;
-  km_fin: number;
-  parcours_total: number; // Generated column
-  litrage_prevu: number | null;
-  litrage_station: number | null;
-  ecart_litrage: number | null; // Generated column
-  prix_litre: number | null;
-  consommation_au_100: number | null; // Generated column
-  prix_litre_calcule: number | null; // Generated column
-  frais_peage: number;
-  autres_frais: number;
-  statut: StatutTrajet;
-  observations: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ConteneurTrajet {
-  id: string;
-  trajet_id: string;
-  type_conteneur_id: string;
-  numero_conteneur: string | null;
-  quantite: number;
-  statut_livraison: StatutLivraison;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface MissionSousTraitance {
-  id: string;
-  sous_traitant_id: string;
-  date_mission: string;
-  localite_depart_id: string;
-  localite_arrivee_id: string;
-  type_conteneur_id: string;
-  numero_conteneur: string | null;
-  quantite: number;
-  montant_total: number;
-  montant_90_pourcent: number; // Generated column
-  reste_10_pourcent: number; // Generated column
-  avance_payee: boolean;
-  solde_paye: boolean;
-  date_paiement_avance: string | null;
-  date_paiement_solde: string | null;
-  statut: StatutMission;
-  observations: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// Extended types with relations (for queries with joins)
-
-export interface TrajetWithRelations extends Trajet {
-  chauffeur?: Pick<Chauffeur, "nom" | "prenom" | "telephone">;
-  vehicule?: Pick<Vehicule, "immatriculation" | "marque" | "modele" | "type_carburant">;
-  localite_depart?: Pick<Localite, "nom" | "region">;
-  localite_arrivee?: Pick<Localite, "nom" | "region">;
-  conteneurs?: (ConteneurTrajet & {
-    type_conteneur?: Pick<TypeConteneur, "nom" | "taille_pieds">;
-  })[];
-}
-
-export interface MissionSousTraitanceWithRelations extends MissionSousTraitance {
-  sous_traitant?: SousTraitant;
-  localite_depart?: Pick<Localite, "nom" | "region">;
-  localite_arrivee?: Pick<Localite, "nom" | "region">;
-  type_conteneur?: Pick<TypeConteneur, "nom" | "taille_pieds" | "description">;
-}
-
-// Statistics types
-
-export interface TrajetStatistics {
-  totalTrajets: number;
-  totalKm: number;
-  totalLitres: number;
-  totalCoutCarburant: number;
-  totalPeage: number;
-  avgConsommation: number;
-}
+// Export du type Database complet pour usage avancé
+export type { Database };

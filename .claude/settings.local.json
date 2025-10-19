@@ -1,55 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm :*)",
-      "Bash(git :*)",
-      "Bash(supabase :*)",
-      "Bash(echo :*)",
-      "Bash(find :*)",
-      "Bash(ls :*)",
-      "Bash(cat :*)",
-      "Bash(curl :*)",
-      "Bash(npx :*)",
-      "Bash(wget :*)",
-      "Bash(rm :*)",
-      "Bash(mv :*)",
-      "Bash(cp :*)",
-      "Bash(mkdir :*)",
-      "Bash(touch :*)",
-      "Bash(chmod :*)",
-      "mcp__supabase__get_project_url",
-      "mcp__supabase__get_anon_key",
-      "mcp__supabase__list_tables",
-      "Bash(pnpm add @supabase/ssr @supabase/supabase-js)",
-      "Bash(pnpm add zustand nuqs)",
-      "Bash(pnpm add next-safe-action zod react-hook-form @hookform/resolvers)",
-      "Bash(pnpm tsc --noEmit)",
-      "Bash(pnpm lint)",
-      "Bash(tree -L 3 -I 'node_modules|.next|.git' /home/zsuper/fuel-management)",
-      "Bash(echo \"✅ PHASE 0 - CONFIGURATION ET FONDATIONS COMPLÉTÉE\n\n📊 Progression globale: 10%\n🎯 Phase actuelle: Prêt pour Phase 1\n\n📁 Structure créée:\n   - 24 dossiers organisés\n   - 15 fichiers de configuration\n   - 10 fichiers de documentation\n   \n📦 Dépendances installées: 21 packages\n   ✅ Supabase (@supabase/ssr + supabase-js)\n   ✅ State (zustand + nuqs)\n   ✅ Forms (react-hook-form + zod + next-safe-action)\n   ✅ Utils (date-fns + recharts + jspdf + xlsx)\n   ✅ PWA (@ducanh2912/next-pwa)\n\n🔧 Configuration:\n   ✅ TypeScript (0 erreur)\n   ✅ ESLint (0 warning)\n   ✅ Supabase clients (browser + server)\n   ✅ PWA manifest + service worker\n   ✅ Git hooks (Husky + lint-staged)\n   \n📝 Documentation:\n   ✅ docs/PHASE0_COMPLETE.md\n   ✅ docs/PROJECT_STRUCTURE.md\n   ✅ docs/QUALITY_CHECKS.md\n   ✅ 7 README.md dans dossiers\n\n🚀 Prochaine étape: Phase 1 - Base de données et authentification\")",
-      "Bash(git checkout -b feature/phase-0-configuration-fondations)",
-      "Bash(git add .)",
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
-      "mcp__supabase__apply_migration",
-      "mcp__supabase__generate_typescript_types",
-      "Bash(supabase db push --linked)",
-      "Bash(pnpm type-check)",
-      "mcp__shadcn__get_project_registries",
-      "mcp__chrome-devtools__list_pages",
-      "Bash(pnpm dev)",
-      "mcp__chrome-devtools__navigate_page",
-      "mcp__chrome-devtools__new_page",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_install",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_fill_form",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_close",
-      "mcp__supabase__execute_sql",
-      "mcp__playwright__browser_wait_for"
-    ]
+      "Bash(pnpm install)"
+    ],
+    "deny": [],
+    "ask": []
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["shadcn", "chrome-devtools"]
+  "enabledMcpjsonServers": [
+    "shadcn",
+    "chrome-devtools"
+  ]
 }

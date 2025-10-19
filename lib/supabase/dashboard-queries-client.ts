@@ -17,8 +17,8 @@ import { formatDateForQuery } from "../date-utils";
 // Create browser client
 function getClient() {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
   );
 }
 
@@ -235,8 +235,7 @@ export async function getVehicleConsumptionStats(
     const vehicleId = trip.vehicule_id;
     if (!vehicleId) return;
 
-    // @ts-expect-error - vehicule is joined
-    const vehicleInfo = trip.vehicule;
+    const vehicleInfo = Array.isArray(trip.vehicule) ? trip.vehicule[0] : trip.vehicule;
 
     if (!vehicleMap[vehicleId]) {
       vehicleMap[vehicleId] = {
@@ -257,16 +256,20 @@ export async function getVehicleConsumptionStats(
 
   // Convert to array with average consumption
   const result = Object.values(vehicleMap)
-    .map((v) => ({
-      vehicleId: v.vehicleId,
-      immatriculation: v.immatriculation,
-      marque: v.marque,
-      modele: v.modele,
-      consumption: v.trips > 0 ? v.totalConsumption / v.trips : 0,
-      trips: v.trips,
-      totalKm: v.totalKm,
-    }))
-    .sort((a, b) => b.consumption - a.consumption)
+    .map((v) => {
+      const avgConsumption = v.trips > 0 ? v.totalConsumption / v.trips : 0;
+      return {
+        vehicleId: v.vehicleId,
+        immatriculation: v.immatriculation,
+        marque: v.marque,
+        modele: v.modele,
+        avgConsumption, // Required by VehicleConsumption type
+        consumption: avgConsumption, // Optional, same value for compatibility
+        trips: v.trips,
+        totalKm: v.totalKm,
+      };
+    })
+    .sort((a, b) => b.avgConsumption - a.avgConsumption)
     .slice(0, limit);
 
   return result;
@@ -302,7 +305,8 @@ export async function getTripChartData(
   // Convert to array
   return Object.entries(dateMap).map(([date, trips]) => ({
     date,
-    trips,
+    count: trips, // Required by TripChartData type
+    trips, // Optional, same value for compatibility
     containers: 0,
   }));
 }

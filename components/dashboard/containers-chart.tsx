@@ -56,7 +56,7 @@ export function ContainersChart({ data, loading }: ContainersChartProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={(entry) => `${entry.percentage.toFixed(1)}%`}
+              label={(entry) => `${(entry["percentage"] as number).toFixed(1)}%`}
               outerRadius={80}
               fill="hsl(var(--primary))"
               dataKey="count"
@@ -69,7 +69,7 @@ export function ContainersChart({ data, loading }: ContainersChartProps) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number, name: string, props) => [
+              formatter={(value: number, _name: string, props) => [
                 `${value} conteneurs (${props.payload.percentage.toFixed(1)}%)`,
                 props.payload.type,
               ]}
@@ -82,8 +82,8 @@ export function ContainersChart({ data, loading }: ContainersChartProps) {
             <Legend
               verticalAlign="bottom"
               height={36}
-              formatter={(value: string, entry: { payload: ContainerStats }) =>
-                entry.payload.type
+              formatter={(_value, entry) =>
+                (entry as unknown as { payload: ContainerStats }).payload.type
               }
             />
           </PieChart>

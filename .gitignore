@@ -50,3 +50,6 @@ next-env.d.ts
 
 # playwright files
 /.playwright-mcp/
+
+# claude config
+/.claude/
