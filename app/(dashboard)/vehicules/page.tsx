@@ -1,0 +1,146 @@
+/**
+ * Page de liste des véhicules
+ * Affiche les véhicules sous forme de cartes avec filtres
+ */
+
+"use client";
+
+import { useEffect } from "react";
+import Link from "next/link";
+import { Plus, Truck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { VehiculeCard } from "@/components/vehicules/vehicule-card";
+import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
+import { useVehicules } from "@/hooks/use-vehicules";
+import { useUserRole } from "@/hooks/use-user-role";
+
+export default function VehiculesPage() {
+  const { canManageVehicles } = useUserRole();
+  const {
+    vehicules,
+    loading,
+    error,
+    filters,
+    updateFilters,
+    clearFilters,
+    count,
+    refresh,
+  } = useVehicules({
+    pageSize: 20,
+    autoRefresh: 60000, // Refresh every minute
+  });
+
+  // Rafraîchir quand on revient sur la page
+  useEffect(() => {
+    const handleFocus = () => {
+      refresh();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refresh]);
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center text-destructive">
+              <p className="font-semibold">Erreur de chargement</p>
+              <p className="text-sm">{error.message}</p>
+              <Button onClick={refresh} variant="outline" className="mt-4">
+                Réessayer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-6 space-y-6">
+      {/* En-tête */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Véhicules</h1>
+          <p className="text-muted-foreground">
+            Gestion de la flotte et maintenance
+          </p>
+        </div>
+        {canManageVehicles && (
+          <Button asChild>
+            <Link href="/vehicules/nouveau">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau véhicule
+            </Link>
+          </Button>
+        )}
+      </div>
+
+      {/* Statistiques rapides */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Total véhicules</p>
+              <p className="text-3xl font-bold">{count}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Actifs</p>
+              <p className="text-3xl font-bold">
+                {vehicules.filter((v) => v.statut === "actif").length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">En maintenance</p>
+              <p className="text-3xl font-bold">
+                {vehicules.filter((v) => v.statut === "maintenance").length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filtres */}
+      <VehiculeFilters
+        filters={filters}
+        onFiltersChange={updateFilters}
+        onClearFilters={clearFilters}
+      />
+
+      {/* Grille de cartes */}
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-48" />
+          ))}
+        </div>
+      ) : vehicules.length === 0 ? (
+        <div className="rounded-md border border-dashed p-8 text-center">
+          <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
+          <p className="text-sm text-muted-foreground">
+            Commencez par ajouter un nouveau véhicule.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {vehicules.map((vehicule) => (
+            <VehiculeCard key={vehicule.id} vehicule={vehicule} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm install)"
+      "Bash(pnpm install)",
+      "mcp__playwright__browser_console_messages",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql",
+      "mcp__shadcn__get_add_command_for_items",
+      "Bash(pnpm tsc --noEmit)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm dev)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form",
+      "Bash(mkdir -p components/chauffeurs)",
+      "Bash(find app/(dashboard) -name \"modifier\" -type d)",
+      "Bash(curl -s http://localhost:300)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_wait_for",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

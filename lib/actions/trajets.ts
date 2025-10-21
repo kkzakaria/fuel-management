@@ -77,7 +77,7 @@ export const createTrajetAction = action
  */
 export const updateTrajetAction = action
   .schema(updateTrajetSchema)
-  .action(async ({ parsedInput: _parsedInput }) => {
+  .action(async () => {
     // TODO: Récupérer trajetId depuis bindArgs une fois implémenté
     // Pour l'instant, cette action n'est pas utilisée
     throw new Error("updateTrajetAction not yet implemented with proper bindArgs");
