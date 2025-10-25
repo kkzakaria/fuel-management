@@ -151,3 +151,17 @@ export function calculatePercentageChange(
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 }
+
+/**
+ * Format date for display (French locale)
+ */
+export function formatDate(date: Date): string {
+  return format(date, 'd MMM yyyy', { locale: fr });
+}
+
+/**
+ * Format date with time for display (French locale)
+ */
+export function formatDateTime(date: Date): string {
+  return format(date, "d MMM yyyy 'à' HH:mm", { locale: fr });
+}
