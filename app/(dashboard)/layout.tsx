@@ -3,6 +3,7 @@
  *
  * Main layout for dashboard with sidebar and header
  * Mobile-first responsive design with hybrid navigation
+ * Includes PWA features: offline indicator and install prompt
  */
 
 import { redirect } from "next/navigation";
@@ -10,6 +11,8 @@ import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth/server";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
+import { OfflineIndicator } from "@/components/offline/offline-indicator";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 export default async function DashboardLayout({
   children,
@@ -29,6 +32,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Indicateur de connexion offline et synchronisation */}
+      <OfflineIndicator />
+
+      {/* Prompt d'installation PWA */}
+      <InstallPrompt />
+
       {/* Sidebar - Hidden on mobile, visible on desktop */}
       <Sidebar userProfile={profile} />
 
