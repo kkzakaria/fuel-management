@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "scripts/**", // Node.js utility scripts (CommonJS allowed)
     ],
   },
 ];

@@ -37,7 +37,15 @@
       "Bash(supabase migration new:*)",
       "Bash(supabase db push:*)",
       "Bash(supabase migration:*)",
-      "Bash(supabase db reset:*)"
+      "Bash(supabase db reset:*)",
+      "Bash(git pull:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(pnpm eslint:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "Bash(pnpm lighthouse:*)",
+      "Bash(pnpm test:run:*)",
+      "Bash(pnpm type-check:*)"
     ],
     "deny": [],
     "ask": []
