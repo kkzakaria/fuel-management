@@ -53,3 +53,12 @@ next-env.d.ts
 
 # claude config
 /.claude/
+
+# Fichier Excels
+*.xlsx
+*.xlsm
+*.xlsb
+*.xltx
+*.xltm
+*.xlam
+*.xls
