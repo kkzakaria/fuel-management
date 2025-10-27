@@ -116,48 +116,6 @@ export function LoginForm() {
           </Button>
         </form>
       </Form>
-
-      <div className="mt-6 rounded-md border bg-muted/50 p-4 text-sm">
-        <p className="mb-3 font-semibold text-foreground">Comptes de test disponibles :</p>
-
-        <div className="space-y-2">
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">Admin:</span>
-            <div className="flex-1">
-              <p className="font-mono text-xs">admin@transport.ci</p>
-              <p className="font-mono text-xs text-muted-foreground">Admin123!</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">Gestionnaire:</span>
-            <div className="flex-1">
-              <p className="font-mono text-xs">gestionnaire@transport.ci</p>
-              <p className="font-mono text-xs text-muted-foreground">Gestion123!</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">Chauffeur:</span>
-            <div className="flex-1">
-              <p className="font-mono text-xs">chauffeur1@transport.ci</p>
-              <p className="font-mono text-xs text-muted-foreground">Chauffeur123!</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">Personnel:</span>
-            <div className="flex-1">
-              <p className="font-mono text-xs">personnel@transport.ci</p>
-              <p className="font-mono text-xs text-muted-foreground">Personnel123!</p>
-            </div>
-          </div>
-        </div>
-
-        <p className="mt-3 text-xs italic text-muted-foreground">
-          Note: Ces comptes doivent être créés via le Dashboard Supabase
-        </p>
-      </div>
     </div>
   );
 }
