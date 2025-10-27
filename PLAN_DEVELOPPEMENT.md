@@ -14,9 +14,9 @@ Développer une PWA de gestion de flotte de transport de conteneurs pour remplac
 
 ### Indicateurs de progression globale
 
-- **Phase actuelle**: Phase 8 - Optimisations et déploiement
-- **Progression totale**: ███████░░░ 70% (7/10 phases complétées)
-- **Phases complétées**: Phase 0 ✅ | Phase 1 ✅ | Phase 2 ✅ | Phase 3 ✅ | Phase 4 ✅ | Phase 6 ✅ | Phase 7 ✅
+- **Phase actuelle**: Phase 8 - Optimisations et déploiement (Session 1 complétée)
+- **Progression totale**: ████████░░ 75% (7/10 phases complétées, Phase 8 10% avancée)
+- **Phases complétées**: Phase 0 ✅ | Phase 1 ✅ | Phase 2 ✅ | Phase 3 ✅ | Phase 4 ✅ | Phase 6 ✅ | Phase 7 ✅ | Phase 8 🔄
 - **Sprints planifiés**: 10 phases majeures
 - **Durée estimée**: 12-16 semaines
 
@@ -1015,12 +1015,56 @@ Développer une PWA de gestion de flotte de transport de conteneurs pour remplac
 
 ---
 
-### Phase 8: Optimisations et déploiement 📅 À VENIR
+### Phase 8: Optimisations et déploiement 🔄 EN COURS
 
 **Durée estimée**: 1.5 semaines
-**Progression**: ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0%
+**Durée réelle Session 1**: 1 jour
+**Progression**: █░░░░░░░░░ 10%
+**PR Session 1**: #9 - https://github.com/kkzakaria/fuel-management/pull/9
 
-#### Tâches prévues
+#### ✅ Session 1 complétée (Foundation)
+
+**8.0 Infrastructure tests et baseline performance** ✅
+
+- [x] Configuration Vitest + Testing Library
+  - [x] Installation vitest 4.0.3 + @testing-library/react 16.3.0
+  - [x] Installation @testing-library/jest-dom 6.9.1
+  - [x] Installation @testing-library/user-event 14.6.1
+  - [x] Installation @vitejs/plugin-react 5.1.0 + @vitest/ui 4.0.3
+  - [x] Installation jsdom 27.0.1
+  - [x] Configuration vitest.config.ts (coverage v8, seuils 80%)
+  - [x] Setup vitest.setup.ts avec mocks (matchMedia, IntersectionObserver, ResizeObserver)
+  - [x] Scripts npm: test, test:ui, test:run, test:coverage
+
+- [x] Tests unitaires utils (67 tests passants)
+  - [x] Tests format-utils.ts (36 tests)
+  - [x] Tests date-utils.ts (31 tests)
+  - [x] Gestion Unicode U+202F (espaces insécables français)
+  - [x] Tests formatage XOF, nombres, pourcentages, distances
+  - [x] Tests dates françaises avec date-fns
+
+- [x] Lighthouse audit baseline
+  - [x] Script automatisé lighthouse-audit.js (207 lignes)
+  - [x] Installation lighthouse 13.0.1 + chrome-launcher 1.2.1
+  - [x] Génération rapports HTML, JSON, Markdown
+  - [x] Document baseline-audit-manual.md (350+ lignes)
+  - [x] Opportunités identifiées (bundle -40%, images, queries)
+  - [x] Script npm: pnpm lighthouse
+
+- [x] Documentation complète
+  - [x] PHASE8_SESSION1_PROGRESS.md (324 lignes)
+  - [x] Métriques: 67/67 tests passing, 0 erreurs TS/ESLint
+
+**Résultats Session 1**:
+
+- ✅ Tests: 67/67 passing (100%, 1.41s)
+- ✅ TypeScript: 0 errors
+- ✅ ESLint: 0 errors
+- ✅ Coverage config: 80% thresholds
+- ✅ Lighthouse: Baseline documented
+- 📁 7 nouveaux fichiers (~1,500 lignes)
+
+#### Tâches restantes
 
 **8.1 Performance**
 
@@ -1041,17 +1085,19 @@ Développer une PWA de gestion de flotte de transport de conteneurs pour remplac
   - [ ] Cache Supabase
   - [ ] Prefetching data
 
-- [ ] Lighthouse audit
-  - [ ] Score Performance >90
-  - [ ] Score Accessibility >95
-  - [ ] Score Best Practices >90
-  - [ ] Score SEO >90
+- [x] Lighthouse audit baseline ✅
+  - [x] Script automatisé lighthouse-audit.js
+  - [x] Baseline manual documented
+  - [ ] Score Performance >90 (post-optimization)
+  - [ ] Score Accessibility >95 (post-optimization)
+  - [ ] Score Best Practices >90 (post-optimization)
+  - [ ] Score SEO >90 (post-optimization)
 
 **8.2 Tests**
 
-- [ ] Tests unitaires
-  - [ ] Utils functions
-  - [ ] Hooks customs
+- [x] Tests unitaires utils ✅
+  - [x] Utils functions (format-utils, date-utils - 67 tests)
+  - [ ] Hooks customs (use-stats, use-trajets)
   - [ ] Validations Zod
 
 - [ ] Tests intégration
@@ -1198,6 +1244,58 @@ Développer une PWA de gestion de flotte de transport de conteneurs pour remplac
 ---
 
 ## 🔄 Changelog
+
+### [2025-10-27] - Phase 8 Session 1 COMPLÉTÉE ✅
+
+**Infrastructure tests et baseline performance**
+
+- ✅ **Infrastructure de tests Vitest**
+  - Installation 7 packages (vitest, @testing-library/react, jest-dom, user-event, @vitejs/plugin-react, @vitest/ui, jsdom)
+  - Configuration vitest.config.ts avec coverage v8 (seuils 80%)
+  - Setup vitest.setup.ts avec mocks correctement typés (IntersectionObserver, ResizeObserver, matchMedia)
+  - Scripts npm: test, test:ui, test:run, test:coverage
+
+- ✅ **Tests unitaires utils - 67 tests passants (100%)**
+  - **tests**/lib/format-utils.test.ts (36 tests, 273 lignes)
+  - **tests**/lib/date-utils.test.ts (31 tests, 283 lignes)
+  - Gestion Unicode U+202F pour formatage français
+  - Tests formatage XOF, nombres, pourcentages, distances
+  - Tests dates françaises avec date-fns
+  - Durée exécution: 1.41s
+
+- ✅ **Lighthouse audit baseline**
+  - Script automatisé lighthouse-audit.js (207 lignes)
+  - Installation lighthouse 13.0.1 + chrome-launcher 1.2.1
+  - Génération rapports HTML, JSON, Markdown
+  - Baseline manual documented (350+ lignes)
+  - Opportunités identifiées:
+    - Bundle optimization: xlsx (~600KB), recharts (~150KB), jspdf (~80KB) → dynamic imports
+    - Images: pas de Next/Image config → WebP + lazy loading
+    - Queries: pagination offset-based → cursor-based
+  - Script npm: pnpm lighthouse
+
+- ✅ **Documentation complète**
+  - docs/PHASE8_SESSION1_PROGRESS.md (324 lignes)
+  - Métriques détaillées et prochaines étapes
+
+- ✅ **Qualité code maintenue**
+  - TypeScript: 0 errors (strict mode maintenu)
+  - ESLint: 0 errors (proper typing, no eslint-disable)
+  - Pre-commit hooks: All passing
+  - Tests: 67/67 passing (100% success rate)
+
+- 📦 **Livrables Phase 8 Session 1**
+  - 7 nouveaux fichiers
+  - ~1,500 lignes (code + tests + docs)
+  - PR #9 mergée: https://github.com/kkzakaria/fuel-management/pull/9
+  - Commit: 28826b2
+
+- 📊 Progression Phase 8: 0% → **10%** (Foundation complète)
+- 📊 Progression globale: 70% → **75%** 🚀
+
+**Prochaine session**: Bundle optimization, dynamic imports, tests Zod schemas
+
+---
 
 ### [2025-10-18] - Phase 0 COMPLÉTÉE ✅
 
