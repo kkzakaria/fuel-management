@@ -26,7 +26,7 @@ export default function NouveauTrajetPage() {
       </div>
 
       {/* Formulaire */}
-      <TrajetForm mode="create" />
+      <TrajetForm />
     </div>
   );
 }
