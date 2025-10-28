@@ -11,10 +11,12 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrajetTable } from "@/components/trajets/trajet-table";
+import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item";
 import { TrajetFilters } from "@/components/trajets/trajet-filters";
 import { TrajetPagination } from "@/components/trajets/trajet-pagination";
 import { useTrajets } from "@/hooks/use-trajets";
 import { useTrajetFormData } from "@/hooks/use-trajet-form-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TrajetsPage() {
   const {
@@ -123,8 +125,31 @@ export default function TrajetsPage() {
         localites={localites}
       />
 
-      {/* Table */}
-      <TrajetTable trajets={trajets} loading={loading} />
+      {/* Table (Desktop) */}
+      <div className="hidden md:block">
+        <TrajetTable trajets={trajets} loading={loading} />
+      </div>
+
+      {/* Liste (Mobile) */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full" />
+            ))}
+          </div>
+        ) : trajets.length === 0 ? (
+          <div className="rounded-md border p-8 text-center">
+            <p className="text-muted-foreground">Aucun trajet trouvé</p>
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-hidden">
+            {trajets.map((trajet) => (
+              <TrajetListItemComponent key={trajet.id} trajet={trajet} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (

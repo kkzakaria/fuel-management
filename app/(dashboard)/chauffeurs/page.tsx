@@ -11,9 +11,11 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChauffeurTable } from "@/components/chauffeurs/chauffeur-table";
+import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item";
 import { ChauffeurFilters } from "@/components/chauffeurs/chauffeur-filters";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
 import { useUserRole } from "@/hooks/use-user-role";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ChauffeursPage() {
   const { canManageDrivers } = useUserRole();
@@ -116,8 +118,31 @@ export default function ChauffeursPage() {
         onClearFilters={clearFilters}
       />
 
-      {/* Table */}
-      <ChauffeurTable chauffeurs={chauffeurs} loading={loading} />
+      {/* Table (Desktop) */}
+      <div className="hidden md:block">
+        <ChauffeurTable chauffeurs={chauffeurs} loading={loading} />
+      </div>
+
+      {/* Liste (Mobile) */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+        ) : chauffeurs.length === 0 ? (
+          <div className="rounded-md border p-8 text-center">
+            <p className="text-muted-foreground">Aucun chauffeur trouvé</p>
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-hidden">
+            {chauffeurs.map((chauffeur) => (
+              <ChauffeurListItem key={chauffeur.id} chauffeur={chauffeur} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

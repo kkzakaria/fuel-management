@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VehiculeCard } from "@/components/vehicules/vehicule-card";
+import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
 import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
 import { useVehicules } from "@/hooks/use-vehicules";
 import { useUserRole } from "@/hooks/use-user-role";
@@ -119,28 +120,55 @@ export default function VehiculesPage() {
         onClearFilters={clearFilters}
       />
 
-      {/* Grille de cartes */}
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-48" />
-          ))}
-        </div>
-      ) : vehicules.length === 0 ? (
-        <div className="rounded-md border border-dashed p-8 text-center">
-          <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
-          <p className="text-sm text-muted-foreground">
-            Commencez par ajouter un nouveau véhicule.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {vehicules.map((vehicule) => (
-            <VehiculeCard key={vehicule.id} vehicule={vehicule} />
-          ))}
-        </div>
-      )}
+      {/* Grille de cartes (Desktop) */}
+      <div className="hidden md:block">
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-48" />
+            ))}
+          </div>
+        ) : vehicules.length === 0 ? (
+          <div className="rounded-md border border-dashed p-8 text-center">
+            <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
+            <p className="text-sm text-muted-foreground">
+              Commencez par ajouter un nouveau véhicule.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {vehicules.map((vehicule) => (
+              <VehiculeCard key={vehicule.id} vehicule={vehicule} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Liste (Mobile) */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+        ) : vehicules.length === 0 ? (
+          <div className="rounded-md border p-8 text-center">
+            <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
+            <p className="text-sm text-muted-foreground">
+              Commencez par ajouter un nouveau véhicule.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-hidden">
+            {vehicules.map((vehicule) => (
+              <VehiculeListItem key={vehicule.id} vehicule={vehicule} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
