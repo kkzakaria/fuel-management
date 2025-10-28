@@ -47,7 +47,7 @@ export async function getFuelVarianceAlerts(
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       id,
@@ -55,8 +55,8 @@ export async function getFuelVarianceAlerts(
       litrage_prevu,
       litrage_station,
       created_at,
-      chauffeur:CHAUFFEUR(nom, prenom),
-      vehicule:VEHICULE(immatriculation, marque, modele)
+      chauffeur:chauffeur(nom, prenom),
+      vehicule:vehicule(immatriculation, marque, modele)
     `,
     )
     .not("ecart_litrage", "is", null)
@@ -104,7 +104,7 @@ export async function getAbnormalConsumptionAlerts(
 
   // First, get average consumption per vehicle
   const { data: vehicleData } = await supabase
-    .from("VEHICULE")
+    .from("vehicule")
     .select("id, immatriculation, marque, modele");
 
   if (!vehicleData) return [];
@@ -114,7 +114,7 @@ export async function getAbnormalConsumptionAlerts(
   for (const vehicle of vehicleData) {
     // Get average consumption for this vehicle
     const { data: tripData } = await supabase
-      .from("TRAJET")
+      .from("trajet")
       .select("consommation_au_100")
       .eq("vehicule_id", vehicle.id)
       .not("consommation_au_100", "is", null)
@@ -128,7 +128,7 @@ export async function getAbnormalConsumptionAlerts(
 
     // Get recent trips with high consumption
     const { data: abnormalTrips } = await supabase
-      .from("TRAJET")
+      .from("trajet")
       .select("id, consommation_au_100, created_at")
       .eq("vehicule_id", vehicle.id)
       .gt("consommation_au_100", avgConsumption * 1.3) // >30% above average
@@ -175,14 +175,14 @@ export async function getPendingPaymentAlerts(
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .select(
       `
       id,
       reste_10_pourcent,
       date_programmation,
       created_at,
-      sous_traitant:SOUS_TRAITANT(nom_entreprise)
+      sous_traitant:sous_traitant(nom_entreprise)
     `,
     )
     .gt("reste_10_pourcent", 0)
@@ -231,13 +231,13 @@ export async function getAlertCount(): Promise<number> {
 
   // Count fuel variance alerts
   const { count: fuelCount } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("*", { count: "exact", head: true })
     .or("ecart_litrage.gt.10,ecart_litrage.lt.-10");
 
   // Count pending payments
   const { count: paymentCount } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .select("*", { count: "exact", head: true })
     .gt("reste_10_pourcent", 0)
     .eq("statut_paiement_final", "non_paye");

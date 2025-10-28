@@ -34,7 +34,7 @@ export async function getDashboardStats(
 
   // Get total trips and fuel data
   const { data: tripData } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("*")
     .gte("date_trajet", formatDateForQuery(dateFrom))
     .lte("date_trajet", formatDateForQuery(dateTo));
@@ -43,11 +43,11 @@ export async function getDashboardStats(
 
   // Get total containers by type
   const { data: containerData } = await supabase
-    .from("CONTENEUR_TRAJET")
+    .from("conteneur_trajet")
     .select(
       `
       quantite,
-      type_conteneur:TYPE_CONTENEUR(nom),
+      type_conteneur:type_conteneur(nom),
       trajet:TRAJET!inner(date_trajet)
     `,
     )
@@ -97,7 +97,7 @@ export async function getDashboardStats(
   const prevTo = new Date(dateFrom.getTime() - 1);
 
   const { data: prevTripData } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("id, montant_carburant")
     .gte("date_trajet", formatDateForQuery(prevFrom))
     .lte("date_trajet", formatDateForQuery(prevTo));
@@ -145,11 +145,11 @@ export async function getContainerStats(
   const supabase = getClient();
 
   const { data } = await supabase
-    .from("CONTENEUR_TRAJET")
+    .from("conteneur_trajet")
     .select(
       `
       quantite,
-      type_conteneur:TYPE_CONTENEUR(nom),
+      type_conteneur:type_conteneur(nom),
       trajet:TRAJET!inner(date_trajet)
     `,
     )
@@ -201,13 +201,13 @@ export async function getVehicleConsumptionStats(
   const supabase = getClient();
 
   const { data: tripData } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       vehicule_id,
       consommation_au_100,
       parcours_total,
-      vehicule:VEHICULE(immatriculation, marque, modele)
+      vehicule:vehicule(immatriculation, marque, modele)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
@@ -286,7 +286,7 @@ export async function getTripChartData(
   const supabase = getClient();
 
   const { data } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("date_trajet, id")
     .gte("date_trajet", formatDateForQuery(dateFrom))
     .lte("date_trajet", formatDateForQuery(dateTo))
@@ -322,7 +322,7 @@ export async function getCostChartData(
   const supabase = getClient();
 
   const { data: tripData } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("date_trajet, prix_litre, litrage_station, frais_peage, autres_frais")
     .gte("date_trajet", formatDateForQuery(dateFrom))
     .lte("date_trajet", formatDateForQuery(dateTo));

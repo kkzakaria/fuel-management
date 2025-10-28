@@ -18,8 +18,8 @@ export async function fetchMissionsClient(
       `
       *,
       sous_traitant:sous_traitant(id, nom_entreprise, contact_principal, telephone),
-      localite_depart:localite!mission_sous_traitance_localite_depart_id_fkey(id, nom),
-      localite_arrivee:localite!mission_sous_traitance_localite_arrivee_id_fkey(id, nom),
+      localite_depart:localite_depart_id(id, nom),
+      localite_arrivee:localite_arrivee_id(id, nom),
       type_conteneur:type_conteneur(id, nom, taille_pieds)
     `,
       { count: 'exact' }
@@ -99,8 +99,8 @@ export async function fetchMissionByIdClient(id: string) {
       `
       *,
       sous_traitant:sous_traitant(id, nom_entreprise, contact_principal, telephone, email, adresse),
-      localite_depart:localite!mission_sous_traitance_localite_depart_id_fkey(id, nom, region),
-      localite_arrivee:localite!mission_sous_traitance_localite_arrivee_id_fkey(id, nom, region),
+      localite_depart:localite_depart_id(id, nom, region),
+      localite_arrivee:localite_arrivee_id(id, nom, region),
       type_conteneur:type_conteneur(id, nom, taille_pieds, description)
     `
     )

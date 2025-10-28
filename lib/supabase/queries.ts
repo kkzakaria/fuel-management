@@ -21,7 +21,7 @@ import { createClient } from "./server";
 export async function getLocalites() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("LOCALITE")
+    .from("localite")
     .select("*")
     .order("nom");
 
@@ -32,7 +32,7 @@ export async function getLocalites() {
 export async function getLocalitesByRegion(region: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("LOCALITE")
+    .from("localite")
     .select("*")
     .eq("region", region)
     .order("nom");
@@ -44,7 +44,7 @@ export async function getLocalitesByRegion(region: string) {
 export async function getLocaliteById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("LOCALITE")
+    .from("localite")
     .select("*")
     .eq("id", id)
     .single();
@@ -60,7 +60,7 @@ export async function getLocaliteById(id: string) {
 export async function getTypeConteneurs() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("TYPE_CONTENEUR")
+    .from("type_conteneur")
     .select("*")
     .order("taille_pieds");
 
@@ -71,7 +71,7 @@ export async function getTypeConteneurs() {
 export async function getTypeConteneurById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("TYPE_CONTENEUR")
+    .from("type_conteneur")
     .select("*")
     .eq("id", id)
     .single();
@@ -86,7 +86,7 @@ export async function getTypeConteneurById(id: string) {
 
 export async function getChauffeurs(statutFilter?: string) {
   const supabase = await createClient();
-  let query = supabase.from("CHAUFFEUR").select("*");
+  let query = supabase.from("chauffeur").select("*");
 
   if (statutFilter) {
     query = query.eq("statut", statutFilter);
@@ -101,7 +101,7 @@ export async function getChauffeurs(statutFilter?: string) {
 export async function getChauffeurById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("CHAUFFEUR")
+    .from("chauffeur")
     .select("*")
     .eq("id", id)
     .single();
@@ -120,7 +120,7 @@ export async function createChauffeur(chauffeur: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("CHAUFFEUR")
+    .from("chauffeur")
     .insert(chauffeur)
     .select()
     .single();
@@ -142,7 +142,7 @@ export async function updateChauffeur(
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("CHAUFFEUR")
+    .from("chauffeur")
     .update(updates)
     .eq("id", id)
     .select()
@@ -158,7 +158,7 @@ export async function updateChauffeur(
 
 export async function getVehicules(statutFilter?: string) {
   const supabase = await createClient();
-  let query = supabase.from("VEHICULE").select("*");
+  let query = supabase.from("vehicule").select("*");
 
   if (statutFilter) {
     query = query.eq("statut", statutFilter);
@@ -173,7 +173,7 @@ export async function getVehicules(statutFilter?: string) {
 export async function getVehiculeById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("VEHICULE")
+    .from("vehicule")
     .select("*")
     .eq("id", id)
     .single();
@@ -193,7 +193,7 @@ export async function createVehicule(vehicule: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("VEHICULE")
+    .from("vehicule")
     .insert(vehicule)
     .select()
     .single();
@@ -216,7 +216,7 @@ export async function updateVehicule(
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("VEHICULE")
+    .from("vehicule")
     .update(updates)
     .eq("id", id)
     .select()
@@ -232,7 +232,7 @@ export async function updateVehicule(
 
 export async function getSousTraitants(statutFilter?: string) {
   const supabase = await createClient();
-  let query = supabase.from("SOUS_TRAITANT").select("*");
+  let query = supabase.from("sous_traitant").select("*");
 
   if (statutFilter) {
     query = query.eq("statut", statutFilter);
@@ -247,7 +247,7 @@ export async function getSousTraitants(statutFilter?: string) {
 export async function getSousTraitantById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("SOUS_TRAITANT")
+    .from("sous_traitant")
     .select("*")
     .eq("id", id)
     .single();
@@ -266,7 +266,7 @@ export async function createSousTraitant(sousTraitant: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("SOUS_TRAITANT")
+    .from("sous_traitant")
     .insert(sousTraitant)
     .select()
     .single();
@@ -288,7 +288,7 @@ export async function updateSousTraitant(
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("SOUS_TRAITANT")
+    .from("sous_traitant")
     .update(updates)
     .eq("id", id)
     .select()
@@ -312,14 +312,14 @@ export async function getTrajets(options?: {
 }) {
   const supabase = await createClient();
   let query = supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       *,
-      chauffeur:CHAUFFEUR(nom, prenom),
-      vehicule:VEHICULE(immatriculation, marque, modele),
-      localite_depart:LOCALITE!TRAJET_localite_depart_id_fkey(nom, region),
-      localite_arrivee:LOCALITE!TRAJET_localite_arrivee_id_fkey(nom, region)
+      chauffeur:chauffeur(nom, prenom),
+      vehicule:vehicule(immatriculation, marque, modele),
+      localite_depart:localite_depart_id(nom, region),
+      localite_arrivee:localite_arrivee_id(nom, region)
     `
     );
 
@@ -353,17 +353,17 @@ export async function getTrajets(options?: {
 export async function getTrajetById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       *,
-      chauffeur:CHAUFFEUR(nom, prenom, telephone),
-      vehicule:VEHICULE(immatriculation, marque, modele, type_carburant),
-      localite_depart:LOCALITE!TRAJET_localite_depart_id_fkey(nom, region),
-      localite_arrivee:LOCALITE!TRAJET_localite_arrivee_id_fkey(nom, region),
-      conteneurs:CONTENEUR_TRAJET(
+      chauffeur:chauffeur(nom, prenom, telephone),
+      vehicule:vehicule(immatriculation, marque, modele, type_carburant),
+      localite_depart:localite_depart_id(nom, region),
+      localite_arrivee:localite_arrivee_id(nom, region),
+      conteneurs:conteneur_trajet(
         *,
-        type_conteneur:TYPE_CONTENEUR(nom, taille_pieds)
+        type_conteneur:type_conteneur(nom, taille_pieds)
       )
     `
     )
@@ -392,7 +392,7 @@ export async function createTrajet(trajet: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .insert(trajet)
     .select()
     .single();
@@ -418,7 +418,7 @@ export async function updateTrajet(
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .update(updates)
     .eq("id", id)
     .select()
@@ -435,11 +435,11 @@ export async function updateTrajet(
 export async function getConteneursByTrajet(trajetId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("CONTENEUR_TRAJET")
+    .from("conteneur_trajet")
     .select(
       `
       *,
-      type_conteneur:TYPE_CONTENEUR(nom, taille_pieds, description)
+      type_conteneur:type_conteneur(nom, taille_pieds, description)
     `
     )
     .eq("trajet_id", trajetId);
@@ -457,7 +457,7 @@ export async function createConteneurTrajet(conteneur: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("CONTENEUR_TRAJET")
+    .from("conteneur_trajet")
     .insert(conteneur)
     .select()
     .single();
@@ -479,14 +479,14 @@ export async function getMissionsSousTraitance(options?: {
 }) {
   const supabase = await createClient();
   let query = supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .select(
       `
       *,
-      sous_traitant:SOUS_TRAITANT(nom_entreprise, contact_principal, telephone),
-      localite_depart:LOCALITE!MISSION_SOUS_TRAITANCE_localite_depart_id_fkey(nom, region),
-      localite_arrivee:LOCALITE!MISSION_SOUS_TRAITANCE_localite_arrivee_id_fkey(nom, region),
-      type_conteneur:TYPE_CONTENEUR(nom, taille_pieds)
+      sous_traitant:sous_traitant(nom_entreprise, contact_principal, telephone),
+      localite_depart:localite_depart_id(nom, region),
+      localite_arrivee:localite_arrivee_id(nom, region),
+      type_conteneur:type_conteneur(nom, taille_pieds)
     `
     );
 
@@ -517,14 +517,14 @@ export async function getMissionsSousTraitance(options?: {
 export async function getMissionSousTraitanceById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .select(
       `
       *,
-      sous_traitant:SOUS_TRAITANT(*),
-      localite_depart:LOCALITE!MISSION_SOUS_TRAITANCE_localite_depart_id_fkey(nom, region),
-      localite_arrivee:LOCALITE!MISSION_SOUS_TRAITANCE_localite_arrivee_id_fkey(nom, region),
-      type_conteneur:TYPE_CONTENEUR(nom, taille_pieds, description)
+      sous_traitant:sous_traitant(*),
+      localite_depart:localite_depart_id(nom, region),
+      localite_arrivee:localite_arrivee_id(nom, region),
+      type_conteneur:type_conteneur(nom, taille_pieds, description)
     `
     )
     .eq("id", id)
@@ -548,7 +548,7 @@ export async function createMissionSousTraitance(mission: {
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .insert(mission)
     .select()
     .single();
@@ -572,7 +572,7 @@ export async function updateMissionSousTraitance(
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .update(updates)
     .eq("id", id)
     .select()
@@ -593,7 +593,7 @@ export async function getTrajetStats(options?: {
   dateFin?: string;
 }) {
   const supabase = await createClient();
-  let query = supabase.from("TRAJET").select("*");
+  let query = supabase.from("trajet").select("*");
 
   if (options?.chauffeurId) {
     query = query.eq("chauffeur_id", options.chauffeurId);

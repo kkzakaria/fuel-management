@@ -31,8 +31,8 @@ export async function fetchTrajetsClient(options?: {
       *,
       chauffeur:chauffeur(id, nom, prenom),
       vehicule:vehicule(id, immatriculation, marque, modele, type_carburant),
-      localite_depart:localite!trajet_localite_depart_id_fkey(id, nom, region),
-      localite_arrivee:localite!trajet_localite_arrivee_id_fkey(id, nom, region)
+      localite_depart:localite_depart_id(id, nom, region),
+      localite_arrivee:localite_arrivee_id(id, nom, region)
     `,
       { count: "exact" }
     );
@@ -93,8 +93,8 @@ export async function fetchTrajetByIdClient(trajetId: string) {
       *,
       chauffeur:chauffeur(id, nom, prenom, telephone, statut),
       vehicule:vehicule(id, immatriculation, marque, modele, type_carburant, statut),
-      localite_depart:localite!trajet_localite_depart_id_fkey(id, nom, region),
-      localite_arrivee:localite!trajet_localite_arrivee_id_fkey(id, nom, region),
+      localite_depart:localite_depart_id(id, nom, region),
+      localite_arrivee:localite_arrivee_id(id, nom, region),
       conteneurs:conteneur_trajet(
         *,
         type_conteneur:type_conteneur(id, nom, taille_pieds, description)
