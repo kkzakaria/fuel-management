@@ -54,8 +54,8 @@ export async function fetchSousTraitantByIdClient(id: string) {
         avance_payee,
         solde_paye,
         statut,
-        localite_depart:localite!mission_sous_traitance_localite_depart_id_fkey(id, nom),
-        localite_arrivee:localite!mission_sous_traitance_localite_arrivee_id_fkey(id, nom),
+        localite_depart:localite_depart_id(id, nom),
+        localite_arrivee:localite_arrivee_id(id, nom),
         type_conteneur:type_conteneur(id, nom, taille_pieds)
       )
     `

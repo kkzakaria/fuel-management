@@ -179,18 +179,18 @@ export class SyncManager {
         case "trajet": {
           if (item.operation === "create") {
             const { error } = await supabase
-              .from("TRAJET")
+              .from("trajet")
               .insert(item.data);
             if (error) throw error;
           } else if (item.operation === "update") {
             const { error } = await supabase
-              .from("TRAJET")
+              .from("trajet")
               .update(item.data)
               .eq("id", item.entity_id);
             if (error) throw error;
           } else if (item.operation === "delete") {
             const { error } = await supabase
-              .from("TRAJET")
+              .from("trajet")
               .delete()
               .eq("id", item.entity_id);
             if (error) throw error;
@@ -201,18 +201,18 @@ export class SyncManager {
         case "conteneur": {
           if (item.operation === "create") {
             const { error } = await supabase
-              .from("CONTENEUR_TRAJET")
+              .from("conteneur_trajet")
               .insert(item.data);
             if (error) throw error;
           } else if (item.operation === "update") {
             const { error } = await supabase
-              .from("CONTENEUR_TRAJET")
+              .from("conteneur_trajet")
               .update(item.data)
               .eq("id", item.entity_id);
             if (error) throw error;
           } else if (item.operation === "delete") {
             const { error } = await supabase
-              .from("CONTENEUR_TRAJET")
+              .from("conteneur_trajet")
               .delete()
               .eq("id", item.entity_id);
             if (error) throw error;
@@ -223,18 +223,18 @@ export class SyncManager {
         case "chauffeur": {
           if (item.operation === "create") {
             const { error } = await supabase
-              .from("CHAUFFEUR")
+              .from("chauffeur")
               .insert(item.data);
             if (error) throw error;
           } else if (item.operation === "update") {
             const { error } = await supabase
-              .from("CHAUFFEUR")
+              .from("chauffeur")
               .update(item.data)
               .eq("id", item.entity_id);
             if (error) throw error;
           } else if (item.operation === "delete") {
             const { error } = await supabase
-              .from("CHAUFFEUR")
+              .from("chauffeur")
               .delete()
               .eq("id", item.entity_id);
             if (error) throw error;
@@ -245,18 +245,18 @@ export class SyncManager {
         case "vehicule": {
           if (item.operation === "create") {
             const { error } = await supabase
-              .from("VEHICULE")
+              .from("vehicule")
               .insert(item.data);
             if (error) throw error;
           } else if (item.operation === "update") {
             const { error } = await supabase
-              .from("VEHICULE")
+              .from("vehicule")
               .update(item.data)
               .eq("id", item.entity_id);
             if (error) throw error;
           } else if (item.operation === "delete") {
             const { error } = await supabase
-              .from("VEHICULE")
+              .from("vehicule")
               .delete()
               .eq("id", item.entity_id);
             if (error) throw error;

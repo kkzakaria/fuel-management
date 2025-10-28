@@ -116,8 +116,8 @@ export async function fetchChauffeurTrajetsClient(
       litrage_station,
       prix_litre,
       statut,
-      localite_depart:localite!trajet_localite_depart_id_fkey(nom, region),
-      localite_arrivee:localite!trajet_localite_arrivee_id_fkey(nom, region),
+      localite_depart:localite_depart_id(nom, region),
+      localite_arrivee:localite_arrivee_id(nom, region),
       vehicule:vehicule(immatriculation, marque, modele)
     `,
       { count: "exact" }

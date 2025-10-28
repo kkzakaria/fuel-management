@@ -32,7 +32,7 @@ export async function getExecutiveSummary(
 
   // Get current period stats
   const { data: trips } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       id,
@@ -43,7 +43,7 @@ export async function getExecutiveSummary(
       montant_carburant,
       cout_total,
       ecart_litrage,
-      conteneurs:CONTENEUR_TRAJET(quantite)
+      conteneurs:conteneur_trajet(quantite)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
@@ -57,14 +57,14 @@ export async function getExecutiveSummary(
   const previousDateTo = new Date(dateFrom.getTime() - 86400000);
 
   const { data: previousTrips } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       id,
       montant_carburant,
       cout_total,
       consommation_au_100,
-      conteneurs:CONTENEUR_TRAJET(quantite)
+      conteneurs:conteneur_trajet(quantite)
     `,
     )
     .gte("date_trajet", formatDateForQuery(previousDateFrom))
@@ -72,7 +72,7 @@ export async function getExecutiveSummary(
 
   // Get active alerts
   const { count: alertsCount } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select("id", { count: "exact", head: true })
     .gte("date_trajet", formatDateForQuery(dateFrom))
     .lte("date_trajet", formatDateForQuery(dateTo))
@@ -213,7 +213,7 @@ export async function getFleetPerformance(
 
   // Get driver performance
   const { data: driverTrips } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       chauffeur_id,
@@ -221,8 +221,8 @@ export async function getFleetPerformance(
       litrage_station,
       consommation_au_100,
       cout_total,
-      conteneurs:CONTENEUR_TRAJET(quantite),
-      chauffeur:CHAUFFEUR(nom, prenom)
+      conteneurs:conteneur_trajet(quantite),
+      chauffeur:chauffeur(nom, prenom)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
@@ -298,7 +298,7 @@ export async function getFleetPerformance(
 
   // Get vehicle performance
   const { data: vehicleTrips } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       vehicule_id,
@@ -307,7 +307,7 @@ export async function getFleetPerformance(
       consommation_au_100,
       montant_carburant,
       ecart_litrage,
-      vehicule:VEHICULE(immatriculation, marque, modele)
+      vehicule:vehicule(immatriculation, marque, modele)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
@@ -430,7 +430,7 @@ export async function getFinancialAnalysis(
 
   // Get trip costs
   const { data: trips } = await supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       id,
@@ -443,7 +443,7 @@ export async function getFinancialAnalysis(
       litrage_station,
       prix_litre,
       destination:localite_destination_id(nom),
-      conteneurs:CONTENEUR_TRAJET(quantite)
+      conteneurs:conteneur_trajet(quantite)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
@@ -451,7 +451,7 @@ export async function getFinancialAnalysis(
 
   // Get subcontracting costs
   const { data: missions } = await supabase
-    .from("MISSION_SOUS_TRAITANCE")
+    .from("mission_sous_traitance")
     .select("id, cout_transport, date_mission")
     .gte("date_mission", formatDateForQuery(dateFrom))
     .lte("date_mission", formatDateForQuery(dateTo));
@@ -660,7 +660,7 @@ export async function getReportTrips(
   const supabase = await createClient();
 
   let query = supabase
-    .from("TRAJET")
+    .from("trajet")
     .select(
       `
       id,
@@ -672,11 +672,11 @@ export async function getReportTrips(
       cout_total,
       statut,
       ecart_litrage,
-      chauffeur:CHAUFFEUR(nom, prenom),
-      vehicule:VEHICULE(immatriculation, marque, modele),
+      chauffeur:chauffeur(nom, prenom),
+      vehicule:vehicule(immatriculation, marque, modele),
       depart:localite_depart_id(nom),
       destination:localite_destination_id(nom),
-      conteneurs:CONTENEUR_TRAJET(quantite)
+      conteneurs:conteneur_trajet(quantite)
     `,
     )
     .gte("date_trajet", formatDateForQuery(dateFrom))
