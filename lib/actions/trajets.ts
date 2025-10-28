@@ -72,38 +72,35 @@ export const createTrajetAction = action
 
 /**
  * Action: Mettre à jour un trajet existant
- * Note: Pour l'instant, cette action nécessite que trajetId soit passé via bindArgsSchemas
- * TODO: Implémenter avec bindArgsSchemas lors de l'utilisation réelle
  */
 export const updateTrajetAction = action
   .schema(updateTrajetSchema)
-  .action(async () => {
-    // TODO: Récupérer trajetId depuis bindArgs une fois implémenté
-    // Pour l'instant, cette action n'est pas utilisée
-    throw new Error("updateTrajetAction not yet implemented with proper bindArgs");
+  .bindArgsSchemas([deleteTrajetSchema])
+  .action(async ({ parsedInput, bindArgsParsedInputs: [{ trajetId }] }) => {
+    const supabase = await createClient();
 
-    // const { data: trajet, error } = await supabase
-    //   .from("trajet")
-    //   .update(parsedInput)
-    //   .eq("id", trajetId)
-    //   .select()
-    //   .single();
+    const { data: trajet, error } = await supabase
+      .from("trajet")
+      .update(parsedInput)
+      .eq("id", trajetId)
+      .select()
+      .single();
 
-    // if (error) {
-    //   console.error("Erreur mise à jour trajet:", error);
-    //   throw new Error("Erreur lors de la mise à jour du trajet");
-    // }
+    if (error) {
+      console.error("Erreur mise à jour trajet:", error);
+      throw new Error("Erreur lors de la mise à jour du trajet");
+    }
 
-    // // Revalider les caches
-    // revalidatePath("/trajets");
-    // revalidatePath(`/trajets/${trajetId}`);
-    // revalidatePath("/");
+    // Revalider les caches
+    revalidatePath("/trajets");
+    revalidatePath(`/trajets/${trajetId}`);
+    revalidatePath("/");
 
-    // return {
-    //   success: true,
-    //   trajet,
-    //   message: "Trajet mis à jour avec succès",
-    // };
+    return {
+      success: true,
+      trajet,
+      message: "Trajet mis à jour avec succès",
+    };
   });
 
 /**

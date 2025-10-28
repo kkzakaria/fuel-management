@@ -39,18 +39,19 @@ import {
 } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConteneurSelector } from "./conteneur-selector";
-import { createTrajetAction } from "@/lib/actions/trajets";
+import { createTrajetAction, updateTrajetAction } from "@/lib/actions/trajets";
 import { createTrajetSchema, trajetCalculations, type CreateTrajetInput } from "@/lib/validations/trajet";
 import { toast } from "sonner";
 import { useTrajetFormData } from "@/hooks/use-trajet-form-data";
+import type { Trajet, ConteneurTrajet } from "@/lib/supabase/types";
 
 interface TrajetFormProps {
-  defaultValues?: Partial<CreateTrajetInput>;
-  mode?: "create" | "edit";
+  trajet?: Trajet & { conteneur_trajet?: ConteneurTrajet[] };
   onSuccess?: () => void;
 }
 
-export function TrajetForm({ defaultValues, mode = "create", onSuccess }: TrajetFormProps) {
+export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
+  const isEditing = Boolean(trajet);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,18 +61,26 @@ export function TrajetForm({ defaultValues, mode = "create", onSuccess }: Trajet
   const form = useForm<CreateTrajetInput>({
     resolver: zodResolver(createTrajetSchema),
     defaultValues: {
-      date_trajet: defaultValues?.date_trajet || new Date().toISOString().split("T")[0],
-      chauffeur_id: defaultValues?.chauffeur_id || "",
-      vehicule_id: defaultValues?.vehicule_id || "",
-      localite_depart_id: defaultValues?.localite_depart_id || "",
-      localite_arrivee_id: defaultValues?.localite_arrivee_id || "",
-      km_debut: defaultValues?.km_debut || 0,
-      km_fin: defaultValues?.km_fin || 0,
-      frais_peage: defaultValues?.frais_peage || 0,
-      autres_frais: defaultValues?.autres_frais || 0,
-      statut: defaultValues?.statut || "en_cours",
-      conteneurs: defaultValues?.conteneurs || [],
-      ...defaultValues,
+      date_trajet: trajet?.date_trajet || new Date().toISOString().split("T")[0],
+      chauffeur_id: trajet?.chauffeur_id || "",
+      vehicule_id: trajet?.vehicule_id || "",
+      localite_depart_id: trajet?.localite_depart_id || "",
+      localite_arrivee_id: trajet?.localite_arrivee_id || "",
+      km_debut: trajet?.km_debut || 0,
+      km_fin: trajet?.km_fin || 0,
+      litrage_prevu: trajet?.litrage_prevu || undefined,
+      litrage_station: trajet?.litrage_station || undefined,
+      prix_litre: trajet?.prix_litre || undefined,
+      frais_peage: trajet?.frais_peage || 0,
+      autres_frais: trajet?.autres_frais || 0,
+      statut: (trajet?.statut as "en_cours" | "termine" | "annule" | undefined) || "en_cours",
+      observations: trajet?.observations || undefined,
+      conteneurs: trajet?.conteneur_trajet?.map((c) => ({
+        type_conteneur_id: c.type_conteneur_id,
+        numero_conteneur: c.numero_conteneur || undefined,
+        quantite: c.quantite || 1,
+        statut_livraison: (c.statut_livraison as "en_cours" | "livre" | "retour") || "en_cours",
+      })) || [],
     },
   });
 
@@ -112,21 +121,35 @@ export function TrajetForm({ defaultValues, mode = "create", onSuccess }: Trajet
   const onSubmit = async (data: CreateTrajetInput) => {
     setIsSubmitting(true);
     try {
-      const result = await createTrajetAction(data);
+      let result;
+      if (isEditing && trajet) {
+        // Mode édition
+        result = await updateTrajetAction(
+          { trajetId: trajet.id },
+          data
+        );
+      } else {
+        // Mode création
+        result = await createTrajetAction(data);
+      }
 
       if (result.data?.success) {
-        toast.success(result.data.message || "Trajet créé avec succès");
+        toast.success(result.data.message || (isEditing ? "Trajet mis à jour avec succès" : "Trajet créé avec succès"));
         if (onSuccess) {
           onSuccess();
         } else {
-          router.push("/trajets");
+          if (isEditing && trajet) {
+            router.push(`/trajets/${trajet.id}`);
+          } else {
+            router.push("/trajets");
+          }
           router.refresh();
         }
       } else {
-        toast.error("Erreur lors de la création du trajet");
+        toast.error(isEditing ? "Erreur lors de la mise à jour du trajet" : "Erreur lors de la création du trajet");
       }
     } catch (error) {
-      console.error("Erreur création trajet:", error);
+      console.error(isEditing ? "Erreur mise à jour trajet:" : "Erreur création trajet:", error);
       toast.error("Erreur lors de la création du trajet");
     } finally {
       setIsSubmitting(false);
@@ -616,7 +639,7 @@ export function TrajetForm({ defaultValues, mode = "create", onSuccess }: Trajet
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "create" ? "Créer le trajet" : "Enregistrer les modifications"}
+            {isEditing ? "Enregistrer les modifications" : "Créer le trajet"}
           </Button>
         </div>
       </form>
