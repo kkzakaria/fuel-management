@@ -81,7 +81,7 @@ export default function ChauffeursPage() {
           columns={chauffeurColumns}
           data={chauffeurs}
           isLoading={loading}
-          searchKey="nom"
+          searchKey="nom_complet"
           searchPlaceholder="Rechercher un chauffeur..."
           filterColumns={[
             {

@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Row } from "@tanstack/react-table"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react"
@@ -19,6 +19,21 @@ import {
 import type { Chauffeur } from "@/lib/supabase/types"
 
 import { ChauffeurDeleteDialog } from "./chauffeur-delete-dialog"
+
+/**
+ * Fonction de filtrage personnalisée pour rechercher dans prénom ET nom
+ */
+function nomCompletFilterFn(
+  row: Row<Chauffeur>,
+  _columnId: string,
+  filterValue: string
+) {
+  const prenom = row.original.prenom?.toLowerCase() || ""
+  const nom = row.original.nom?.toLowerCase() || ""
+  const search = filterValue.toLowerCase()
+
+  return prenom.includes(search) || nom.includes(search)
+}
 
 /**
  * Composant d'actions de ligne avec dialog de suppression
@@ -89,6 +104,7 @@ export const chauffeurColumns: ColumnDef<Chauffeur>[] = [
         </div>
       )
     },
+    filterFn: nomCompletFilterFn,
     size: 200,
   },
   {
