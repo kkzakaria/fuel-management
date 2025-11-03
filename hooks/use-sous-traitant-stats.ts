@@ -1,12 +1,12 @@
 /**
  * Hook pour récupérer les statistiques d'un sous-traitant
  */
-import type { SousTraitantStats } from "@/lib/supabase/sous-traitant-types";
 
 "use client";
 
 import { useState, useEffect } from "react";
 import { fetchSousTraitantStatsClient } from "@/lib/supabase/sous-traitant-queries-client";
+import type { SousTraitantStats } from "@/lib/supabase/sous-traitant-types";
 
 export function useSousTraitantStats(sousTraitantId: string | null) {
   const [stats, setStats] = useState<SousTraitantStats | null>(null);
