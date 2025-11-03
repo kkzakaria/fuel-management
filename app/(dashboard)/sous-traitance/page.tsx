@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
@@ -17,10 +17,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSousTraitants } from '@/hooks/use-sous-traitants'
+import type { SousTraitant } from '@/lib/supabase/types'
 
 export default function SousTraitancePage() {
   const router = useRouter()
   const { sousTraitants, loading, error, refresh } = useSousTraitants()
+
+  // Handler pour la navigation vers les détails
+  const handleRowClick = useCallback((sousTraitant: SousTraitant) => {
+    startTransition(() => {
+      router.push(`/sous-traitance/${sousTraitant.id}`)
+    })
+  }, [router])
 
   // Rafraîchir quand on revient sur la page
   useEffect(() => {
@@ -87,9 +95,7 @@ export default function SousTraitancePage() {
               ],
             },
           ]}
-          onRowClick={(sousTraitant) =>
-            router.push(`/sous-traitance/${sousTraitant.id}`)
-          }
+          onRowClick={handleRowClick}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
