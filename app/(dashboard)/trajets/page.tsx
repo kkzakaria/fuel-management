@@ -82,6 +82,7 @@ export default function TrajetsPage() {
           onRowClick={(trajet) => router.push(`/trajets/${trajet.id}`)}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
         />
       </div>
 
