@@ -130,7 +130,26 @@ const { data, isLoading } = useChauffeurs()
 - 🔄 Lignes skeleton animées dans le TableBody
 - 🎨 Largeurs variées pour effet naturel (75%, 80%, 85%, etc.)
 
-### 5. Avec Navigation sur Clic
+### 5. Avec En-tête Fixe (Sticky Header)
+
+L'en-tête reste visible lors du scroll vertical dans le tableau.
+
+```tsx
+<DataTable
+  columns={columns}
+  data={data}
+  stickyHeader // En-tête fixe avec effet blur
+/>
+```
+
+**Comportement avec stickyHeader** :
+
+- 📌 En-tête reste visible en haut lors du scroll
+- 🎨 Effet backdrop blur pour meilleure lisibilité
+- 📏 Hauteur maximale du tableau : 600px
+- ↕️ Scroll vertical automatique si contenu déborde
+
+### 6. Avec Navigation sur Clic
 
 ```tsx
 import { useRouter } from "next/navigation";
@@ -217,6 +236,7 @@ const [selectedRows, setSelectedRows] = useState([])
   onSelectionChange={setSelected}
   // UI
   enableColumnVisibility
+  stickyHeader // En-tête fixe lors du scroll
   actions={(table) => <Button onClick={handleExport}>Exporter</Button>}
 />
 ```
@@ -383,6 +403,7 @@ interface DataTableProps<TData> {
 
   // UI
   enableColumnVisibility?: boolean; // Défaut: true
+  stickyHeader?: boolean; // Défaut: false - En-tête fixe lors du scroll
   actions?: (table: Table<TData>) => ReactNode;
 }
 

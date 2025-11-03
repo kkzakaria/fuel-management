@@ -53,6 +53,9 @@ export interface DataTableProps<TData> {
   /** Activer le contrôle de visibilité des colonnes */
   enableColumnVisibility?: boolean
 
+  /** Rendre l'en-tête du tableau fixe lors du scroll */
+  stickyHeader?: boolean
+
   /** Composant d'actions personnalisées affiché dans la toolbar */
   actions?: (table: Table<TData>) => ReactNode
 

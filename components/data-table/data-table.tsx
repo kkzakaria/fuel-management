@@ -83,6 +83,7 @@ export function DataTable<TData>({
   onRowClick,
   enableSelection: _enableSelection = false,
   enableColumnVisibility = true,
+  stickyHeader = false,
   actions,
   onSelectionChange,
 }: DataTableProps<TData>) {
@@ -142,7 +143,12 @@ export function DataTable<TData>({
       />
 
       {/* Tableau */}
-      <div className="overflow-hidden rounded-md border bg-background">
+      <div
+        className={cn(
+          "rounded-md border bg-background",
+          stickyHeader ? "overflow-y-auto max-h-[600px]" : "overflow-hidden"
+        )}
+      >
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -152,7 +158,11 @@ export function DataTable<TData>({
                     <TableHead
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
-                      className="h-11 font-bold"
+                      className={cn(
+                        "h-11 font-bold",
+                        stickyHeader &&
+                          "sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                      )}
                     >
                       {header.isPlaceholder
                         ? null
