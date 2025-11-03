@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useEffect } from "react"
+import { useCallback, useEffect, startTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTrajets } from "@/hooks/use-trajets"
+import type { TrajetListItem } from "@/components/trajets/trajet-table"
 
 export default function TrajetsPage() {
   const router = useRouter()
@@ -24,6 +25,13 @@ export default function TrajetsPage() {
     pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
   })
+
+  // Handler pour la navigation vers les détails
+  const handleRowClick = useCallback((trajet: TrajetListItem) => {
+    startTransition(() => {
+      router.push(`/trajets/${trajet.id}`)
+    })
+  }, [router])
 
   // Rafraîchir quand on revient sur la page
   useEffect(() => {
@@ -79,7 +87,7 @@ export default function TrajetsPage() {
           isLoading={loading}
           searchKey="date_trajet"
           searchPlaceholder="Rechercher par date..."
-          onRowClick={(trajet) => router.push(`/trajets/${trajet.id}`)}
+          onRowClick={handleRowClick}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader

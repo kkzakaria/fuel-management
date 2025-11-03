@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useEffect } from "react"
+import { useCallback, useEffect, startTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useChauffeurs } from "@/hooks/use-chauffeurs"
 import { useUserRole } from "@/hooks/use-user-role"
+import type { Chauffeur } from "@/lib/supabase/types"
 
 export default function ChauffeursPage() {
   const router = useRouter()
@@ -26,6 +27,13 @@ export default function ChauffeursPage() {
     pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
   })
+
+  // Handler pour la navigation vers les détails
+  const handleRowClick = useCallback((chauffeur: Chauffeur) => {
+    startTransition(() => {
+      router.push(`/chauffeurs/${chauffeur.id}`)
+    })
+  }, [router])
 
   // Rafraîchir quand on revient sur la page
   useEffect(() => {
@@ -94,7 +102,7 @@ export default function ChauffeursPage() {
               ],
             },
           ]}
-          onRowClick={(chauffeur) => router.push(`/chauffeurs/${chauffeur.id}`)}
+          onRowClick={handleRowClick}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
