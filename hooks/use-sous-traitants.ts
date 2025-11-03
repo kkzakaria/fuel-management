@@ -1,61 +1,70 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
-import { fetchSousTraitantsClient } from '@/lib/supabase/sous-traitant-queries-client'
-import type { SousTraitantFilters } from '@/lib/validations/sous-traitant'
-import type { Database } from '@/lib/supabase/database.types'
-
-type SousTraitant = Database['public']['Tables']['sous_traitant']['Row']
-
 /**
- * Hook pour récupérer et gérer la liste des sous-traitants
+ * Hook pour gérer la liste des sous-traitants avec filtres
  */
-export function useSousTraitants() {
-  const [sousTraitants, setSousTraitants] = useState<SousTraitant[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [filters, setFilters] = useState<SousTraitantFilters>({
-    search: '',
-    statut: 'tous',
-  })
 
-  const fetchSousTraitants = useCallback(async () => {
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import type { SousTraitant } from "@/lib/supabase/sous-traitant-types";
+import { fetchSousTraitantsClient } from "@/lib/supabase/sous-traitant-queries-client";
+import type { SousTraitantFilters } from "@/lib/validations/sous-traitant";
+
+interface UseSousTraitantsOptions {
+  initialFilters?: SousTraitantFilters;
+  autoRefresh?: number;
+}
+
+export function useSousTraitants(options?: UseSousTraitantsOptions) {
+  const [sousTraitants, setSousTraitants] = useState<SousTraitant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [filters, setFilters] = useState<SousTraitantFilters>(
+    options?.initialFilters || {}
+  );
+
+  const fetchData = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const data = await fetchSousTraitantsClient(filters)
-      setSousTraitants(data)
+      setLoading(true);
+      setError(null);
+      const result = await fetchSousTraitantsClient(filters);
+      setSousTraitants(result);
     } catch (err) {
-      setError(err as Error)
-      console.error('Error fetching sous-traitants:', err)
+      setError(err as Error);
+      console.error("Erreur chargement sous-traitants:", err);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }, [filters])
+  }, [filters]);
 
   useEffect(() => {
-    fetchSousTraitants()
-  }, [fetchSousTraitants])
+    fetchData();
+  }, [fetchData]);
 
-  const updateFilters = useCallback((newFilters: Partial<SousTraitantFilters>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }))
-  }, [])
+  useEffect(() => {
+    if (!options?.autoRefresh) return;
+    const interval = setInterval(fetchData, options.autoRefresh);
+    return () => clearInterval(interval);
+  }, [options?.autoRefresh, fetchData]);
 
-  const clearFilters = useCallback(() => {
-    setFilters({ search: '', statut: 'tous' })
-  }, [])
+  const updateFilters = (newFilters: Partial<SousTraitantFilters>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
 
-  const refresh = useCallback(() => {
-    fetchSousTraitants()
-  }, [fetchSousTraitants])
+  const clearFilters = () => {
+    setFilters({});
+  };
+
+  const refresh = () => {
+    fetchData();
+  };
 
   return {
     sousTraitants,
-    isLoading,
+    loading,
     error,
     filters,
     updateFilters,
     clearFilters,
     refresh,
-  }
+  };
 }
