@@ -1,39 +1,31 @@
 /**
  * Page de liste des chauffeurs
- * Affiche la table avec filtres et pagination
+ * Affiche la table avec filtres et pagination via DataTable
  */
 
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChauffeurTable } from "@/components/chauffeurs/chauffeur-table";
-import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item";
-import { ChauffeurFilters } from "@/components/chauffeurs/chauffeur-filters";
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { useChauffeurs } from "@/hooks/use-chauffeurs";
-import { useUserRole } from "@/hooks/use-user-role";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Plus } from "lucide-react"
+
+import { DataTable } from "@/components/data-table"
+import { chauffeurColumns } from "@/components/chauffeurs/chauffeur-columns"
+import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useChauffeurs } from "@/hooks/use-chauffeurs"
+import { useUserRole } from "@/hooks/use-user-role"
 
 export default function ChauffeursPage() {
-  const { canManageDrivers } = useUserRole();
-  const {
-    chauffeurs,
-    loading,
-    error,
-    filters,
-    updateFilters,
-    clearFilters,
-    count,
-    refresh,
-  } = useChauffeurs({
-    pageSize: 20,
+  const router = useRouter()
+  const { canManageDrivers } = useUserRole()
+  const { chauffeurs, loading, error, refresh } = useChauffeurs({
+    pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
-  });
+  })
 
   // Rafraîchir quand on revient sur la page
   useEffect(() => {
@@ -83,65 +75,38 @@ export default function ChauffeursPage() {
         )}
       </div>
 
-      {/* Pull to Refresh Wrapper */}
-      <PullToRefresh onRefresh={refresh}>
-        {/* Statistiques rapides */}
-        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total chauffeurs</p>
-              <p className="text-3xl font-bold">{count}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Sur cette page</p>
-              <p className="text-3xl font-bold">{chauffeurs.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Actifs</p>
-              <p className="text-3xl font-bold">
-                {chauffeurs.filter((c) => c.statut === "actif").length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtres */}
-      <MobileFilterDrawer
-        activeFiltersCount={
-          [filters.statut, filters.search].filter(Boolean).length
-        }
-        onClearFilters={clearFilters}
-        title="Filtrer les chauffeurs"
-        description="Affiner vos résultats par statut et recherche"
-      >
-        <ChauffeurFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onClearFilters={clearFilters}
-        />
-      </MobileFilterDrawer>
-
-      {/* Table (Desktop) */}
+      {/* Desktop: DataTable avec toutes les fonctionnalités */}
       <div className="hidden md:block">
-        <ChauffeurTable chauffeurs={chauffeurs} loading={loading} />
+        <DataTable
+          columns={chauffeurColumns}
+          data={chauffeurs}
+          isLoading={loading}
+          searchKey="nom"
+          searchPlaceholder="Rechercher un chauffeur..."
+          filterColumns={[
+            {
+              key: "statut",
+              label: "Statut",
+              options: [
+                { label: "Actif", value: "actif" },
+                { label: "Inactif", value: "inactif" },
+                { label: "Suspendu", value: "suspendu" },
+              ],
+            },
+          ]}
+          onRowClick={(chauffeur) => router.push(`/chauffeurs/${chauffeur.id}`)}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
       </div>
 
-      {/* Liste (Mobile) */}
+      {/* Mobile: Vue en cartes */}
       <div className="md:hidden">
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
             ))}
           </div>
         ) : chauffeurs.length === 0 ? (
@@ -149,14 +114,13 @@ export default function ChauffeursPage() {
             <p className="text-muted-foreground">Aucun chauffeur trouvé</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
+          <div className="space-y-3">
             {chauffeurs.map((chauffeur) => (
               <ChauffeurListItem key={chauffeur.id} chauffeur={chauffeur} />
             ))}
           </div>
         )}
       </div>
-      </PullToRefresh>
     </div>
-  );
+  )
 }
