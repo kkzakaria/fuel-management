@@ -47,7 +47,7 @@ export default async function DashboardLayout({
         <Header user={user} userProfile={profile} />
 
         {/* Page Content */}
-        <main className="p-4 pb-20 sm:p-6 lg:pb-6">{children}</main>
+        <main className="p-4 pb-24 sm:p-6 sm:pb-24 lg:pb-6">{children}</main>
       </div>
 
       {/* Bottom Navigation - Mobile only */}

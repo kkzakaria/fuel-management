@@ -11,9 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SousTraitantFilters } from '@/components/sous-traitants/sous-traitant-filters'
 import { SousTraitantTable } from '@/components/sous-traitants/sous-traitant-table'
+import { SousTraitantListItem } from '@/components/sous-traitants/sous-traitant-list-item'
 import { useSousTraitants } from '@/hooks/use-sous-traitants'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SousTraitancePage() {
   const { sousTraitants, isLoading, error, filters, updateFilters, clearFilters, refresh } = useSousTraitants()
@@ -82,13 +84,41 @@ export default function SousTraitancePage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <SousTraitantTable sousTraitants={sousTraitants} onDelete={refresh} />
-          )}
+          {/* Table (Desktop) */}
+          <div className="hidden md:block">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <SousTraitantTable sousTraitants={sousTraitants} onDelete={refresh} />
+            )}
+          </div>
+
+          {/* Liste (Mobile) */}
+          <div className="md:hidden">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-28 w-full" />
+                ))}
+              </div>
+            ) : sousTraitants.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Aucun sous-traitant trouvé
+              </div>
+            ) : (
+              <div className="rounded-md border overflow-hidden">
+                {sousTraitants.map((sousTraitant) => (
+                  <SousTraitantListItem
+                    key={sousTraitant.id}
+                    sousTraitant={sousTraitant}
+                    onDelete={refresh}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

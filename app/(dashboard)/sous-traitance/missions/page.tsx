@@ -10,9 +10,11 @@ import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MissionTable } from '@/components/missions/mission-table'
+import { MissionListItem } from '@/components/missions/mission-list-item'
 import { useMissions } from '@/hooks/use-missions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function MissionsPage() {
   const { missions, isLoading, error, page, totalPages, total, nextPage, previousPage, refresh } = useMissions()
@@ -69,42 +71,99 @@ export default function MissionsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <>
-              <MissionTable missions={missions} onDelete={refresh} />
+          {/* Table (Desktop) */}
+          <div className="hidden md:block">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <>
+                <MissionTable missions={missions} onDelete={refresh} />
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Page {page} sur {totalPages}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {page} sur {totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={previousPage}
+                        disabled={page === 1 || isLoading}
+                      >
+                        Précédent
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={nextPage}
+                        disabled={page === totalPages || isLoading}
+                      >
+                        Suivant
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={previousPage}
-                      disabled={page === 1 || isLoading}
-                    >
-                      Précédent
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={nextPage}
-                      disabled={page === totalPages || isLoading}
-                    >
-                      Suivant
-                    </Button>
-                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Liste (Mobile) */}
+          <div className="md:hidden">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            ) : missions.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Aucune mission trouvée
+              </div>
+            ) : (
+              <>
+                <div className="rounded-md border overflow-hidden">
+                  {missions.map((mission) => (
+                    <MissionListItem
+                      key={mission.id}
+                      mission={mission}
+                      onDelete={refresh}
+                    />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+
+                {/* Pagination Mobile */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {page}/{totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={previousPage}
+                        disabled={page === 1 || isLoading}
+                      >
+                        Préc.
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={nextPage}
+                        disabled={page === totalPages || isLoading}
+                      >
+                        Suiv.
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
