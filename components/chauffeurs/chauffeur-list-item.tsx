@@ -40,7 +40,7 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
   return (
     <>
       <div
-        className="flex items-center gap-3 p-4 border-b hover:bg-muted/50 cursor-pointer transition-colors"
+        className="flex items-center gap-3 p-4 border-b hover:bg-muted/50 active:bg-muted cursor-pointer transition-all duration-200 active:scale-[0.98]"
         onClick={handleClick}
       >
         {/* Avatar */}

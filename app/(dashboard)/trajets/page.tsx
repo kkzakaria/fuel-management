@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrajetTable } from "@/components/trajets/trajet-table";
 import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item";
 import { TrajetFilters } from "@/components/trajets/trajet-filters";
+import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { TrajetPagination } from "@/components/trajets/trajet-pagination";
 import { useTrajets } from "@/hooks/use-trajets";
 import { useTrajetFormData } from "@/hooks/use-trajet-form-data";
@@ -85,8 +87,10 @@ export default function TrajetsPage() {
         </Button>
       </div>
 
-      {/* Statistiques rapides */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Pull to Refresh Wrapper */}
+      <PullToRefresh onRefresh={refresh}>
+        {/* Statistiques rapides */}
+        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
@@ -116,14 +120,30 @@ export default function TrajetsPage() {
       </div>
 
       {/* Filtres */}
-      <TrajetFilters
-        filters={filters}
-        onFiltersChange={updateFilters}
+      <MobileFilterDrawer
+        activeFiltersCount={
+          [
+            filters.chauffeur_id,
+            filters.vehicule_id,
+            filters.localite_arrivee_id,
+            filters.date_debut,
+            filters.date_fin,
+            filters.statut,
+          ].filter(Boolean).length
+        }
         onClearFilters={clearFilters}
-        chauffeurs={chauffeurs}
-        vehicules={vehicules}
-        localites={localites}
-      />
+        title="Filtrer les trajets"
+        description="Affiner vos résultats par date, chauffeur, véhicule, destination et statut"
+      >
+        <TrajetFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          chauffeurs={chauffeurs}
+          vehicules={vehicules}
+          localites={localites}
+        />
+      </MobileFilterDrawer>
 
       {/* Table (Desktop) */}
       <div className="hidden md:block">
@@ -151,16 +171,17 @@ export default function TrajetsPage() {
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <TrajetPagination
-          currentPage={page}
-          totalPages={totalPages}
-          totalCount={count}
-          pageSize={pageSize}
-          onPageChange={goToPage}
-        />
-      )}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <TrajetPagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={count}
+            pageSize={pageSize}
+            onPageChange={goToPage}
+          />
+        )}
+      </PullToRefresh>
     </div>
   );
 }
