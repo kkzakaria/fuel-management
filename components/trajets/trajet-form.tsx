@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Popover,
   PopoverContent,
@@ -217,20 +218,19 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Chauffeur *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un chauffeur" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {chauffeurs.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.prenom} {c.nom}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={chauffeurs.map((c) => ({
+                        value: c.id,
+                        label: `${c.prenom} ${c.nom}`,
+                      }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Sélectionner un chauffeur"
+                      searchPlaceholder="Rechercher un chauffeur..."
+                      emptyMessage="Aucun chauffeur trouvé."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -243,20 +243,19 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Véhicule *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un véhicule" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {vehicules.map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          {v.immatriculation} {v.marque && `(${v.marque} ${v.modele})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={vehicules.map((v) => ({
+                        value: v.id,
+                        label: `${v.immatriculation}${v.marque ? ` (${v.marque} ${v.modele})` : ""}`,
+                      }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Sélectionner un véhicule"
+                      searchPlaceholder="Rechercher un véhicule..."
+                      emptyMessage="Aucun véhicule trouvé."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -301,20 +300,19 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Localité de départ *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner le départ" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {localites.map((l) => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.nom} {l.region && `(${l.region})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={localites.map((l) => ({
+                        value: l.id,
+                        label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+                      }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Sélectionner le départ"
+                      searchPlaceholder="Rechercher une localité..."
+                      emptyMessage="Aucune localité trouvée."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -327,20 +325,19 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Localité d&apos;arrivée *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner l'arrivée" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {localites.map((l) => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.nom} {l.region && `(${l.region})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={localites.map((l) => ({
+                        value: l.id,
+                        label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+                      }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Sélectionner l'arrivée"
+                      searchPlaceholder="Rechercher une localité..."
+                      emptyMessage="Aucune localité trouvée."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

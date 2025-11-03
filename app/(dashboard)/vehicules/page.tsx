@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { VehiculeCard } from "@/components/vehicules/vehicule-card";
 import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
 import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
+import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { useVehicules } from "@/hooks/use-vehicules";
 import { useUserRole } from "@/hooks/use-user-role";
 
@@ -81,8 +83,10 @@ export default function VehiculesPage() {
         )}
       </div>
 
-      {/* Statistiques rapides */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Pull to Refresh Wrapper */}
+      <PullToRefresh onRefresh={refresh}>
+        {/* Statistiques rapides */}
+        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
@@ -114,11 +118,20 @@ export default function VehiculesPage() {
       </div>
 
       {/* Filtres */}
-      <VehiculeFilters
-        filters={filters}
-        onFiltersChange={updateFilters}
+      <MobileFilterDrawer
+        activeFiltersCount={
+          [filters.statut, filters.type_carburant, filters.search].filter(Boolean).length
+        }
         onClearFilters={clearFilters}
-      />
+        title="Filtrer les véhicules"
+        description="Affiner vos résultats par statut, type de carburant et recherche"
+      >
+        <VehiculeFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+        />
+      </MobileFilterDrawer>
 
       {/* Grille de cartes (Desktop) */}
       <div className="hidden md:block">
@@ -169,6 +182,7 @@ export default function VehiculesPage() {
           </div>
         )}
       </div>
+      </PullToRefresh>
     </div>
   );
 }
