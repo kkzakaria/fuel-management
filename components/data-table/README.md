@@ -10,7 +10,7 @@ Composant de tableau générique basé sur TanStack Table avec toutes les foncti
 ✅ **Pagination** - Navigation complète (première, précédente, suivante, dernière)
 ✅ **Sélection** - Sélection multiple avec checkboxes
 ✅ **Visibilité** - Toggle de visibilité des colonnes
-✅ **Loading** - État de chargement avec skeleton animé
+✅ **Loading** - État de chargement intégré au TableBody (toolbar/pagination visibles)
 ✅ **Responsive** - Adapté mobile et desktop
 ✅ **Accessibilité** - Support clavier et ARIA
 ✅ **TypeScript** - Typé avec génériques pour toute donnée
@@ -111,15 +111,24 @@ export default function MyPage() {
 
 ### 4. Avec État de Chargement
 
+L'état de chargement est intégré directement dans le TableBody, la toolbar et la pagination restent visibles pendant le chargement.
+
 ```tsx
 const { data, isLoading } = useChauffeurs()
 
 <DataTable
   columns={columns}
   data={data || []}
-  isLoading={isLoading}
+  isLoading={isLoading} // Affiche skeleton dans le corps du tableau
 />
 ```
+
+**Comportement pendant le chargement** :
+
+- ✅ Toolbar reste visible et fonctionnelle
+- ✅ Pagination reste visible (avec les données actuelles)
+- 🔄 Lignes skeleton animées dans le TableBody
+- 🎨 Largeurs variées pour effet naturel (75%, 80%, 85%, etc.)
 
 ### 5. Avec Navigation sur Clic
 
@@ -509,7 +518,7 @@ const transformedData = useMemo(() => {
 ### 3. Gérer le Loading State
 
 ```tsx
-// ✅ Bon - Skeleton animé
+// ✅ Bon - Skeleton animé dans le TableBody, toolbar/pagination visibles
 <DataTable columns={columns} data={data || []} isLoading={isLoading} />;
 
 // ❌ Mauvais - Rien pendant le chargement
@@ -517,6 +526,8 @@ const transformedData = useMemo(() => {
   !isLoading && <DataTable columns={columns} data={data} />;
 }
 ```
+
+**Note** : Le skeleton est maintenant intégré dans le TableBody. La toolbar et la pagination restent visibles et interactives pendant le chargement.
 
 ### 4. Taille des Colonnes
 
@@ -602,6 +613,12 @@ const { data, isLoading } = useMyData()
   isLoading={isLoading} // ← Obligatoire pour le skeleton
 />
 ```
+
+**Note** : Le skeleton s'affiche maintenant directement dans le TableBody. La toolbar et la pagination restent visibles. Si vous ne voyez pas le skeleton, vérifiez que :
+
+- `isLoading={true}` est bien passé au composant
+- Vous avez suffisamment de colonnes définies
+- Le `pageSize` est configuré (défaut: 10 lignes)
 
 ### La Navigation sur Clic ne Fonctionne Pas sur Actions
 

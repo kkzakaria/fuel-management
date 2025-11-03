@@ -23,11 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { DataTableProps } from "@/types/data-table"
 
 import { DataTablePagination } from "./data-table-pagination"
-import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableToolbar } from "./data-table-toolbar"
 
 /**
@@ -81,7 +81,7 @@ export function DataTable<TData>({
   pageSize = 10,
   pageSizeOptions = [10, 20, 50, 100],
   onRowClick,
-  enableSelection = false,
+  enableSelection: _enableSelection = false,
   enableColumnVisibility = true,
   actions,
   onSelectionChange,
@@ -129,18 +129,6 @@ export function DataTable<TData>({
     }
   }, [rowSelection, onSelectionChange, table])
 
-  // Afficher le skeleton si en cours de chargement
-  if (isLoading) {
-    return (
-      <DataTableSkeleton
-        columnCount={columns.length}
-        rowCount={pageSize}
-        showSelection={enableSelection}
-        showActions={columns.some((col) => col.id === "actions")}
-      />
-    )
-  }
-
   return (
     <div className="space-y-4">
       {/* Barre d'outils */}
@@ -179,7 +167,36 @@ export function DataTable<TData>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              // État de chargement - lignes skeleton
+              Array.from({ length: pageSize }).map((_, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {table.getAllColumns().map((column, colIndex) => {
+                    if (!column.getIsVisible()) return null
+
+                    // Largeurs variées pour effet naturel
+                    const widths = [75, 80, 85, 70, 90, 65, 95, 88]
+                    const width = widths[colIndex % widths.length]
+
+                    return (
+                      <TableCell key={column.id}>
+                        {column.id === "select" ? (
+                          <Skeleton className="h-4 w-4" />
+                        ) : column.id === "actions" ? (
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                        ) : (
+                          <Skeleton
+                            className="h-4"
+                            style={{ width: `${width}%` }}
+                          />
+                        )}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
+              // Données normales
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -212,6 +229,7 @@ export function DataTable<TData>({
                 </TableRow>
               ))
             ) : (
+              // Aucun résultat
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
