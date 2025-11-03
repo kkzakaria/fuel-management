@@ -42,7 +42,7 @@ export function StatCard({
           </div>
         ) : (
           <>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="text-xl font-bold sm:text-2xl">{value}</div>
             {trend && (
               <div className="flex items-center gap-1 text-xs">
                 {trend.isPositive ? (
@@ -59,7 +59,8 @@ export function StatCard({
                   {trend.value > 0 ? "+" : ""}
                   {trend.value.toFixed(1)}%
                 </span>
-                <span className="text-muted-foreground">vs période précédente</span>
+                <span className="text-muted-foreground hidden xs:inline sm:inline">vs période précédente</span>
+                <span className="text-muted-foreground inline xs:hidden sm:hidden">vs précéd.</span>
               </div>
             )}
             {description && (
