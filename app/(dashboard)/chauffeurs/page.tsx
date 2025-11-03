@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChauffeurTable } from "@/components/chauffeurs/chauffeur-table";
 import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item";
 import { ChauffeurFilters } from "@/components/chauffeurs/chauffeur-filters";
+import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
 import { useUserRole } from "@/hooks/use-user-role";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,8 +83,10 @@ export default function ChauffeursPage() {
         )}
       </div>
 
-      {/* Statistiques rapides */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Pull to Refresh Wrapper */}
+      <PullToRefresh onRefresh={refresh}>
+        {/* Statistiques rapides */}
+        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
@@ -112,11 +116,20 @@ export default function ChauffeursPage() {
       </div>
 
       {/* Filtres */}
-      <ChauffeurFilters
-        filters={filters}
-        onFiltersChange={updateFilters}
+      <MobileFilterDrawer
+        activeFiltersCount={
+          [filters.statut, filters.search].filter(Boolean).length
+        }
         onClearFilters={clearFilters}
-      />
+        title="Filtrer les chauffeurs"
+        description="Affiner vos résultats par statut et recherche"
+      >
+        <ChauffeurFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+        />
+      </MobileFilterDrawer>
 
       {/* Table (Desktop) */}
       <div className="hidden md:block">
@@ -143,6 +156,7 @@ export default function ChauffeursPage() {
           </div>
         )}
       </div>
+      </PullToRefresh>
     </div>
   );
 }
