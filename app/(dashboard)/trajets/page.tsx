@@ -12,8 +12,10 @@ import { Plus } from "lucide-react"
 
 import { DataTable } from "@/components/data-table"
 import { trajetColumns } from "@/components/trajets/trajet-columns"
+import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useTrajets } from "@/hooks/use-trajets"
 
 export default function TrajetsPage() {
@@ -69,17 +71,40 @@ export default function TrajetsPage() {
         </Button>
       </div>
 
-      {/* DataTable avec toutes les fonctionnalités */}
-      <DataTable
-        columns={trajetColumns}
-        data={trajets}
-        isLoading={loading}
-        searchKey="date_trajet"
-        searchPlaceholder="Rechercher par date..."
-        onRowClick={(trajet) => router.push(`/trajets/${trajet.id}`)}
-        pageSize={20}
-        pageSizeOptions={[10, 20, 50, 100]}
-      />
+      {/* Desktop: DataTable avec toutes les fonctionnalités */}
+      <div className="hidden md:block">
+        <DataTable
+          columns={trajetColumns}
+          data={trajets}
+          isLoading={loading}
+          searchKey="date_trajet"
+          searchPlaceholder="Rechercher par date..."
+          onRowClick={(trajet) => router.push(`/trajets/${trajet.id}`)}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+        />
+      </div>
+
+      {/* Mobile: Vue en cartes */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : trajets.length === 0 ? (
+          <div className="rounded-md border p-8 text-center">
+            <p className="text-muted-foreground">Aucun trajet trouvé</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {trajets.map((trajet) => (
+              <TrajetListItemComponent key={trajet.id} trajet={trajet} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

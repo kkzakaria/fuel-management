@@ -76,16 +76,17 @@ export function DataTableSkeleton({
                 )}
 
                 {/* Colonnes de données */}
-                {Array.from({ length: columnCount }).map((_, colIndex) => (
-                  <TableCell key={colIndex}>
-                    <Skeleton
-                      className="h-4"
-                      style={{
-                        width: `${Math.floor(Math.random() * 40) + 60}%`,
-                      }}
-                    />
-                  </TableCell>
-                ))}
+                {Array.from({ length: columnCount }).map((_, colIndex) => {
+                  // Largeurs fixes pour éviter l'hydratation mismatch
+                  const widths = [75, 80, 85, 70, 90, 65, 95, 88]
+                  const width = widths[colIndex % widths.length]
+
+                  return (
+                    <TableCell key={colIndex}>
+                      <Skeleton className="h-4" style={{ width: `${width}%` }} />
+                    </TableCell>
+                  )
+                })}
 
                 {/* Colonne d'actions */}
                 {showActions && (
