@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
@@ -150,72 +151,66 @@ export function TrajetFilters({
         {/* Chauffeur */}
         <div className="space-y-2">
           <Label htmlFor="chauffeur">Chauffeur</Label>
-          <Select
+          <Combobox
+            options={[
+              { value: "all", label: "Tous les chauffeurs" },
+              ...chauffeurs.map((c) => ({
+                value: c.id,
+                label: `${c.prenom} ${c.nom}`,
+              })),
+            ]}
             value={filters.chauffeur_id || "all"}
             onValueChange={(value) =>
               onFiltersChange({ chauffeur_id: value === "all" ? undefined : value })
             }
-          >
-            <SelectTrigger id="chauffeur">
-              <SelectValue placeholder="Tous les chauffeurs" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les chauffeurs</SelectItem>
-              {chauffeurs.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.prenom} {c.nom}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Tous les chauffeurs"
+            searchPlaceholder="Rechercher un chauffeur..."
+            emptyMessage="Aucun chauffeur trouvé."
+          />
         </div>
 
         {/* Véhicule */}
         <div className="space-y-2">
           <Label htmlFor="vehicule">Véhicule</Label>
-          <Select
+          <Combobox
+            options={[
+              { value: "all", label: "Tous les véhicules" },
+              ...vehicules.map((v) => ({
+                value: v.id,
+                label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
+              })),
+            ]}
             value={filters.vehicule_id || "all"}
             onValueChange={(value) =>
               onFiltersChange({ vehicule_id: value === "all" ? undefined : value })
             }
-          >
-            <SelectTrigger id="vehicule">
-              <SelectValue placeholder="Tous les véhicules" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les véhicules</SelectItem>
-              {vehicules.map((v) => (
-                <SelectItem key={v.id} value={v.id}>
-                  {v.immatriculation} {v.marque && `(${v.marque})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Tous les véhicules"
+            searchPlaceholder="Rechercher un véhicule..."
+            emptyMessage="Aucun véhicule trouvé."
+          />
         </div>
 
         {/* Destination */}
         <div className="space-y-2">
           <Label htmlFor="destination">Destination</Label>
-          <Select
+          <Combobox
+            options={[
+              { value: "all", label: "Toutes les destinations" },
+              ...localites.map((l) => ({
+                value: l.id,
+                label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+              })),
+            ]}
             value={filters.localite_arrivee_id || "all"}
             onValueChange={(value) =>
               onFiltersChange({
                 localite_arrivee_id: value === "all" ? undefined : value,
               })
             }
-          >
-            <SelectTrigger id="destination">
-              <SelectValue placeholder="Toutes les destinations" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les destinations</SelectItem>
-              {localites.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.nom} {l.region && `(${l.region})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Toutes les destinations"
+            searchPlaceholder="Rechercher une destination..."
+            emptyMessage="Aucune destination trouvée."
+          />
         </div>
 
         {/* Statut */}
