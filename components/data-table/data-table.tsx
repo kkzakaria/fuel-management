@@ -152,7 +152,7 @@ export function DataTable<TData>({
                     <TableHead
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
-                      className="h-11"
+                      className="h-11 font-bold"
                     >
                       {header.isPlaceholder
                         ? null
