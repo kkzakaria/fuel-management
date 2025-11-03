@@ -1,55 +1,39 @@
 /**
  * Page de liste des trajets
- * Affiche la table avec filtres et pagination
+ * Affiche la table avec filtres et pagination via DataTable
  */
 
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { TrajetTable } from "@/components/trajets/trajet-table";
-import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item";
-import { TrajetFilters } from "@/components/trajets/trajet-filters";
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { TrajetPagination } from "@/components/trajets/trajet-pagination";
-import { useTrajets } from "@/hooks/use-trajets";
-import { useTrajetFormData } from "@/hooks/use-trajet-form-data";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Plus } from "lucide-react"
+
+import { DataTable } from "@/components/data-table"
+import { trajetColumns } from "@/components/trajets/trajet-columns"
+import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useTrajets } from "@/hooks/use-trajets"
 
 export default function TrajetsPage() {
-  const {
-    trajets,
-    loading,
-    error,
-    filters,
-    updateFilters,
-    clearFilters,
-    page,
-    totalPages,
-    count,
-    pageSize,
-    goToPage,
-    refresh,
-  } = useTrajets({
-    pageSize: 20,
+  const router = useRouter()
+  const { trajets, loading, error, refresh } = useTrajets({
+    pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
-  });
-
-  const { chauffeurs, vehicules, localites } = useTrajetFormData();
+  })
 
   // Rafraîchir quand on revient sur la page
   useEffect(() => {
     const handleFocus = () => {
-      refresh();
-    };
+      refresh()
+    }
 
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [refresh]);
+    window.addEventListener("focus", handleFocus)
+    return () => window.removeEventListener("focus", handleFocus)
+  }, [refresh])
 
   if (error) {
     return (
@@ -66,7 +50,7 @@ export default function TrajetsPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -87,75 +71,27 @@ export default function TrajetsPage() {
         </Button>
       </div>
 
-      {/* Pull to Refresh Wrapper */}
-      <PullToRefresh onRefresh={refresh}>
-        {/* Statistiques rapides */}
-        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total trajets</p>
-              <p className="text-3xl font-bold">{count}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Cette page</p>
-              <p className="text-3xl font-bold">{trajets.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Pages</p>
-              <p className="text-3xl font-bold">
-                {page} / {totalPages || 1}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtres */}
-      <MobileFilterDrawer
-        activeFiltersCount={
-          [
-            filters.chauffeur_id,
-            filters.vehicule_id,
-            filters.localite_arrivee_id,
-            filters.date_debut,
-            filters.date_fin,
-            filters.statut,
-          ].filter(Boolean).length
-        }
-        onClearFilters={clearFilters}
-        title="Filtrer les trajets"
-        description="Affiner vos résultats par date, chauffeur, véhicule, destination et statut"
-      >
-        <TrajetFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onClearFilters={clearFilters}
-          chauffeurs={chauffeurs}
-          vehicules={vehicules}
-          localites={localites}
-        />
-      </MobileFilterDrawer>
-
-      {/* Table (Desktop) */}
+      {/* Desktop: DataTable avec toutes les fonctionnalités */}
       <div className="hidden md:block">
-        <TrajetTable trajets={trajets} loading={loading} />
+        <DataTable
+          columns={trajetColumns}
+          data={trajets}
+          isLoading={loading}
+          searchKey="date_trajet"
+          searchPlaceholder="Rechercher par date..."
+          onRowClick={(trajet) => router.push(`/trajets/${trajet.id}`)}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
       </div>
 
-      {/* Liste (Mobile) */}
+      {/* Mobile: Vue en cartes */}
       <div className="md:hidden">
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full" />
+              <Skeleton key={i} className="h-32 w-full rounded-lg" />
             ))}
           </div>
         ) : trajets.length === 0 ? (
@@ -163,25 +99,13 @@ export default function TrajetsPage() {
             <p className="text-muted-foreground">Aucun trajet trouvé</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
+          <div className="space-y-3">
             {trajets.map((trajet) => (
               <TrajetListItemComponent key={trajet.id} trajet={trajet} />
             ))}
           </div>
         )}
       </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <TrajetPagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalCount={count}
-            pageSize={pageSize}
-            onPageChange={goToPage}
-          />
-        )}
-      </PullToRefresh>
     </div>
-  );
+  )
 }

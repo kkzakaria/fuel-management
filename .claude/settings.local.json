@@ -54,7 +54,8 @@
       "Bash(ls:*)",
       "mcp__playwright__browser_resize",
       "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
