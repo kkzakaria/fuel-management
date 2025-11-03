@@ -1,11 +1,11 @@
 /**
  * Hook pour récupérer les détails d'une mission de sous-traitance
  */
-import type { MissionSousTraitanceWithDetails } from "@/lib/supabase/sous-traitant-types";
 
 "use client";
 
 import { useState, useEffect } from "react";
+import type { MissionSousTraitanceWithDetails } from "@/lib/supabase/sous-traitant-types";
 import { fetchMissionSousTraitanceByIdClient } from "@/lib/supabase/sous-traitant-queries-client";
 
 export function useMissionSousTraitance(missionId: string | null) {

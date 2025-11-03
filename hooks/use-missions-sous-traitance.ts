@@ -2,10 +2,10 @@
  * Hook pour gérer la liste des missions de sous-traitance avec filtres et pagination
  */
 
-import type { MissionSousTraitanceWithDetails } from "@/lib/supabase/sous-traitant-types";
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import type { MissionSousTraitanceWithDetails } from "@/lib/supabase/sous-traitant-types";
 import { fetchMissionsSousTraitanceClient } from "@/lib/supabase/sous-traitant-queries-client";
 import type { MissionSousTraitanceFilters } from "@/lib/validations/sous-traitant";
 
