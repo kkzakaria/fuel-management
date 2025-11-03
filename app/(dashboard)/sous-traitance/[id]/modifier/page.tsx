@@ -1,63 +1,53 @@
 /**
- * Page: Modifier un sous-traitant
+ * Page: Modifier sous-traitant
  * Route: /sous-traitance/[id]/modifier
  */
 
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { SousTraitantForm } from '@/components/sous-traitants/sous-traitant-form'
-import { createClient } from '@/lib/supabase/server'
+"use client";
 
-interface ModifierSousTraitantPageProps {
-  params: Promise<{
-    id: string
-  }>
-}
+import { use } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SousTraitantForm } from "@/components/sous-traitants/sous-traitant-form";
+import { useSousTraitant } from "@/hooks/use-sous-traitant";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
-export async function generateMetadata({
+export default function ModifierSousTraitantPage({
   params,
-}: ModifierSousTraitantPageProps): Promise<Metadata> {
-  const { id } = await params
-  const supabase = await createClient()
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const { sousTraitant, loading, error } = useSousTraitant(id);
 
-  const { data: sousTraitant } = await supabase
-    .from('sous_traitant')
-    .select('nom_entreprise')
-    .eq('id', id)
-    .single()
-
-  return {
-    title: sousTraitant
-      ? `Modifier ${sousTraitant.nom_entreprise} | Transport Manager`
-      : 'Modifier sous-traitant | Transport Manager',
-    description: 'Modifier les informations du partenaire de transport',
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Erreur: {error.message}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
-}
 
-export default async function ModifierSousTraitantPage({
-  params,
-}: ModifierSousTraitantPageProps) {
-  const { id } = await params
-  const supabase = await createClient()
-
-  // Fetch sous-traitant
-  const { data: sousTraitant, error } = await supabase
-    .from('sous_traitant')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error || !sousTraitant) {
-    notFound()
+  if (loading || !sousTraitant) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/sous-traitance/${id}`}>
           <Button variant="ghost" size="icon">
@@ -69,17 +59,16 @@ export default async function ModifierSousTraitantPage({
             Modifier {sousTraitant.nom_entreprise}
           </h1>
           <p className="text-muted-foreground">
-            Mettre à jour les informations du partenaire
+            Mettre à jour les informations du sous-traitant
           </p>
         </div>
       </div>
 
-      {/* Form */}
       <Card>
         <CardHeader>
           <CardTitle>Informations du sous-traitant</CardTitle>
           <CardDescription>
-            Modifiez les informations du partenaire de transport
+            Modifiez les coordonnées de l&apos;entreprise partenaire
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -87,5 +76,5 @@ export default async function ModifierSousTraitantPage({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

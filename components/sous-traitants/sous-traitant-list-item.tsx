@@ -1,184 +1,68 @@
 /**
- * Composant Item de liste pour sous-traitant (optimisé mobile)
- * Format liste compacte pour petits écrans
+ * Carte sous-traitant pour affichage mobile
  */
 
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronRight, Eye, Edit, Trash2, Phone, Mail, MapPin, Building2 } from "lucide-react";
+import Link from "next/link";
+import { Phone, Mail, MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SousTraitantDeleteDialog } from "./sous-traitant-delete-dialog";
-import type { Database } from "@/lib/supabase/database.types";
-
-type SousTraitant = Database["public"]["Tables"]["sous_traitant"]["Row"];
+import type { SousTraitant } from "@/lib/supabase/sous-traitant-types";
 
 interface SousTraitantListItemProps {
   sousTraitant: SousTraitant;
   onDelete?: () => void;
 }
 
-function getStatutBadgeVariant(
-  statut: string
-): "default" | "secondary" | "destructive" {
-  switch (statut) {
-    case "actif":
-      return "default";
-    case "inactif":
-      return "secondary";
-    case "blackliste":
-      return "destructive";
-    default:
-      return "secondary";
-  }
-}
-
-function getStatutLabel(statut: string): string {
-  switch (statut) {
-    case "actif":
-      return "Actif";
-    case "inactif":
-      return "Inactif";
-    case "blackliste":
-      return "Blacklisté";
-    default:
-      return statut;
-  }
-}
-
-export function SousTraitantListItem({
-  sousTraitant,
-  onDelete,
-}: SousTraitantListItemProps) {
-  const router = useRouter();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const handleClick = () => {
-    router.push(`/sous-traitance/${sousTraitant.id}`);
-  };
-
-  const handleDeleteSuccess = () => {
-    setDeleteDialogOpen(false);
-    if (onDelete) {
-      onDelete();
-    }
+export function SousTraitantListItem({ sousTraitant }: SousTraitantListItemProps) {
+  const getStatutBadge = (statut: string | null) => {
+    if (statut === "actif") return <Badge variant="default">Actif</Badge>;
+    if (statut === "blackliste") return <Badge variant="destructive">Blacklisté</Badge>;
+    return <Badge variant="secondary">Inactif</Badge>;
   };
 
   return (
-    <>
-      <div
-        className="flex items-center gap-3 p-4 border-b hover:bg-muted/50 cursor-pointer transition-colors"
-        onClick={handleClick}
-      >
-        {/* Icône entreprise */}
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-          <Building2 className="h-6 w-6 text-primary" />
-        </div>
-
-        {/* Contenu principal */}
-        <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Ligne 1 : Nom entreprise + Statut */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-bold truncate">
-              {sousTraitant.nom_entreprise}
-            </span>
-            {sousTraitant.statut && (
-              <Badge
-                variant={getStatutBadgeVariant(sousTraitant.statut)}
-                className="text-xs shrink-0"
-              >
-                {getStatutLabel(sousTraitant.statut)}
-              </Badge>
-            )}
-          </div>
-
-          {/* Ligne 2 : Contact principal */}
-          {sousTraitant.contact_principal && (
-            <div className="text-sm text-muted-foreground truncate">
-              {sousTraitant.contact_principal}
-            </div>
-          )}
-
-          {/* Ligne 3 : Téléphone + Email */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {sousTraitant.telephone && (
-              <>
-                <div className="flex items-center gap-1 truncate">
-                  <Phone className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{sousTraitant.telephone}</span>
-                </div>
-                {sousTraitant.email && <span>•</span>}
-              </>
-            )}
-            {sousTraitant.email && (
-              <div className="flex items-center gap-1 truncate">
-                <Mail className="h-3 w-3 shrink-0" />
-                <span className="truncate">{sousTraitant.email}</span>
+    <Link href={`/sous-traitance/${sousTraitant.id}`}>
+      <Card className="hover:bg-muted/50 transition-colors border-b last:border-b-0 rounded-none">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold">{sousTraitant.nom_entreprise}</h3>
+                {getStatutBadge(sousTraitant.statut)}
               </div>
-            )}
-          </div>
+              
+              {sousTraitant.contact_principal && (
+                <p className="text-sm text-muted-foreground">
+                  {sousTraitant.contact_principal}
+                </p>
+              )}
 
-          {/* Ligne 4 : Adresse */}
-          {sousTraitant.adresse && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{sousTraitant.adresse}</span>
+              <div className="space-y-1">
+                {sousTraitant.telephone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
+                    <span>{sousTraitant.telephone}</span>
+                  </div>
+                )}
+                {sousTraitant.email && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    <span className="truncate">{sousTraitant.email}</span>
+                  </div>
+                )}
+                {sousTraitant.adresse && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    <span className="line-clamp-1">{sousTraitant.adresse}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => router.push(`/sous-traitance/${sousTraitant.id}`)}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                Voir détails
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() =>
-                  router.push(`/sous-traitance/${sousTraitant.id}/modifier`)
-                }
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Modifier
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <SousTraitantDeleteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        sousTraitant={sousTraitant}
-        onSuccess={handleDeleteSuccess}
-      />
-    </>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
