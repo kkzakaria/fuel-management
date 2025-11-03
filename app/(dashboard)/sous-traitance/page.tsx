@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SousTraitancePage() {
-  const { sousTraitants, isLoading, error, filters, updateFilters, clearFilters, refresh } = useSousTraitants()
+  const { sousTraitants, loading, error, filters, updateFilters, clearFilters, refresh } = useSousTraitants()
 
   return (
     <div className="space-y-6">
@@ -72,13 +72,13 @@ export default function SousTraitancePage() {
             <div>
               <CardTitle>Liste des sous-traitants</CardTitle>
               <CardDescription>
-                {isLoading
+                {loading
                   ? 'Chargement...'
                   : `${sousTraitants.length} partenaire${sousTraitants.length > 1 ? 's' : ''} de transport`}
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={refresh} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Actualiser
             </Button>
           </div>
@@ -86,7 +86,7 @@ export default function SousTraitancePage() {
         <CardContent>
           {/* Table (Desktop) */}
           <div className="hidden md:block">
-            {isLoading ? (
+            {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
@@ -97,7 +97,7 @@ export default function SousTraitancePage() {
 
           {/* Liste (Mobile) */}
           <div className="md:hidden">
-            {isLoading ? (
+            {loading ? (
               <div className="space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-28 w-full" />

@@ -1,21 +1,12 @@
 /**
- * Composant Table des sous-traitants
- * Affiche la liste des sous-traitants avec actions
+ * Table des sous-traitants (Desktop)
  */
 
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import {
-  MoreHorizontal,
-  Eye,
-  Edit,
-  Trash2,
-  Phone,
-  Mail,
-  MapPin,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -31,181 +22,96 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { SousTraitantDeleteDialog } from './sous-traitant-delete-dialog'
-import { useState } from 'react'
-import type { Database } from '@/lib/supabase/database.types'
-
-type SousTraitant = Database['public']['Tables']['sous_traitant']['Row']
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import type { SousTraitant } from "@/lib/supabase/sous-traitant-types";
+import { useState } from "react";
+import { toast } from "sonner";
+import { deleteSousTraitantAction } from "@/lib/actions/sous-traitants";
 
 interface SousTraitantTableProps {
-  sousTraitants: SousTraitant[]
-  onDelete?: () => void
+  sousTraitants: SousTraitant[];
+  onDelete?: () => void;
 }
 
-function getStatutBadgeVariant(
-  statut: string
-): 'default' | 'secondary' | 'destructive' {
-  switch (statut) {
-    case 'actif':
-      return 'default'
-    case 'inactif':
-      return 'secondary'
-    case 'blackliste':
-      return 'destructive'
-    default:
-      return 'secondary'
-  }
-}
+export function SousTraitantTable({ sousTraitants, onDelete }: SousTraitantTableProps) {
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-function getStatutLabel(statut: string): string {
-  switch (statut) {
-    case 'actif':
-      return 'Actif'
-    case 'inactif':
-      return 'Inactif'
-    case 'blackliste':
-      return 'Blacklisté'
-    default:
-      return statut
-  }
-}
+  const handleDelete = async (id: string, nom: string) => {
+    if (!confirm(`Supprimer ${nom} ?`)) return;
 
-export function SousTraitantTable({
-  sousTraitants,
-  onDelete,
-}: SousTraitantTableProps) {
-  const router = useRouter()
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedSousTraitant, setSelectedSousTraitant] =
-    useState<SousTraitant | null>(null)
-
-  const handleRowClick = (id: string) => {
-    router.push(`/sous-traitance/${id}`)
-  }
-
-  const handleDelete = (sousTraitant: SousTraitant) => {
-    setSelectedSousTraitant(sousTraitant)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleDeleteSuccess = () => {
-    setDeleteDialogOpen(false)
-    setSelectedSousTraitant(null)
-    if (onDelete) {
-      onDelete()
+    try {
+      setDeleting(id);
+      const result = await deleteSousTraitantAction({ id });
+      if (result?.serverError) throw new Error(result.serverError);
+      toast.success("Sous-traitant supprimé");
+      onDelete?.();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Erreur suppression");
+    } finally {
+      setDeleting(null);
     }
-  }
+  };
 
-  if (sousTraitants.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        Aucun sous-traitant trouvé
-      </div>
-    )
-  }
+  const getStatutBadge = (statut: string | null) => {
+    if (statut === "actif") return <Badge variant="default">Actif</Badge>;
+    if (statut === "blackliste") return <Badge variant="destructive">Blacklisté</Badge>;
+    return <Badge variant="secondary">Inactif</Badge>;
+  };
 
   return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Entreprise</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Téléphone</TableHead>
+            <TableHead>Statut</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sousTraitants.length === 0 ? (
             <TableRow>
-              <TableHead>Entreprise</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Téléphone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
+                Aucun sous-traitant trouvé
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sousTraitants.map((sousTraitant) => (
-              <TableRow
-                key={sousTraitant.id}
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleRowClick(sousTraitant.id)}
-              >
-                <TableCell className="font-medium">
-                  <div>
-                    <div>{sousTraitant.nom_entreprise}</div>
-                    {sousTraitant.adresse && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin className="h-3 w-3" />
-                        <span className="line-clamp-1">
-                          {sousTraitant.adresse}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{sousTraitant.contact_principal || '-'}</TableCell>
-                <TableCell>
-                  {sousTraitant.telephone ? (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{sousTraitant.telephone}</span>
-                    </div>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell>
-                  {sousTraitant.email ? (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{sousTraitant.email}</span>
-                    </div>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell>
-                  {sousTraitant.statut && (
-                    <Badge variant={getStatutBadgeVariant(sousTraitant.statut)}>
-                      {getStatutLabel(sousTraitant.statut)}
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell>
+          ) : (
+            sousTraitants.map((st) => (
+              <TableRow key={st.id} className="cursor-pointer hover:bg-muted/50">
+                <TableCell className="font-medium">{st.nom_entreprise}</TableCell>
+                <TableCell>{st.contact_principal || "-"}</TableCell>
+                <TableCell>{st.telephone || "-"}</TableCell>
+                <TableCell>{getStatutBadge(st.statut)}</TableCell>
+                <TableCell className="text-right">
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Ouvrir menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/sous-traitance/${sousTraitant.id}`)
-                        }}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        Voir détails
+                      <DropdownMenuItem asChild>
+                        <Link href={`/sous-traitance/${st.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Détails
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(
-                            `/sous-traitance/${sousTraitant.id}/modifier`
-                          )
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Modifier
+                      <DropdownMenuItem asChild>
+                        <Link href={`/sous-traitance/${st.id}/modifier`}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Modifier
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDelete(sousTraitant)
-                        }}
                         className="text-destructive"
+                        onClick={() => handleDelete(st.id, st.nom_entreprise)}
+                        disabled={deleting === st.id}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Supprimer
@@ -214,19 +120,10 @@ export function SousTraitantTable({
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {selectedSousTraitant && (
-        <SousTraitantDeleteDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          sousTraitant={selectedSousTraitant}
-          onSuccess={handleDeleteSuccess}
-        />
-      )}
-    </>
-  )
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
 }
