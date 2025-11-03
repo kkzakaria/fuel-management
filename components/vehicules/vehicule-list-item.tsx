@@ -95,8 +95,8 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
         <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <ChevronRight className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-11 w-11">
+                <ChevronRight className="h-5 w-5" />
                 <span className="sr-only">Actions</span>
               </Button>
             </DropdownMenuTrigger>

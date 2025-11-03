@@ -48,7 +48,7 @@ export function VehiculeCard({ vehicule }: VehiculeCardProps) {
           <div onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="icon" className="h-11 w-11">
                   •••
                 </Button>
               </DropdownMenuTrigger>

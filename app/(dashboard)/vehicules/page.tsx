@@ -62,12 +62,12 @@ export default function VehiculesPage() {
   }
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Véhicules</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold sm:text-3xl">Véhicules</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
             Gestion de la flotte et maintenance
           </p>
         </div>
