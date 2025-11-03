@@ -45,7 +45,16 @@
       "mcp__chrome-devtools__navigate_page",
       "Bash(pnpm lighthouse:*)",
       "Bash(pnpm test:run:*)",
-      "Bash(pnpm type-check:*)"
+      "Bash(pnpm type-check:*)",
+      "Bash(git reset:*)",
+      "Bash(gh pr view:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(git stash:*)",
+      "Bash(git fetch:*)",
+      "Bash(ls:*)",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_close"
     ],
     "deny": [],
     "ask": []
