@@ -48,7 +48,7 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
         <div className="flex-1 min-w-0 space-y-1.5">
           {/* Ligne 1 : Immatriculation + Statut */}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-bold truncate">
+            <span className="text-base font-bold truncate">
               {vehicule.immatriculation}
             </span>
             <Badge
@@ -61,7 +61,7 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
                       ? "outline"
                       : "destructive"
               }
-              className="text-xs shrink-0"
+              className="text-sm shrink-0"
             >
               {vehicule.statut}
             </Badge>
@@ -74,7 +74,7 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
           </div>
 
           {/* Ligne 3 : Métriques */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {vehicule.type_carburant && (
               <div className="flex items-center gap-1">
                 <Fuel className="h-3 w-3" />
@@ -85,7 +85,8 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
             {vehicule.kilometrage_actuel != null && (
               <div className="flex items-center gap-1">
                 <Gauge className="h-3 w-3" />
-                <span>{vehicule.kilometrage_actuel.toLocaleString("fr-FR")} km</span>
+                <span className="font-semibold text-foreground">{vehicule.kilometrage_actuel.toLocaleString("fr-FR")}</span>
+                <span>km</span>
               </div>
             )}
           </div>

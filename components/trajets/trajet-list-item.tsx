@@ -36,7 +36,7 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
   };
 
   const getStatutBadge = (statut: string | null) => {
-    if (!statut) return <Badge variant="outline" className="text-xs">Inconnu</Badge>;
+    if (!statut) return <Badge variant="outline" className="text-sm">Inconnu</Badge>;
 
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       en_cours: "secondary",
@@ -51,7 +51,7 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
     };
 
     return (
-      <Badge variant={variants[statut] || "default"} className="text-xs">
+      <Badge variant={variants[statut] || "default"} className="text-sm">
         {labels[statut] || statut}
       </Badge>
     );
@@ -74,12 +74,12 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
           </div>
 
           {/* Ligne 2 : Trajet */}
-          <div className="text-sm font-semibold truncate">
+          <div className="text-base font-semibold truncate">
             {trajet.localite_depart?.nom || "Départ"} → {trajet.localite_arrivee?.nom || "Arrivée"}
           </div>
 
           {/* Ligne 3 : Chauffeur + Véhicule */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="truncate">
               {trajet.chauffeur
                 ? `${trajet.chauffeur.prenom} ${trajet.chauffeur.nom}`
@@ -92,12 +92,12 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
           </div>
 
           {/* Ligne 4 : Métriques */}
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4 text-sm">
             <span className="text-muted-foreground">
-              <span className="font-medium text-foreground">{trajet.parcours_total}</span> km
+              <span className="font-semibold text-foreground">{trajet.parcours_total}</span> km
             </span>
             <span className="text-muted-foreground">
-              <span className="font-medium text-foreground">{trajet.litrage_station || "-"}</span> L
+              <span className="font-semibold text-foreground">{trajet.litrage_station || "-"}</span> L
             </span>
             {trajet.consommation_au_100 && (
               <span className="text-muted-foreground">

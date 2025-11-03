@@ -54,7 +54,7 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
         <div className="flex-1 min-w-0 space-y-1.5">
           {/* Ligne 1 : Nom + Statut */}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold truncate">
+            <span className="text-base font-semibold truncate">
               {chauffeur.prenom} {chauffeur.nom}
             </span>
             <Badge
@@ -65,7 +65,7 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
                     ? "secondary"
                     : "destructive"
               }
-              className="text-xs shrink-0"
+              className="text-sm shrink-0"
             >
               {chauffeur.statut}
             </Badge>
@@ -73,14 +73,14 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
 
           {/* Ligne 2 : Téléphone */}
           {chauffeur.telephone && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Phone className="h-3 w-3" />
               <span>{chauffeur.telephone}</span>
             </div>
           )}
 
           {/* Ligne 3 : N° Permis + Date embauche */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {chauffeur.numero_permis && (
               <>
                 <div className="flex items-center gap-1.5">
