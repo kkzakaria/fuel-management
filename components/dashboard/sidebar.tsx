@@ -89,8 +89,8 @@ export function Sidebar({ userProfile }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r bg-card lg:block">
-        <div className="flex h-full flex-col">
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 overflow-hidden border-r bg-card lg:block">
+        <div className="flex h-full flex-col overflow-hidden">
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
             <Link href="/" className="flex items-center gap-3 font-semibold">
@@ -106,7 +106,7 @@ export function Sidebar({ userProfile }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4">
+          <nav className="flex-1 space-y-1 overflow-y-auto p-4">
             {visibleItems.map((item) => {
               const Icon = item.icon;
               const isActive =
