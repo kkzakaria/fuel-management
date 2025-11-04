@@ -34,6 +34,8 @@ interface TrajetFiltersProps {
   chauffeurs?: Array<{ id: string; nom: string; prenom: string }>;
   vehicules?: Array<{ id: string; immatriculation: string; marque?: string | null }>;
   localites?: Array<{ id: string; nom: string; region?: string | null }>;
+  /** Masquer le bouton de réinitialisation interne (utilisé dans les drawers) */
+  hideClearButton?: boolean;
 }
 
 export function TrajetFilters({
@@ -43,6 +45,7 @@ export function TrajetFilters({
   chauffeurs = [],
   vehicules = [],
   localites = [],
+  hideClearButton = false,
 }: TrajetFiltersProps) {
   const [dateDebut, setDateDebut] = useState<Date | undefined>(
     filters.date_debut ? new Date(filters.date_debut) : undefined
@@ -73,7 +76,7 @@ export function TrajetFilters({
     <div className="space-y-4 rounded-lg border p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Filtres</h3>
-        {hasActiveFilters && (
+        {!hideClearButton && hasActiveFilters && (
           <Button
             variant="ghost"
             size="sm"

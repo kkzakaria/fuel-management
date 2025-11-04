@@ -9,21 +9,27 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTrajetsClient } from "@/lib/supabase/trajet-queries-client";
 import type { TrajetFilters } from "@/lib/validations/trajet";
+import type { TrajetListItem } from "@/components/trajets/trajet-table";
 
 interface UseTrajetsOptions {
   initialFilters?: TrajetFilters;
   pageSize?: number;
   autoRefresh?: number; // ms between auto-refresh
+  mode?: "paginated" | "infinite"; // Mode de pagination
 }
 
 export function useTrajets(options?: UseTrajetsOptions) {
   const [filters, setFilters] = useState<TrajetFilters>(options?.initialFilters || {});
   const [page, setPage] = useState(1);
   const pageSize = options?.pageSize || 20;
+  const mode = options?.mode || "paginated";
+
+  // Pour le mode infinite : accumuler les trajets
+  const [accumulatedTrajets, setAccumulatedTrajets] = useState<TrajetListItem[]>([]);
 
   // Attendre le montage avant d'activer la query
   const [isMounted, setIsMounted] = useState(false);
@@ -42,9 +48,36 @@ export function useTrajets(options?: UseTrajetsOptions) {
     staleTime: 3 * 60 * 1000, // 3 minutes pour les trajets (données fréquemment modifiées)
   });
 
-  const trajets = data?.trajets ?? [];
+  const currentPageTrajets = useMemo(() => data?.trajets ?? [], [data?.trajets]);
   const count = data?.count ?? 0;
   const totalPages = data?.totalPages ?? 0;
+
+  // En mode infinite, accumuler les trajets de toutes les pages
+  useEffect(() => {
+    if (mode === "infinite" && currentPageTrajets.length > 0) {
+      setAccumulatedTrajets((prev) => {
+        // Si c'est la page 1, remplacer (cas de changement de filtres)
+        if (page === 1) {
+          return currentPageTrajets;
+        }
+        // Sinon, accumuler en évitant les doublons
+        const existingIds = new Set(prev.map((t) => t.id));
+        const newTrajets = currentPageTrajets.filter((t) => !existingIds.has(t.id));
+        return [...prev, ...newTrajets];
+      });
+    }
+  }, [mode, currentPageTrajets, page]);
+
+  // Reset accumulated data when filters change in infinite mode
+  useEffect(() => {
+    if (mode === "infinite") {
+      setAccumulatedTrajets([]);
+      setPage(1);
+    }
+  }, [filters, mode]);
+
+  const trajets = mode === "infinite" ? accumulatedTrajets : currentPageTrajets;
+  const hasNextPage = page < totalPages;
 
   const updateFilters = (newFilters: Partial<TrajetFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -75,7 +108,17 @@ export function useTrajets(options?: UseTrajetsOptions) {
   };
 
   const refresh = async () => {
+    if (mode === "infinite") {
+      setAccumulatedTrajets([]);
+      setPage(1);
+    }
     await refetch();
+  };
+
+  const loadMore = () => {
+    if (hasNextPage && !isLoading) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return {
@@ -93,5 +136,9 @@ export function useTrajets(options?: UseTrajetsOptions) {
     previousPage,
     goToPage,
     refresh,
+    // Infinite scroll specific
+    hasNextPage,
+    loadMore,
+    mode,
   };
 }
