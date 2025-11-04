@@ -58,14 +58,17 @@ export function MobileFilterDrawer({
       <div className={buttonVisibilityClass}>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2 whitespace-nowrap">
-              <Filter className="h-4 w-4" />
-              <span>Filtrer</span>
+            <Button variant="outline" size="icon" className="relative shrink-0">
+              <Filter className="h-5 w-5" />
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="h-5 min-w-[20px] rounded-full px-1">
+                <Badge
+                  variant="secondary"
+                  className="absolute -top-2 -right-2 h-5 min-w-[20px] rounded-full px-1 text-xs"
+                >
                   {activeFiltersCount}
                 </Badge>
               )}
+              <span className="sr-only">Filtrer</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[85vh] flex flex-col">

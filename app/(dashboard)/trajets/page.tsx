@@ -19,7 +19,6 @@ import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
 import { TrajetTabletTable } from "@/components/trajets/trajet-tablet-table"
 import { TrajetFilters } from "@/components/trajets/trajet-filters"
 import { TrajetMobileSearch } from "@/components/trajets/trajet-mobile-search"
-import { FloatingActionButton } from "@/components/ui/floating-action-button"
 import { InfiniteScroll } from "@/components/ui/infinite-scroll"
 import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer"
 import { Button } from "@/components/ui/button"
@@ -90,9 +89,9 @@ export default function TrajetsPage() {
 
   return (
     <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* MOBILE : Recherche + Filtres drawer + Infinite scroll + FAB */}
+      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Infinite scroll */}
       <div className="md:hidden space-y-4">
-        {/* Header : Recherche + Filtres (une seule ligne) */}
+        {/* Header : Recherche + Filtres + Ajout (une seule ligne) */}
         <div className="flex items-center gap-3">
           {/* Barre de recherche mobile */}
           <div className="flex-1">
@@ -119,6 +118,14 @@ export default function TrajetsPage() {
               hideClearButton={true}
             />
           </MobileFilterDrawer>
+
+          {/* Bouton Nouveau trajet (icône seulement) */}
+          <Button asChild size="icon" className="shrink-0">
+            <Link href="/trajets/nouveau">
+              <Plus className="h-5 w-5" />
+              <span className="sr-only">Nouveau trajet</span>
+            </Link>
+          </Button>
         </div>
 
         {/* Liste avec infinite scroll */}
@@ -143,13 +150,6 @@ export default function TrajetsPage() {
             ))}
           </InfiniteScroll>
         )}
-
-        {/* Bouton FAB pour créer un nouveau trajet */}
-        <FloatingActionButton
-          href="/trajets/nouveau"
-          icon={Plus}
-          label="Nouveau trajet"
-        />
       </div>
 
       {/* TABLETTE : Table simplifiée 5 colonnes avec drawer de filtres */}
