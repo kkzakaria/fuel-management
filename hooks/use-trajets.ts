@@ -1,13 +1,14 @@
 /**
  * Hook pour gérer la liste des trajets avec filtres et pagination
+ * Utilise TanStack Query pour le cache et l'optimisation
  */
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchTrajetsClient } from "@/lib/supabase/trajet-queries-client";
 import type { TrajetFilters } from "@/lib/validations/trajet";
-import type { TrajetListItem } from "@/components/trajets/trajet-table";
 
 interface UseTrajetsOptions {
   initialFilters?: TrajetFilters;
@@ -16,47 +17,21 @@ interface UseTrajetsOptions {
 }
 
 export function useTrajets(options?: UseTrajetsOptions) {
-  const [trajets, setTrajets] = useState<TrajetListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const [filters, setFilters] = useState<TrajetFilters>(options?.initialFilters || {});
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [count, setCount] = useState(0);
   const pageSize = options?.pageSize || 20;
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await fetchTrajetsClient({
-        filters,
-        page,
-        pageSize,
-      });
-      setTrajets(result.trajets);
-      setCount(result.count);
-      setTotalPages(result.totalPages);
-    } catch (err) {
-      setError(err as Error);
-      console.error("Erreur chargement trajets:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, page, pageSize]);
+  // Utilise useQuery pour le cache automatique
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["trajets", filters, page, pageSize],
+    queryFn: () => fetchTrajetsClient({ filters, page, pageSize }),
+    refetchInterval: options?.autoRefresh,
+    staleTime: 3 * 60 * 1000, // 3 minutes pour les trajets (données fréquemment modifiées)
+  });
 
-  // Charger les données initiales et quand les filtres/page changent
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Auto-refresh si configuré
-  useEffect(() => {
-    if (!options?.autoRefresh) return;
-
-    const interval = setInterval(fetchData, options.autoRefresh);
-    return () => clearInterval(interval);
-  }, [options?.autoRefresh, fetchData]);
+  const trajets = data?.trajets ?? [];
+  const count = data?.count ?? 0;
+  const totalPages = data?.totalPages ?? 0;
 
   const updateFilters = (newFilters: Partial<TrajetFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -86,14 +61,14 @@ export function useTrajets(options?: UseTrajetsOptions) {
     }
   };
 
-  const refresh = () => {
-    fetchData();
+  const refresh = async () => {
+    await refetch();
   };
 
   return {
     trajets,
-    loading,
-    error,
+    loading: isLoading,
+    error: error as Error | null,
     filters,
     updateFilters,
     clearFilters,
