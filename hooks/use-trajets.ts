@@ -26,6 +26,7 @@ export function useTrajets(options?: UseTrajetsOptions) {
     queryKey: ["trajets", filters, page, pageSize],
     queryFn: () => fetchTrajetsClient({ filters, page, pageSize }),
     refetchInterval: options?.autoRefresh,
+    refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
     staleTime: 3 * 60 * 1000, // 3 minutes pour les trajets (données fréquemment modifiées)
   });
 

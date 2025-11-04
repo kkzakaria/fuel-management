@@ -25,6 +25,7 @@ export function useSousTraitants(options?: UseSousTraitantsOptions) {
     queryKey: ["sous-traitants", filters],
     queryFn: () => fetchSousTraitantsClient(filters),
     refetchInterval: options?.autoRefresh,
+    refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
     staleTime: 5 * 60 * 1000, // 5 minutes pour les sous-traitants
   });
 

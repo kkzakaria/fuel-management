@@ -5,7 +5,6 @@
 
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { Plus, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,16 +33,6 @@ export default function VehiculesPage() {
     pageSize: 20,
     autoRefresh: 60000, // Refresh every minute
   });
-
-  // Rafraîchir quand on revient sur la page
-  useEffect(() => {
-    const handleFocus = () => {
-      refresh();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [refresh]);
 
   if (error) {
     return (
