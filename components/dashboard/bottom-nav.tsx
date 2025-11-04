@@ -70,7 +70,7 @@ export function BottomNav({ userRole }: BottomNavProps) {
     .slice(0, 5);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background sm:hidden">
       <div className="flex min-h-[72px] items-center justify-around px-2 pb-safe">
         {visibleItems.map((item) => {
           const Icon = item.icon;
