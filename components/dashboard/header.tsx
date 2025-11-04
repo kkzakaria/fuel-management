@@ -33,13 +33,13 @@ export function Header({ user, userProfile }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center gap-4 px-4 sm:px-6">
-        {/* Mobile Menu Button */}
+        {/* Tablet Menu Button - Hidden on mobile, visible on tablet, hidden on desktop */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="hidden sm:flex lg:hidden"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -54,7 +54,7 @@ export function Header({ user, userProfile }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Logo - Mobile only */}
+        {/* Logo - Mobile and Tablet only */}
         <Link href="/" className="flex items-center gap-2 lg:hidden">
           <TruckIcon className="h-6 w-6" />
           <span className="font-semibold">Transport Manager</span>
