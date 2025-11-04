@@ -3,7 +3,9 @@ import {
   Columns3Icon,
   FilterIcon,
   ListFilterIcon,
+  Plus,
 } from "lucide-react"
+import Link from "next/link"
 import { useId, useMemo, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -45,6 +47,7 @@ export function DataTableToolbar<TData>({
   filterColumns = [],
   enableColumnVisibility = true,
   actions,
+  addButton,
 }: DataTableToolbarProps<TData>) {
   const id = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -141,7 +144,35 @@ export function DataTableToolbar<TData>({
       </div>
 
       {/* Actions personnalisées */}
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      <div className="flex items-center gap-3">
+        {/* Bouton d'ajout */}
+        {addButton && addButton.permission !== false && (
+          addButton.type === "link" ? (
+            <Button asChild>
+              <Link href={addButton.href}>
+                {addButton.icon ? (
+                  <addButton.icon className="mr-2 h-4 w-4" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {addButton.label}
+              </Link>
+            </Button>
+          ) : (
+            <Button onClick={addButton.onClick}>
+              {addButton.icon ? (
+                <addButton.icon className="mr-2 h-4 w-4" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              {addButton.label}
+            </Button>
+          )
+        )}
+
+        {/* Autres actions */}
+        {actions}
+      </div>
     </div>
   )
 }

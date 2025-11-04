@@ -17,6 +17,51 @@ export interface FilterConfig {
 }
 
 /**
+ * Configuration pour le bouton d'ajout dans la toolbar (navigation vers une route)
+ */
+export interface AddButtonLinkConfig {
+  /** Type de bouton : navigation vers une URL */
+  type: "link"
+  /** URL de navigation (ex: "/chauffeurs/nouveau") */
+  href: string
+  /** Label du bouton (ex: "Nouveau chauffeur") */
+  label: string
+  /** Permission requise pour afficher le bouton (défaut: true) */
+  permission?: boolean
+  /** Icône personnalisée (défaut: Plus de lucide-react) */
+  icon?: React.ComponentType<{ className?: string }>
+}
+
+/**
+ * Configuration pour le bouton d'ajout dans la toolbar (ouverture d'un dialogue)
+ */
+export interface AddButtonDialogConfig {
+  /** Type de bouton : ouverture d'un dialogue/modal */
+  type: "dialog"
+  /** Callback appelé lors du clic (ex: ouvrir un dialogue) */
+  onClick: () => void
+  /** Label du bouton (ex: "Nouveau chauffeur") */
+  label: string
+  /** Permission requise pour afficher le bouton (défaut: true) */
+  permission?: boolean
+  /** Icône personnalisée (défaut: Plus de lucide-react) */
+  icon?: React.ComponentType<{ className?: string }>
+}
+
+/**
+ * Configuration pour le bouton d'ajout dans la toolbar
+ *
+ * @example
+ * // Navigation vers une route
+ * addButton={{ type: "link", href: "/trajets/nouveau", label: "Nouveau trajet" }}
+ *
+ * @example
+ * // Ouverture d'un dialogue
+ * addButton={{ type: "dialog", onClick: () => setDialogOpen(true), label: "Nouveau trajet" }}
+ */
+export type AddButtonConfig = AddButtonLinkConfig | AddButtonDialogConfig
+
+/**
  * Props du composant DataTable
  */
 export interface DataTableProps<TData> {
@@ -59,6 +104,9 @@ export interface DataTableProps<TData> {
   /** Composant d'actions personnalisées affiché dans la toolbar */
   actions?: (table: Table<TData>) => ReactNode
 
+  /** Configuration du bouton d'ajout affiché dans la toolbar */
+  addButton?: AddButtonConfig
+
   /** Callback pour les lignes sélectionnées (si enableSelection = true) */
   onSelectionChange?: (selectedRows: TData[]) => void
 }
@@ -73,6 +121,7 @@ export interface DataTableToolbarProps<TData> {
   filterColumns?: FilterConfig[]
   enableColumnVisibility?: boolean
   actions?: ReactNode
+  addButton?: AddButtonConfig
 }
 
 /**
