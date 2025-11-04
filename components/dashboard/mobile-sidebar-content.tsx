@@ -68,7 +68,7 @@ const navItems: NavItem[] = [
     title: "Paramètres",
     href: "/parametres",
     icon: Settings,
-    roles: ["admin"],
+    roles: ["admin", "gestionnaire", "chauffeur", "personnel"],
   },
 ];
 

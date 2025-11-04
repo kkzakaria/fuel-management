@@ -15,6 +15,7 @@ import {
   Users,
   Building2,
   FileText,
+  Settings,
 } from "lucide-react";
 
 interface NavItem {
@@ -55,6 +56,12 @@ const navItems: NavItem[] = [
     icon: FileText,
     roles: ["admin", "gestionnaire"],
   },
+  {
+    title: "Paramètres",
+    href: "/parametres",
+    icon: Settings,
+    roles: ["admin", "gestionnaire", "chauffeur", "personnel"],
+  },
 ];
 
 interface BottomNavProps {
@@ -64,10 +71,10 @@ interface BottomNavProps {
 export function BottomNav({ userRole }: BottomNavProps) {
   const pathname = usePathname();
 
-  // Filter nav items based on user role and limit to 5 items
+  // Filter nav items based on user role and limit to 6 items
   const visibleItems = navItems
     .filter((item) => item.roles.includes(userRole))
-    .slice(0, 5);
+    .slice(0, 6);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background sm:hidden">
