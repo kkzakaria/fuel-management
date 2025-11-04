@@ -4,7 +4,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
-import { useId } from "react"
+import { useId, useMemo } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -34,6 +34,12 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
   const id = useId()
 
+  // Memoize les valeurs pour éviter les re-calculs pendant le render (React 19 strict)
+  const paginationState = table.getState().pagination
+  const rowCount = useMemo(() => table.getRowCount(), [table])
+  const canPreviousPage = useMemo(() => table.getCanPreviousPage(), [table])
+  const canNextPage = useMemo(() => table.getCanNextPage(), [table])
+
   return (
     <div className="flex items-center justify-between gap-8">
       {/* Sélecteur de taille de page */}
@@ -42,7 +48,7 @@ export function DataTablePagination<TData>({
           Lignes par page
         </Label>
         <Select
-          value={table.getState().pagination.pageSize.toString()}
+          value={paginationState.pageSize.toString()}
           onValueChange={(value) => {
             table.setPageSize(Number(value))
           }}
@@ -67,24 +73,19 @@ export function DataTablePagination<TData>({
           aria-live="polite"
         >
           <span className="text-foreground">
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}
+            {paginationState.pageIndex * paginationState.pageSize + 1}
             -
             {Math.min(
               Math.max(
-                table.getState().pagination.pageIndex *
-                  table.getState().pagination.pageSize +
-                  table.getState().pagination.pageSize,
+                paginationState.pageIndex * paginationState.pageSize +
+                  paginationState.pageSize,
                 0
               ),
-              table.getRowCount()
+              rowCount
             )}
           </span>{" "}
           sur{" "}
-          <span className="text-foreground">
-            {table.getRowCount().toString()}
-          </span>
+          <span className="text-foreground">{rowCount.toString()}</span>
         </p>
       </div>
 
@@ -99,7 +100,7 @@ export function DataTablePagination<TData>({
                 variant="outline"
                 className="disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => table.firstPage()}
-                disabled={!table.getCanPreviousPage()}
+                disabled={!canPreviousPage}
                 aria-label="Aller à la première page"
               >
                 <ChevronFirstIcon size={16} aria-hidden="true" />
@@ -113,7 +114,7 @@ export function DataTablePagination<TData>({
                 variant="outline"
                 className="disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                disabled={!canPreviousPage}
                 aria-label="Aller à la page précédente"
               >
                 <ChevronLeftIcon size={16} aria-hidden="true" />
@@ -127,7 +128,7 @@ export function DataTablePagination<TData>({
                 variant="outline"
                 className="disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                disabled={!canNextPage}
                 aria-label="Aller à la page suivante"
               >
                 <ChevronRightIcon size={16} aria-hidden="true" />
@@ -141,7 +142,7 @@ export function DataTablePagination<TData>({
                 variant="outline"
                 className="disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => table.lastPage()}
-                disabled={!table.getCanNextPage()}
+                disabled={!canNextPage}
                 aria-label="Aller à la dernière page"
               >
                 <ChevronLastIcon size={16} aria-hidden="true" />
