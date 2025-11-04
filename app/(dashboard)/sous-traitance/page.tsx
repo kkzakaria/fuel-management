@@ -5,20 +5,28 @@
 
 'use client'
 
-import { useCallback, startTransition } from 'react'
+import { useCallback, useState, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { DataTable } from '@/components/data-table'
 import { sousTraitantColumns } from '@/components/sous-traitants/sous-traitant-columns'
 import { SousTraitantListItem } from '@/components/sous-traitants/sous-traitant-list-item'
+import { SousTraitantForm } from '@/components/sous-traitants/sous-traitant-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSousTraitants } from '@/hooks/use-sous-traitants'
 import type { SousTraitant } from '@/lib/supabase/types'
 
 export default function SousTraitancePage() {
   const router = useRouter()
+  const [dialogOpen, setDialogOpen] = useState(false)
   const { sousTraitants, loading, error, refresh } = useSousTraitants()
 
   // Handler pour la navigation vers les détails
@@ -27,6 +35,12 @@ export default function SousTraitancePage() {
       router.push(`/sous-traitance/${sousTraitant.id}`)
     })
   }, [router])
+
+  // Handler pour fermer le dialogue et rafraîchir les données
+  const handleSuccess = useCallback(() => {
+    setDialogOpen(false)
+    refresh()
+  }, [refresh])
 
   if (error) {
     return (
@@ -80,8 +94,8 @@ export default function SousTraitancePage() {
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
           addButton={{
-            type: 'link',
-            href: '/sous-traitance/nouveau',
+            type: 'dialog',
+            onClick: () => setDialogOpen(true),
             label: 'Nouveau sous-traitant',
           }}
         />
@@ -113,6 +127,16 @@ export default function SousTraitancePage() {
           </div>
         )}
       </div>
+
+      {/* Dialogue de création */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouveau sous-traitant</DialogTitle>
+          </DialogHeader>
+          <SousTraitantForm onSuccess={handleSuccess} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
