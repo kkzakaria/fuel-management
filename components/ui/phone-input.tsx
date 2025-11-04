@@ -54,23 +54,39 @@ const getMaxLengthForCountry = (country: RPNInput.Country): number => {
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
   React.forwardRef<React.ComponentRef<typeof RPNInput.default>, PhoneInputProps>(
     ({ className, onChange, value, defaultCountry, ...props }, ref) => {
+      const [internalValue, setInternalValue] = React.useState<
+        RPNInput.Value | undefined
+      >(value as RPNInput.Value | undefined);
+
+      const [country, setCountry] = React.useState<RPNInput.Country | undefined>(
+        defaultCountry
+      );
+
+      // Synchroniser avec la prop value
+      React.useEffect(() => {
+        setInternalValue(value as RPNInput.Value | undefined);
+      }, [value]);
+
       const handleChange = React.useCallback(
         (newValue: RPNInput.Value | undefined) => {
           // Si une valeur est fournie, valider la longueur
           if (newValue) {
+            let isValid = true;
+
             try {
               // Parser le numéro de téléphone
               const phoneNumber = parsePhoneNumberWithError(newValue);
+
               if (phoneNumber && phoneNumber.country) {
                 const maxLength = getMaxLengthForCountry(phoneNumber.country);
                 const nationalNumber = phoneNumber.nationalNumber;
 
-                // Si le numéro national dépasse la longueur maximale, ignorer
+                // Si le numéro national dépasse la longueur maximale, rejeter
                 if (nationalNumber.length > maxLength) {
-                  return;
+                  isValid = false;
                 }
               }
-            } catch (error) {
+            } catch {
               // Si le parsing échoue mais qu'on a un defaultCountry, valider quand même
               if (defaultCountry) {
                 // Extraire uniquement les chiffres (sans +, espaces, etc.)
@@ -84,20 +100,73 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                   ? digitsOnly.slice(countryCallingCode.length)
                   : digitsOnly;
 
-                // Si le numéro national dépasse la longueur maximale, ignorer
+                // Si le numéro national dépasse la longueur maximale, rejeter
                 if (nationalDigits.length > maxLength) {
-                  return;
+                  isValid = false;
                 }
               }
-              // Sinon laisser passer pour permettre la saisie initiale
-              console.debug("Error parsing phone number:", error);
             }
+
+            // Si la nouvelle valeur n'est pas valide, ne pas mettre à jour
+            if (!isValid) {
+              return;
+            }
+
+            // Mettre à jour l'état interne avec la nouvelle valeur valide
+            setInternalValue(newValue);
+          } else {
+            // Valeur vide
+            setInternalValue(undefined);
           }
 
-          // Appeler le onChange original
+          // Appeler le onChange original avec la nouvelle valeur valide
           onChange?.(newValue || ("" as RPNInput.Value));
         },
         [onChange, defaultCountry]
+      );
+
+      // Créer un InputComponent personnalisé qui reçoit country et value
+      const CustomInputComponent = React.useMemo(
+        () =>
+          React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+            function CustomInput({ className, ...inputProps }, inputRef) {
+              const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                // Si c'est un chiffre, vérifier la longueur
+                if (/^\d$/.test(e.key)) {
+                  const currentValue = (e.currentTarget.value || "").replace(/\D/g, "");
+                  const maxLength = country ? getMaxLengthForCountry(country) : 15;
+
+                  // Extraire les chiffres du numéro national (sans indicatif pays)
+                  let nationalDigits = currentValue;
+                  if (country) {
+                    const countryCallingCode = RPNInput.getCountryCallingCode(country);
+                    if (currentValue.startsWith(countryCallingCode)) {
+                      nationalDigits = currentValue.slice(countryCallingCode.length);
+                    }
+                  }
+
+                  // Si on a déjà atteint la longueur maximale, bloquer la saisie
+                  if (nationalDigits.length >= maxLength) {
+                    e.preventDefault();
+                    return;
+                  }
+                }
+
+                // Appeler le handler original si présent
+                inputProps.onKeyDown?.(e);
+              };
+
+              return (
+                <Input
+                  className={cn("rounded-e-lg rounded-s-none", className)}
+                  {...inputProps}
+                  onKeyDown={handleKeyDown}
+                  ref={inputRef}
+                />
+              );
+            }
+          ),
+        [country]
       );
 
       return (
@@ -106,35 +175,25 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           className={cn("flex", className)}
           flagComponent={FlagComponent}
           countrySelectComponent={CountrySelect}
-          inputComponent={InputComponent}
+          inputComponent={CustomInputComponent}
           smartCaret={false}
           defaultCountry={defaultCountry}
-          value={value || undefined}
+          value={internalValue || undefined}
           /**
            * Handles the onChange event with length validation.
            *
            * Validates phone number length based on country before updating.
            * For example, Côte d'Ivoire (CI) numbers are limited to 10 digits.
+           * Uses controlled component pattern to enforce limits.
            */
           onChange={handleChange}
+          onCountryChange={setCountry}
           {...props}
         />
       );
     },
   );
 PhoneInput.displayName = "PhoneInput";
-
-const InputComponent = React.forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<"input">
->(({ className, ...props }, ref) => (
-  <Input
-    className={cn("rounded-e-lg rounded-s-none", className)}
-    {...props}
-    ref={ref}
-  />
-));
-InputComponent.displayName = "InputComponent";
 
 type CountryEntry = { label: string; value: RPNInput.Country | undefined };
 
@@ -161,7 +220,9 @@ const CountrySelect = ({
       modal
       onOpenChange={(open) => {
         setIsOpen(open);
-        open && setSearchValue("");
+        if (open) {
+          setSearchValue("");
+        }
       }}
     >
       <PopoverTrigger asChild>
