@@ -2,7 +2,7 @@ import * as React from "react";
 import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
-import { getExampleNumber, parsePhoneNumber } from "libphonenumber-js";
+import { getExampleNumber, parsePhoneNumberWithError } from "libphonenumber-js";
 import examples from "libphonenumber-js/mobile/examples";
 
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ const getMaxLengthForCountry = (country: RPNInput.Country): number => {
 };
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
-  React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
+  React.forwardRef<React.ComponentRef<typeof RPNInput.default>, PhoneInputProps>(
     ({ className, onChange, value, ...props }, ref) => {
       const handleChange = React.useCallback(
         (newValue: RPNInput.Value | undefined) => {
@@ -60,7 +60,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           if (newValue) {
             try {
               // Parser le numéro de téléphone
-              const phoneNumber = parsePhoneNumber(newValue);
+              const phoneNumber = parsePhoneNumberWithError(newValue);
               if (phoneNumber && phoneNumber.country) {
                 const maxLength = getMaxLengthForCountry(phoneNumber.country);
                 const nationalNumber = phoneNumber.nationalNumber;
