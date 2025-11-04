@@ -77,30 +77,36 @@ export function BottomNav({ userRole }: BottomNavProps) {
     .slice(0, 6);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background sm:hidden">
-      <div className="flex min-h-[72px] items-center justify-around px-2 pb-safe">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+    <nav className="fixed bottom-2 left-2 right-2 z-50 sm:hidden">
+      <div className="mx-auto max-w-md rounded-full bg-blue-800 px-2 py-1 shadow-2xl">
+        <div className="flex items-center justify-around">
+          {visibleItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href));
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1.5 transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className={cn("h-6 w-6", isActive && "fill-current")} />
-              <span className="text-xs font-medium">{item.title}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "relative flex flex-shrink-0 items-center justify-center gap-1 rounded-full transition-all duration-300",
+                  isActive
+                    ? "bg-blue-500 px-3 py-1.5 text-white"
+                    : "h-9 w-9 text-white/70 hover:text-white",
+                )}
+              >
+                <Icon className={cn("h-4 w-4", isActive && "stroke-[2.5]")} />
+                {isActive && (
+                  <span className="text-xs font-medium whitespace-nowrap">
+                    {item.title}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
