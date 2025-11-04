@@ -2,6 +2,8 @@ import * as React from "react";
 import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
+import { getExampleNumber, parsePhoneNumber } from "libphonenumber-js";
+import examples from "libphonenumber-js/mobile/examples";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,9 +31,57 @@ type PhoneInputProps = Omit<
     onChange?: (value: RPNInput.Value) => void;
   };
 
+/**
+ * Calcule le nombre maximum de chiffres pour un numéro de téléphone
+ * basé sur le code pays (ex: 10 chiffres pour CI - Côte d'Ivoire)
+ */
+const getMaxLengthForCountry = (country: RPNInput.Country): number => {
+  try {
+    const exampleNumber = getExampleNumber(country, examples);
+    if (exampleNumber) {
+      // Obtenir le numéro national sans l'indicatif pays
+      const nationalNumber = exampleNumber.nationalNumber.toString();
+      return nationalNumber.length;
+    }
+  } catch (error) {
+    // En cas d'erreur, retourner une longueur par défaut
+    console.debug(`Could not get max length for country ${country}:`, error);
+  }
+  // Longueur par défaut si le pays n'est pas trouvé
+  return 15;
+};
+
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
   React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
     ({ className, onChange, value, ...props }, ref) => {
+      const handleChange = React.useCallback(
+        (newValue: RPNInput.Value | undefined) => {
+          // Si une valeur est fournie, valider la longueur
+          if (newValue) {
+            try {
+              // Parser le numéro de téléphone
+              const phoneNumber = parsePhoneNumber(newValue);
+              if (phoneNumber && phoneNumber.country) {
+                const maxLength = getMaxLengthForCountry(phoneNumber.country);
+                const nationalNumber = phoneNumber.nationalNumber;
+
+                // Si le numéro national dépasse la longueur maximale, ignorer
+                if (nationalNumber.length > maxLength) {
+                  return;
+                }
+              }
+            } catch (error) {
+              // En cas d'erreur de parsing, laisser passer
+              console.debug("Error parsing phone number:", error);
+            }
+          }
+
+          // Appeler le onChange original
+          onChange?.(newValue || ("" as RPNInput.Value));
+        },
+        [onChange]
+      );
+
       return (
         <RPNInput.default
           ref={ref}
@@ -42,15 +92,12 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           smartCaret={false}
           value={value || undefined}
           /**
-           * Handles the onChange event.
+           * Handles the onChange event with length validation.
            *
-           * react-phone-number-input might trigger the onChange event as undefined
-           * when a valid phone number is not entered. To prevent this,
-           * the value is coerced to an empty string.
-           *
-           * @param {E164Number | undefined} value - The entered value
+           * Validates phone number length based on country before updating.
+           * For example, Côte d'Ivoire (CI) numbers are limited to 10 digits.
            */
-          onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
+          onChange={handleChange}
           {...props}
         />
       );
