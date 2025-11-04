@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 import { DataTableColumnHeader } from "@/components/data-table"
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -146,16 +146,17 @@ export const chauffeurColumns: ColumnDef<Chauffeur>[] = [
     cell: ({ row }) => {
       const statut = row.getValue("statut") as string
 
-      const variants: Record<
-        string,
-        "default" | "secondary" | "destructive"
-      > = {
-        actif: "default",
+      const variantMap: Record<string, "success" | "secondary" | "destructive"> = {
+        actif: "success",
         inactif: "secondary",
         suspendu: "destructive",
       }
 
-      return <Badge variant={variants[statut] || "default"}>{statut}</Badge>
+      return (
+        <StatusBadge variant={variantMap[statut] || "secondary"}>
+          {statut}
+        </StatusBadge>
+      )
     },
     size: 120,
     enableSorting: false,

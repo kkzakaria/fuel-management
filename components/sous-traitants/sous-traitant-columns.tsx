@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 import { DataTableColumnHeader } from "@/components/data-table"
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -131,11 +131,8 @@ export const sousTraitantColumns: ColumnDef<SousTraitant>[] = [
     cell: ({ row }) => {
       const statut = row.getValue("statut") as string | null
 
-      const variants: Record<
-        string,
-        "default" | "secondary" | "destructive"
-      > = {
-        actif: "default",
+      const variantMap: Record<string, "success" | "secondary" | "destructive"> = {
+        actif: "success",
         inactif: "secondary",
         blackliste: "destructive",
       }
@@ -146,10 +143,14 @@ export const sousTraitantColumns: ColumnDef<SousTraitant>[] = [
         blackliste: "Blacklisté",
       }
 
-      const variant = statut ? variants[statut] || "secondary" : "secondary"
+      const displayStatus = statut || "inactif"
       const label = statut ? labels[statut] || statut : "Inactif"
 
-      return <Badge variant={variant}>{label}</Badge>
+      return (
+        <StatusBadge variant={variantMap[displayStatus] || "secondary"}>
+          {label}
+        </StatusBadge>
+      )
     },
     size: 120,
     enableSorting: false,

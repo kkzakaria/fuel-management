@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 import { DataTableColumnHeader } from "@/components/data-table"
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -58,11 +58,11 @@ export interface TrajetListItem {
 }
 
 function getStatutBadge(statut: string | null) {
-  if (!statut) return <Badge variant="outline">Inconnu</Badge>
+  if (!statut) return <StatusBadge variant="outline">Inconnu</StatusBadge>
 
-  const variants: Record<string, "default" | "secondary" | "destructive"> = {
-    en_cours: "secondary",
-    termine: "default",
+  const variantMap: Record<string, "success" | "info" | "destructive"> = {
+    en_cours: "info",
+    termine: "success",
     annule: "destructive",
   }
 
@@ -73,9 +73,9 @@ function getStatutBadge(statut: string | null) {
   }
 
   return (
-    <Badge variant={variants[statut] || "default"}>
+    <StatusBadge variant={variantMap[statut] || "secondary"}>
       {labels[statut] || statut}
-    </Badge>
+    </StatusBadge>
   )
 }
 

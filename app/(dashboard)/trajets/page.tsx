@@ -51,14 +51,6 @@ export default function TrajetsPage() {
 
   return (
     <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* En-tête */}
-      <div className="min-w-0">
-        <h1 className="text-2xl font-bold sm:text-3xl">Trajets</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Gestion des trajets et livraisons de conteneurs
-        </p>
-      </div>
-
       {/* Desktop: DataTable avec toutes les fonctionnalités */}
       <div className="hidden md:block">
         <DataTable
