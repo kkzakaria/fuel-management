@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -140,16 +140,13 @@ export function ChauffeurForm({ chauffeur, onSuccess }: ChauffeurFormProps) {
               <FormItem>
                 <FormLabel>Téléphone</FormLabel>
                 <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder="+225 0123456789"
+                  <PhoneInput
+                    placeholder="Entrez le numéro de téléphone"
+                    defaultCountry="CI"
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? undefined}
                   />
                 </FormControl>
-                <FormDescription>
-                  Format: +225 suivi de 10 chiffres
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
