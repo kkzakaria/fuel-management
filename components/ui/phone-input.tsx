@@ -53,7 +53,7 @@ const getMaxLengthForCountry = (country: RPNInput.Country): number => {
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
   React.forwardRef<React.ComponentRef<typeof RPNInput.default>, PhoneInputProps>(
-    ({ className, onChange, value, ...props }, ref) => {
+    ({ className, onChange, value, defaultCountry, ...props }, ref) => {
       const handleChange = React.useCallback(
         (newValue: RPNInput.Value | undefined) => {
           // Si une valeur est fournie, valider la longueur
@@ -71,7 +71,25 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
                 }
               }
             } catch (error) {
-              // En cas d'erreur de parsing, laisser passer
+              // Si le parsing échoue mais qu'on a un defaultCountry, valider quand même
+              if (defaultCountry) {
+                // Extraire uniquement les chiffres (sans +, espaces, etc.)
+                const digitsOnly = newValue.replace(/\D/g, "");
+                const maxLength = getMaxLengthForCountry(defaultCountry);
+
+                // Pour CI, le numéro commence par l'indicatif pays (225) + 10 chiffres
+                // On doit vérifier uniquement les chiffres du numéro national
+                const countryCallingCode = RPNInput.getCountryCallingCode(defaultCountry);
+                const nationalDigits = digitsOnly.startsWith(countryCallingCode)
+                  ? digitsOnly.slice(countryCallingCode.length)
+                  : digitsOnly;
+
+                // Si le numéro national dépasse la longueur maximale, ignorer
+                if (nationalDigits.length > maxLength) {
+                  return;
+                }
+              }
+              // Sinon laisser passer pour permettre la saisie initiale
               console.debug("Error parsing phone number:", error);
             }
           }
@@ -79,7 +97,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           // Appeler le onChange original
           onChange?.(newValue || ("" as RPNInput.Value));
         },
-        [onChange]
+        [onChange, defaultCountry]
       );
 
       return (
@@ -90,6 +108,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           countrySelectComponent={CountrySelect}
           inputComponent={InputComponent}
           smartCaret={false}
+          defaultCountry={defaultCountry}
           value={value || undefined}
           /**
            * Handles the onChange event with length validation.
