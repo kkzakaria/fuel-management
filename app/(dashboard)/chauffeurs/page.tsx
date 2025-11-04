@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useCallback, useEffect, startTransition } from "react"
+import { useCallback, startTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
@@ -34,16 +34,6 @@ export default function ChauffeursPage() {
       router.push(`/chauffeurs/${chauffeur.id}`)
     })
   }, [router])
-
-  // Rafraîchir quand on revient sur la page
-  useEffect(() => {
-    const handleFocus = () => {
-      refresh();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [refresh]);
 
   if (error) {
     return (

@@ -26,6 +26,7 @@ export function useChauffeurs(options?: UseChauffeursOptions) {
     queryKey: ["chauffeurs", filters, page, pageSize],
     queryFn: () => fetchChauffeursClient({ filters, page, pageSize }),
     refetchInterval: options?.autoRefresh,
+    refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
     staleTime: 5 * 60 * 1000, // 5 minutes pour les chauffeurs (données moins fréquemment modifiées)
   });
 

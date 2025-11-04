@@ -26,6 +26,7 @@ export function useVehicules(options?: UseVehiculesOptions) {
     queryKey: ["vehicules", filters, page, pageSize],
     queryFn: () => fetchVehiculesClient({ filters, page, pageSize }),
     refetchInterval: options?.autoRefresh,
+    refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
     staleTime: 5 * 60 * 1000, // 5 minutes pour les véhicules
   });
 
