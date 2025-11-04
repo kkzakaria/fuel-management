@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useRef } from "react"
 
 import {
   Table,
@@ -96,10 +96,31 @@ export function DataTable<TData>({
     pageSize,
   })
 
+  // Ref pour tracker le premier montage
+  const isFirstMount = useRef(true)
+
+  // Stabiliser les données avec useMemo pour éviter les re-renders inutiles
+  const stableData = useMemo(() => data, [data])
+  const stableColumns = useMemo(() => columns, [columns])
+
+  // Réinitialiser la pagination quand les données changent (APRÈS le premier montage)
+  useEffect(() => {
+    // Ignorer le premier montage pour éviter l'erreur "state update before mount"
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0,
+    }))
+  }, [stableData])
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data,
-    columns,
+    data: stableData,
+    columns: stableColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
