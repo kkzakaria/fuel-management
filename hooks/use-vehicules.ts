@@ -3,9 +3,13 @@
  * Utilise TanStack Query pour le cache et l'optimisation
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+// ^ Exception nécessaire: Le pattern "enabled after mount" requiert setState dans useEffect
+// pour activer TanStack Query APRÈS le montage et éviter "state update before mount"
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchVehiculesClient } from "@/lib/supabase/vehicule-queries-client";
 import type { VehiculeFilters } from "@/lib/validations/vehicule";
@@ -21,10 +25,18 @@ export function useVehicules(options?: UseVehiculesOptions) {
   const [page, setPage] = useState(1);
   const pageSize = options?.pageSize || 20;
 
+  // Attendre le montage avant d'activer la query
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Utilise useQuery pour le cache automatique
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["vehicules", filters, page, pageSize],
     queryFn: () => fetchVehiculesClient({ filters, page, pageSize }),
+    enabled: isMounted, // N'active la query qu'après le montage
     refetchInterval: options?.autoRefresh,
     refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
     staleTime: 5 * 60 * 1000, // 5 minutes pour les véhicules
