@@ -5,14 +5,21 @@
 
 "use client"
 
-import { useCallback, startTransition } from "react"
+import { useCallback, useState, startTransition } from "react"
 import { useRouter } from "next/navigation"
 
 import { DataTable } from "@/components/data-table"
 import { chauffeurColumns } from "@/components/chauffeurs/chauffeur-columns"
 import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item"
+import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useChauffeurs } from "@/hooks/use-chauffeurs"
 import { useUserRole } from "@/hooks/use-user-role"
@@ -21,6 +28,7 @@ import type { Chauffeur } from "@/lib/supabase/types"
 export default function ChauffeursPage() {
   const router = useRouter()
   const { canManageDrivers } = useUserRole()
+  const [dialogOpen, setDialogOpen] = useState(false)
   const { chauffeurs, loading, error, refresh } = useChauffeurs({
     pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
@@ -32,6 +40,12 @@ export default function ChauffeursPage() {
       router.push(`/chauffeurs/${chauffeur.id}`)
     })
   }, [router])
+
+  // Handler pour fermer le dialogue et rafraîchir les données
+  const handleSuccess = useCallback(() => {
+    setDialogOpen(false)
+    refresh()
+  }, [refresh])
 
   if (error) {
     return (
@@ -85,8 +99,8 @@ export default function ChauffeursPage() {
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
           addButton={{
-            type: "link",
-            href: "/chauffeurs/nouveau",
+            type: "dialog",
+            onClick: () => setDialogOpen(true),
             label: "Nouveau chauffeur",
             permission: canManageDrivers,
           }}
@@ -113,6 +127,16 @@ export default function ChauffeursPage() {
           </div>
         )}
       </div>
+
+      {/* Dialogue de création */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouveau chauffeur</DialogTitle>
+          </DialogHeader>
+          <ChauffeurForm onSuccess={handleSuccess} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
