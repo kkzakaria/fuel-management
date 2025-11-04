@@ -13,13 +13,13 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -148,16 +148,14 @@ export function SousTraitantForm({
               <FormItem>
                 <FormLabel>Téléphone</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    type="tel"
-                    placeholder="+225 07 08 09 10 11"
+                  <PhoneInput
+                    placeholder="Entrez le numéro de téléphone"
+                    defaultCountry="CI"
                     disabled={loading}
+                    {...field}
+                    value={field.value ?? undefined}
                   />
                 </FormControl>
-                <FormDescription>
-                  Format: +225 XX XX XX XX XX
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
