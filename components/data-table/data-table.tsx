@@ -85,6 +85,7 @@ export function DataTable<TData>({
   enableColumnVisibility = true,
   stickyHeader = false,
   actions,
+  addButton,
   onSelectionChange,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -161,6 +162,7 @@ export function DataTable<TData>({
         filterColumns={filterColumns}
         enableColumnVisibility={enableColumnVisibility}
         actions={actions?.(table)}
+        addButton={addButton}
       />
 
       {/* Tableau */}

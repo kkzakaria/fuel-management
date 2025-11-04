@@ -7,8 +7,6 @@
 
 import { useCallback, startTransition } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Plus } from "lucide-react"
 
 import { DataTable } from "@/components/data-table"
 import { chauffeurColumns } from "@/components/chauffeurs/chauffeur-columns"
@@ -56,21 +54,11 @@ export default function ChauffeursPage() {
   return (
     <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold sm:text-3xl">Chauffeurs</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Gestion des chauffeurs et performance
-          </p>
-        </div>
-        {canManageDrivers && (
-          <Button asChild>
-            <Link href="/chauffeurs/nouveau">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau chauffeur
-            </Link>
-          </Button>
-        )}
+      <div className="min-w-0">
+        <h1 className="text-2xl font-bold sm:text-3xl">Chauffeurs</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Gestion des chauffeurs et performance
+        </p>
       </div>
 
       {/* Desktop: DataTable avec toutes les fonctionnalités */}
@@ -96,6 +84,12 @@ export default function ChauffeursPage() {
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
+          addButton={{
+            type: "link",
+            href: "/chauffeurs/nouveau",
+            label: "Nouveau chauffeur",
+            permission: canManageDrivers,
+          }}
         />
       </div>
 
