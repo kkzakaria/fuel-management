@@ -139,48 +139,46 @@ export function SousTraitantForm({
           )}
         />
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Téléphone */}
-          <FormField
-            control={form.control}
-            name="telephone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Téléphone</FormLabel>
-                <FormControl>
-                  <PhoneInput
-                    placeholder="Entrez le numéro de téléphone"
-                    defaultCountry="CI"
-                    disabled={loading}
-                    {...field}
-                    value={field.value ?? undefined}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* Téléphone */}
+        <FormField
+          control={form.control}
+          name="telephone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Téléphone</FormLabel>
+              <FormControl>
+                <PhoneInput
+                  placeholder="Entrez le numéro de téléphone"
+                  defaultCountry="CI"
+                  disabled={loading}
+                  {...field}
+                  value={field.value ?? undefined}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="contact@entreprise.ci"
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        {/* Email */}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="email"
+                  placeholder="contact@entreprise.ci"
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Adresse */}
         <FormField
