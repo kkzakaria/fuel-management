@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   description:
     "Application de gestion de flotte de transport de conteneurs - Côte d'Ivoire",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

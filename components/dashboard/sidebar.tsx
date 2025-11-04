@@ -8,6 +8,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -92,8 +93,14 @@ export function Sidebar({ userProfile }: SidebarProps) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <TruckIcon className="h-6 w-6" />
+            <Link href="/" className="flex items-center gap-3 font-semibold">
+              <Image
+                src="/logo-suivi-carburant.png"
+                alt="Logo Suivi Carburant"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
               <span>Transport Manager</span>
             </Link>
           </div>
@@ -123,23 +130,6 @@ export function Sidebar({ userProfile }: SidebarProps) {
               );
             })}
           </nav>
-
-          {/* User Info */}
-          <div className="border-t p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                {userProfile.nom?.charAt(0) || "U"}
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium">
-                  {userProfile.nom} {userProfile.prenom}
-                </p>
-                <p className="truncate text-xs text-muted-foreground capitalize">
-                  {userProfile.role}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
     </>
