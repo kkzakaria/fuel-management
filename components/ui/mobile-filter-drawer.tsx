@@ -30,6 +30,8 @@ interface MobileFilterDrawerProps {
   title?: string;
   /** Description du drawer (optionnel) */
   description?: string;
+  /** Afficher le bouton aussi sur tablette (optionnel) */
+  showOnTablet?: boolean;
 }
 
 export function MobileFilterDrawer({
@@ -38,57 +40,72 @@ export function MobileFilterDrawer({
   onClearFilters,
   title = "Filtres",
   description = "Filtrer et affiner vos résultats",
+  showOnTablet = false,
 }: MobileFilterDrawerProps) {
   const [open, setOpen] = useState(false);
 
   const handleClearFilters = () => {
     onClearFilters();
-    setOpen(false);
+    // Ne pas fermer le drawer pour permettre de continuer à ajuster les filtres
   };
+
+  const buttonVisibilityClass = showOnTablet ? "xl:hidden" : "md:hidden";
+  const inlineVisibilityClass = showOnTablet ? "hidden xl:block" : "hidden md:block";
 
   return (
     <>
-      {/* Mobile: Bouton pour ouvrir le drawer */}
-      <div className="md:hidden">
+      {/* Mobile/Tablet: Bouton pour ouvrir le drawer */}
+      <div className={buttonVisibilityClass}>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" className="w-full gap-2">
+            <Button variant="outline" className="gap-2 whitespace-nowrap">
               <Filter className="h-4 w-4" />
               <span>Filtrer</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-auto h-5 min-w-[20px] rounded-full px-1">
+                <Badge variant="secondary" className="h-5 min-w-[20px] rounded-full px-1">
                   {activeFiltersCount}
                 </Badge>
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+          <SheetContent side="bottom" className="h-[85vh] flex flex-col">
             <SheetHeader>
-              <div className="flex items-center justify-between">
-                <SheetTitle>{title}</SheetTitle>
+              <SheetTitle>{title}</SheetTitle>
+              <SheetDescription>{description}</SheetDescription>
+            </SheetHeader>
+
+            {/* Contenu scrollable */}
+            <div className="flex-1 overflow-y-auto py-6">
+              {children}
+            </div>
+
+            {/* Boutons d'action fixes en bas */}
+            <div className="flex-shrink-0 border-t pt-4 pb-4 px-1">
+              <div className="flex gap-3">
                 {activeFiltersCount > 0 && (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="outline"
                     onClick={handleClearFilters}
-                    className="h-8"
+                    className="flex-1"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Réinitialiser
                   </Button>
                 )}
+                <Button
+                  onClick={() => setOpen(false)}
+                  className="flex-1"
+                >
+                  Appliquer {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                </Button>
               </div>
-              <SheetDescription>{description}</SheetDescription>
-            </SheetHeader>
-            <div className="mt-6">
-              {children}
             </div>
           </SheetContent>
         </Sheet>
       </div>
 
       {/* Desktop: Affichage inline normal */}
-      <div className="hidden md:block">
+      <div className={inlineVisibilityClass}>
         {children}
       </div>
     </>
