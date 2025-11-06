@@ -2,46 +2,50 @@
  * Page: Rapports
  *
  * Main reports page with type selection and filters
+ * Migré vers Nuqs pour gestion automatique des filtres via URL
  */
 
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryStates } from "nuqs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ReportTypeSelector } from "@/components/reports/report-type-selector";
 import { ReportFilters, type ReportFiltersState } from "@/components/reports/report-filters";
+import { rapportSearchParams } from "@/lib/nuqs/parsers/rapport";
 import { getPresetDateRange } from "@/lib/date-utils";
 import { FileText } from "lucide-react";
 
 export default function RapportsPage() {
   const router = useRouter();
-  const [filters, setFilters] = useState<ReportFiltersState>(() => {
+
+  // Utilise Nuqs pour gérer les filtres via URL
+  const [searchParams, setSearchParams] = useQueryStates(rapportSearchParams, {
+    history: "push",
+    shallow: true,
+  });
+
+  // Convertir searchParams en format ReportFiltersState pour compatibilité
+  const filters: ReportFiltersState = useMemo(() => {
     const range = getPresetDateRange("month");
     return {
-      reportType: null,
-      dateFrom: range.from,
-      dateTo: range.to,
+      reportType: searchParams.reportType,
+      dateFrom: searchParams.dateFrom ? new Date(searchParams.dateFrom) : range.from,
+      dateTo: searchParams.dateTo ? new Date(searchParams.dateTo) : range.to,
+      chauffeurId: searchParams.chauffeurId ?? undefined,
+      vehiculeId: searchParams.vehiculeId ?? undefined,
+      destinationId: searchParams.destinationId ?? undefined,
     };
-  });
+  }, [searchParams]);
 
   const handleGenerateReport = () => {
     if (!filters.reportType) return;
 
-    // Encode filters for URL
-    const params = new URLSearchParams({
-      type: filters.reportType,
-      dateFrom: filters.dateFrom.toISOString(),
-      dateTo: filters.dateTo.toISOString(),
-    });
-
-    if (filters.chauffeurId) params.set("chauffeurId", filters.chauffeurId);
-    if (filters.vehiculeId) params.set("vehiculeId", filters.vehiculeId);
-    if (filters.destinationId) params.set("destinationId", filters.destinationId);
-
-    // Navigate to preview page
-    router.push(`/rapports/preview?${params.toString()}`);
+    // Les filtres sont déjà dans l'URL grâce à Nuqs
+    // Il suffit de naviguer vers la page preview
+    router.push("/rapports/preview");
   };
 
   return (
@@ -72,7 +76,7 @@ export default function RapportsPage() {
 
         <ReportTypeSelector
           selectedType={filters.reportType}
-          onSelectType={(type) => setFilters({ ...filters, reportType: type })}
+          onSelectType={(type) => setSearchParams({ reportType: type })}
         />
       </div>
 
@@ -92,7 +96,16 @@ export default function RapportsPage() {
             <CardContent>
               <ReportFilters
                 filters={filters}
-                onFiltersChange={setFilters}
+                onFiltersChange={(newFilters) => {
+                  setSearchParams({
+                    reportType: newFilters.reportType,
+                    dateFrom: newFilters.dateFrom?.toISOString() ?? null,
+                    dateTo: newFilters.dateTo?.toISOString() ?? null,
+                    chauffeurId: newFilters.chauffeurId ?? null,
+                    vehiculeId: newFilters.vehiculeId ?? null,
+                    destinationId: newFilters.destinationId ?? null,
+                  });
+                }}
                 onGenerate={handleGenerateReport}
               />
             </CardContent>

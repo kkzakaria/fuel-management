@@ -2,12 +2,14 @@
  * Page: Report Preview
  *
  * Preview and export reports
+ * Migré vers Nuqs pour lecture automatique des paramètres URL
  */
 
 "use client";
 
 import { useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useQueryStates } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +18,7 @@ import { ReportSummary } from "@/components/reports/report-summary";
 import { FleetPerformance } from "@/components/reports/fleet-performance";
 import { FinancialAnalysis } from "@/components/reports/financial-analysis";
 import { useReportData } from "@/hooks/use-report-data";
+import { rapportSearchParams } from "@/lib/nuqs/parsers/rapport";
 import { ArrowLeft, FileText, Table2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ReportType } from "@/lib/report-types";
@@ -23,19 +26,20 @@ import type { MonthlyReport } from "@/lib/report-types";
 
 function ReportPreviewContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+
+  // Utilise Nuqs pour lire les paramètres URL de manière type-safe
+  const [searchParams] = useQueryStates(rapportSearchParams, {
+    history: "push",
+    shallow: true,
+  });
+
   const { report, isLoading, error, loadReport } = useReportData();
 
   useEffect(() => {
     const loadReportData = async () => {
-      const type = searchParams.get("type");
-      const dateFrom = searchParams.get("dateFrom");
-      const dateTo = searchParams.get("dateTo");
-      const chauffeurId = searchParams.get("chauffeurId");
-      const vehiculeId = searchParams.get("vehiculeId");
-      const destinationId = searchParams.get("destinationId");
+      const { reportType, dateFrom, dateTo, chauffeurId, vehiculeId, destinationId } = searchParams;
 
-      if (!type || !dateFrom || !dateTo) {
+      if (!reportType || !dateFrom || !dateTo) {
         toast.error("Paramètres de rapport invalides");
         router.push("/rapports");
         return;
@@ -43,7 +47,7 @@ function ReportPreviewContent() {
 
       try {
         await loadReport({
-          reportType: type as ReportType,
+          reportType: reportType as ReportType,
           dateFrom: new Date(dateFrom),
           dateTo: new Date(dateTo),
           chauffeurId: chauffeurId || undefined,
