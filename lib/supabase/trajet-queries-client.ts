@@ -63,7 +63,7 @@ export async function fetchTrajetsClient(options?: {
   }
 
   const { data, error, count } = await query
-    .order("date_trajet", { ascending: false })
+    .order("numero_trajet", { ascending: false })
     .range(from, to);
 
   if (error) {

@@ -65,11 +65,16 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
       >
         {/* Contenu principal */}
         <div className="flex-1 min-w-0 space-y-2">
-          {/* Ligne 1 : Date + Statut */}
+          {/* Ligne 1 : Numéro + Date + Statut */}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-muted-foreground">
-              {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-mono font-semibold text-primary">
+                {trajet.numero_trajet}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
+              </span>
+            </div>
             {getStatutBadge(trajet.statut)}
           </div>
 
