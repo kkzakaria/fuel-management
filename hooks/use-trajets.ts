@@ -3,7 +3,7 @@
  * Utilise TanStack Query pour le cache et l'optimisation
  */
 
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 // ^ Exception nécessaire: Le pattern "enabled after mount" requiert setState dans useEffect
 // pour activer TanStack Query APRÈS le montage et éviter "state update before mount"
 
@@ -69,12 +69,15 @@ export function useTrajets(options?: UseTrajetsOptions) {
   }, [mode, currentPageTrajets, page]);
 
   // Reset accumulated data when filters change in infinite mode
+  // Utilise JSON.stringify pour détecter les vrais changements de filtres (contenu)
+  // au lieu de la référence d'objet qui change à chaque render
   useEffect(() => {
     if (mode === "infinite") {
       setAccumulatedTrajets([]);
       setPage(1);
     }
-  }, [filters, mode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(filters), mode]);
 
   const trajets = mode === "infinite" ? accumulatedTrajets : currentPageTrajets;
   const hasNextPage = page < totalPages;
