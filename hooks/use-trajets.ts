@@ -1,7 +1,7 @@
 /**
  * Hook pour gérer la liste des trajets avec filtres et pagination
  * Utilise TanStack Query pour le cache et l'optimisation
- * Version migré vers Nuqs pour la gestion des filtres via URL
+ * Migré vers Nuqs pour gestion automatique des filtres via URL
  */
 
 /* eslint-disable react-hooks/set-state-in-effect */

@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Icons**: Lucide React
 - **Package Manager**: pnpm (required)
 - **PWA**: @ducanh2912/next-pwa ✅ Configured
-- **State Management**: Zustand + Nuqs ✅ Installed
+- **State Management**: Zustand + Nuqs v2.7.2 ✅ Fully integrated (6 pages migrated)
 - **Server Actions**: Next Safe Action ✅ Installed
 - **Forms**: React Hook Form + Zod + @hookform/resolvers
 - **Charts**: Recharts
@@ -108,6 +108,20 @@ lib/
 │   ├── trajet.ts             # ✅ Trip validation schemas
 │   ├── chauffeur.ts          # ✅ Driver validation schemas
 │   └── vehicule.ts           # ✅ Vehicle validation schemas
+├── nuqs/                      # ✅ URL state management
+│   ├── serializers/          # Custom type validators
+│   │   ├── date.ts           # ISO 8601 date parsing
+│   │   ├── uuid.ts           # UUID v4 validation
+│   │   └── enum.ts           # Type-safe enum factory
+│   ├── parsers/              # Page-specific URL schemas
+│   │   ├── trajet.ts         # 9 trip parameters
+│   │   ├── rapport.ts        # 7 report parameters
+│   │   ├── vehicule.ts       # 5 vehicle parameters
+│   │   ├── chauffeur.ts      # 4 driver parameters
+│   │   ├── sous-traitant.ts  # 3 subcontractor parameters
+│   │   └── mission.ts        # 6 mission parameters
+│   ├── hooks.ts              # Reusable URL parameter hooks
+│   └── search-params.ts      # Centralized parser exports
 ├── utils/                     # ✅ Utilities
 │   ├── auth.ts               # Server-side auth utils
 │   └── auth-client.ts        # Client-side auth hooks
@@ -270,6 +284,92 @@ React hooks follow consistent patterns:
 - **Detail hooks**: Single entity with relations (e.g., `use-trajet.ts`)
 - **Stats hooks**: Aggregated statistics (e.g., `use-chauffeur-stats.ts`)
 - **Form data hooks**: Load dropdown data (e.g., `use-trajet-form-data.ts`)
+
+### URL State Management with Nuqs
+
+**Nuqs v2.7.2** is used for type-safe URL search parameter management:
+
+#### Infrastructure (`lib/nuqs/`)
+
+```typescript
+// Serializers: Custom validation for complex types
+lib/nuqs/serializers/
+├── date.ts      // ISO 8601 parsing with validation
+├── uuid.ts      // UUID v4 validation with regex
+└── enum.ts      // Type-safe enum factory
+
+// Parsers: Page-specific URL parameter definitions
+lib/nuqs/parsers/
+├── trajet.ts    // 9 parameters (chauffeurId, vehiculeId, etc.)
+├── rapport.ts   // 7 parameters (reportType, dateFrom, etc.)
+├── vehicule.ts  // 5 parameters (statut, type_carburant, etc.)
+└── chauffeur.ts // 4 parameters (statut, search, etc.)
+```
+
+#### Usage Pattern
+
+All list hooks use Nuqs for automatic URL persistence:
+
+```typescript
+import { useQueryStates } from "nuqs";
+import {
+  trajetSearchParams,
+  trajetSearchParamsToFilters,
+} from "@/lib/nuqs/parsers/trajet";
+
+export function useTrajets(options?: UseTrajetsOptions) {
+  // Read/write URL parameters with type safety
+  const [searchParams, setSearchParams] = useQueryStates(trajetSearchParams, {
+    history: "push",
+    shallow: true,
+  });
+
+  // Convert to API-compatible format (camelCase → snake_case)
+  const filters = useMemo(
+    () => trajetSearchParamsToFilters(searchParams),
+    [searchParams]
+  );
+
+  // Update filters (automatically updates URL)
+  const updateFilters = (newFilters: Partial<Filters>) => {
+    setSearchParams({ ...newFilters, page: 1 });
+  };
+
+  return { filters, updateFilters, ...rest };
+}
+```
+
+#### Key Features
+
+- **Bookmarkable URLs**: Filter state is preserved in URL
+- **Type Safety**: Full TypeScript validation for all parameters
+- **Validation**: Invalid values (malformed UUIDs, dates, enums) are automatically rejected
+- **Compatibility Layer**: camelCase (Nuqs) → snake_case (API) conversion
+- **Navigation**: Simplified routing - `router.push("/page")` preserves URL params automatically
+
+#### Required Setup
+
+**Critical**: `NuqsAdapter` must wrap the app in `app/layout.tsx`:
+
+```typescript
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <QueryProvider>
+          <NuqsAdapter>
+            {children}
+          </NuqsAdapter>
+        </QueryProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+**Testing**: See `docs/NUQS_MIGRATION_TESTS.md` for comprehensive test results
 
 ### Component Organization
 
