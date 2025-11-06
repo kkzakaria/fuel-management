@@ -24,6 +24,7 @@ import { TrajetAlertBadge } from "./trajet-alert-badge";
 // Type complet pour les détails d'un trajet avec toutes les relations
 interface TrajetDetails {
   id: string;
+  numero_trajet: string;
   date_trajet: string;
   km_debut: number;
   km_fin: number;
@@ -122,13 +123,18 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
       {/* En-tête */}
       <div className="flex items-start justify-between">
         <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Badge variant="outline" className="font-mono text-base px-3 py-1">
+              {trajet.numero_trajet}
+            </Badge>
+            {getStatutBadge(trajet.statut)}
+          </div>
           <h2 className="text-2xl font-bold">Détails du trajet</h2>
           <p className="text-muted-foreground">
             {format(new Date(trajet.date_trajet), "dd MMMM yyyy", { locale: fr })}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          {getStatutBadge(trajet.statut)}
           <TrajetAlertBadge trajet={trajet} />
         </div>
       </div>

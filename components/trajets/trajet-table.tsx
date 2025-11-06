@@ -31,6 +31,7 @@ import { TrajetDeleteDialog } from "./trajet-delete-dialog";
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
   id: string;
+  numero_trajet: string;
   date_trajet: string;
   km_debut: number;
   km_fin: number;
@@ -101,6 +102,7 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>N° Trajet</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Chauffeur</TableHead>
               <TableHead>Véhicule</TableHead>
@@ -114,7 +116,7 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
           <TableBody>
             {[...Array(5)].map((_, i) => (
               <TableRow key={i}>
-                <TableCell colSpan={8} className="h-16 text-center">
+                <TableCell colSpan={9} className="h-16 text-center">
                   <div className="animate-pulse">Chargement...</div>
                 </TableCell>
               </TableRow>
@@ -139,6 +141,7 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>N° Trajet</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Chauffeur</TableHead>
               <TableHead>Véhicule</TableHead>
@@ -152,6 +155,9 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
           <TableBody>
             {trajets.map((trajet) => (
               <TableRow key={trajet.id}>
+                <TableCell>
+                  <span className="font-mono text-sm font-medium">{trajet.numero_trajet}</span>
+                </TableCell>
                 <TableCell>
                   {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
                 </TableCell>

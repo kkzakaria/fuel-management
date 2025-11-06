@@ -344,6 +344,7 @@ export type Database = {
           litrage_station: number | null
           localite_arrivee_id: string
           localite_depart_id: string
+          numero_trajet: string
           observations: string | null
           parcours_total: number | null
           prix_litre: number | null
@@ -367,6 +368,7 @@ export type Database = {
           litrage_station?: number | null
           localite_arrivee_id: string
           localite_depart_id: string
+          numero_trajet: string
           observations?: string | null
           parcours_total?: number | null
           prix_litre?: number | null
@@ -390,6 +392,7 @@ export type Database = {
           litrage_station?: number | null
           localite_arrivee_id?: string
           localite_depart_id?: string
+          numero_trajet?: string
           observations?: string | null
           parcours_total?: number | null
           prix_litre?: number | null
@@ -500,26 +503,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_test_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      get_current_chauffeur_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_chauffeur: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_gestionnaire_or_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      create_test_profiles: { Args: never; Returns: undefined }
+      get_current_chauffeur_id: { Args: never; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
+      is_chauffeur: { Args: never; Returns: boolean }
+      is_gestionnaire_or_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       user_role: "admin" | "gestionnaire" | "chauffeur" | "personnel"

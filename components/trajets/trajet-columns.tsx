@@ -23,6 +23,7 @@ import { TrajetDeleteDialog } from "./trajet-delete-dialog"
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
   id: string
+  numero_trajet: string
   date_trajet: string
   km_debut: number
   km_fin: number
@@ -135,6 +136,17 @@ function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
  * Définitions des colonnes pour le DataTable des trajets
  */
 export const trajetColumns: ColumnDef<TrajetListItem>[] = [
+  {
+    accessorKey: "numero_trajet",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="N° Trajet" />
+    ),
+    cell: ({ row }) => {
+      const numero = row.getValue("numero_trajet") as string
+      return <div className="font-mono text-sm font-medium">{numero}</div>
+    },
+    size: 140,
+  },
   {
     accessorKey: "date_trajet",
     header: ({ column }) => (
