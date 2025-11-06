@@ -1,34 +1,47 @@
 /**
  * Hook pour gérer la liste des trajets avec filtres et pagination
  * Utilise TanStack Query pour le cache et l'optimisation
+ * Version migré vers Nuqs pour la gestion des filtres via URL
  */
 
 /* eslint-disable react-hooks/set-state-in-effect */
 // ^ Exception nécessaire: Les patterns suivants requièrent setState dans useEffect:
 // 1. "enabled after mount" pour activer TanStack Query APRÈS le montage
 // 2. Accumulation progressive des trajets en mode infinite scroll
-// 3. Reset conditionnel lors de vrais changements de filtres (pas au montage)
 
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryStates } from "nuqs";
 import { fetchTrajetsClient } from "@/lib/supabase/trajet-queries-client";
-import type { TrajetFilters } from "@/lib/validations/trajet";
+import {
+  trajetSearchParams,
+  trajetSearchParamsToFilters,
+} from "@/lib/nuqs/parsers/trajet";
 import type { TrajetListItem } from "@/components/trajets/trajet-table";
 
 interface UseTrajetsOptions {
-  initialFilters?: TrajetFilters;
   pageSize?: number;
   autoRefresh?: number; // ms between auto-refresh
   mode?: "paginated" | "infinite"; // Mode de pagination
 }
 
 export function useTrajets(options?: UseTrajetsOptions) {
-  const [filters, setFilters] = useState<TrajetFilters>(options?.initialFilters || {});
-  const [page, setPage] = useState(1);
+  // Utilise Nuqs pour gérer les filtres via URL
+  const [searchParams, setSearchParams] = useQueryStates(trajetSearchParams, {
+    history: "push",
+    shallow: true,
+  });
+
   const pageSize = options?.pageSize || 20;
   const mode = options?.mode || "paginated";
+
+  // Convertir les search params en filtres pour l'API
+  const filters = useMemo(
+    () => trajetSearchParamsToFilters(searchParams),
+    [searchParams]
+  );
 
   // Pour le mode infinite : accumuler les trajets
   const [accumulatedTrajets, setAccumulatedTrajets] = useState<TrajetListItem[]>([]);
@@ -37,8 +50,7 @@ export function useTrajets(options?: UseTrajetsOptions) {
   const [isMounted, setIsMounted] = useState(false);
 
   // Tracker les filtres précédents pour détecter les vrais changements
-  // Initialiser avec des filtres normalisés (sans valeurs vides)
-  const prevFiltersRef = useRef<string>("{}");
+  const prevFiltersRef = useRef<string>(JSON.stringify(filters));
 
   useEffect(() => {
     setIsMounted(true);
@@ -46,8 +58,9 @@ export function useTrajets(options?: UseTrajetsOptions) {
 
   // Utilise useQuery pour le cache automatique
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["trajets", filters, page, pageSize],
-    queryFn: () => fetchTrajetsClient({ filters, page, pageSize }),
+    queryKey: ["trajets", filters, searchParams.page, pageSize],
+    queryFn: () =>
+      fetchTrajetsClient({ filters, page: searchParams.page, pageSize }),
     enabled: isMounted, // N'active la query qu'après le montage
     refetchInterval: options?.autoRefresh,
     refetchIntervalInBackground: false, // Ne refetch que si la fenêtre est active
@@ -63,11 +76,11 @@ export function useTrajets(options?: UseTrajetsOptions) {
     if (mode === "infinite" && currentPageTrajets.length > 0) {
       setAccumulatedTrajets((prev) => {
         // Si c'est la page 1 ET qu'on n'a rien d'accumulé, initialiser
-        if (page === 1 && prev.length === 0) {
+        if (searchParams.page === 1 && prev.length === 0) {
           return currentPageTrajets;
         }
         // Si c'est la page 1 ET qu'on a déjà des données, merger intelligemment
-        if (page === 1) {
+        if (searchParams.page === 1) {
           const existingIds = new Set(prev.map((t) => t.id));
           const newTrajets = currentPageTrajets.filter((t) => !existingIds.has(t.id));
           // Si il y a de nouveaux trajets, les ajouter au début
@@ -79,85 +92,109 @@ export function useTrajets(options?: UseTrajetsOptions) {
         return [...prev, ...newTrajets];
       });
     }
-  }, [mode, currentPageTrajets, page]);
+  }, [mode, currentPageTrajets, searchParams.page]);
 
   // Reset accumulated data when filters change in infinite mode
-  // N'exécute le reset QUE si les filtres ont vraiment changé (pas au montage initial)
-  // Normalise les filtres en supprimant les valeurs vides/undefined pour éviter les faux positifs
+  // Nuqs gère automatiquement la normalisation des filtres vides
   useEffect(() => {
-    // Normaliser les filtres : supprimer les clés vides/undefined/null
-    const normalizeFilters = (f: TrajetFilters) => {
-      const normalized: Record<string, string | undefined> = {};
-      Object.entries(f).forEach(([key, value]) => {
-        if (value !== "" && value !== null && value !== undefined) {
-          normalized[key] = value;
-        }
-      });
-      return JSON.stringify(normalized);
-    };
+    const currentFilters = JSON.stringify(filters);
 
-    const currentFilters = normalizeFilters(filters);
-
-    if (mode === "infinite" && isMounted && currentFilters !== prevFiltersRef.current) {
+    if (
+      mode === "infinite" &&
+      isMounted &&
+      currentFilters !== prevFiltersRef.current
+    ) {
       setAccumulatedTrajets([]);
-      setPage(1);
+      setSearchParams({ page: 1 });
       prevFiltersRef.current = currentFilters;
     }
-  }, [filters, mode, isMounted]);
+  }, [filters, mode, isMounted, setSearchParams]);
 
   const trajets = mode === "infinite" ? accumulatedTrajets : currentPageTrajets;
-  const hasNextPage = page < totalPages;
+  const hasNextPage = searchParams.page < totalPages;
 
-  const updateFilters = (newFilters: Partial<TrajetFilters>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-    setPage(1); // Reset to first page when filters change
+  // Fonction helper pour mettre à jour les filtres via Nuqs
+  const updateFilters = (newFilters: {
+    chauffeurId?: string | null;
+    vehiculeId?: string | null;
+    localiteArriveeId?: string | null;
+    dateDebut?: string | null;
+    dateFin?: string | null;
+    statut?: "en_cours" | "termine" | "annule" | null;
+    search?: string;
+  }) => {
+    setSearchParams({ ...newFilters, page: 1 });
   };
 
   const clearFilters = () => {
-    setFilters({});
-    setPage(1);
+    setSearchParams({
+      chauffeurId: null,
+      vehiculeId: null,
+      localiteArriveeId: null,
+      dateDebut: null,
+      dateFin: null,
+      statut: null,
+      search: "",
+      page: 1,
+    });
   };
 
   const nextPage = () => {
-    if (page < totalPages) {
-      setPage(page + 1);
+    if (searchParams.page < totalPages) {
+      setSearchParams({ page: searchParams.page + 1 });
     }
   };
 
   const previousPage = () => {
-    if (page > 1) {
-      setPage(page - 1);
+    if (searchParams.page > 1) {
+      setSearchParams({ page: searchParams.page - 1 });
     }
   };
 
   const goToPage = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setPage(pageNumber);
+      setSearchParams({ page: pageNumber });
     }
   };
 
   const refresh = async () => {
     if (mode === "infinite") {
       setAccumulatedTrajets([]);
-      setPage(1);
+      setSearchParams({ page: 1 });
     }
     await refetch();
   };
 
   const loadMore = () => {
     if (hasNextPage && !isLoading) {
-      setPage((prev) => prev + 1);
+      setSearchParams({ page: searchParams.page + 1 });
     }
   };
+
+  // Créer un objet filters compatible avec l'ancienne API (snake_case)
+  // pour éviter de casser les composants existants
+  const compatibleFilters = useMemo(
+    () => ({
+      chauffeur_id: searchParams.chauffeurId ?? undefined,
+      vehicule_id: searchParams.vehiculeId ?? undefined,
+      localite_arrivee_id: searchParams.localiteArriveeId ?? undefined,
+      date_debut: searchParams.dateDebut ?? undefined,
+      date_fin: searchParams.dateFin ?? undefined,
+      statut: searchParams.statut ?? undefined,
+      search: searchParams.search || undefined,
+    }),
+    [searchParams]
+  );
 
   return {
     trajets,
     loading: isLoading,
     error: error as Error | null,
-    filters,
+    // Expose filters en format snake_case pour compatibilité
+    filters: compatibleFilters,
     updateFilters,
     clearFilters,
-    page,
+    page: searchParams.page,
     totalPages,
     count,
     pageSize,
