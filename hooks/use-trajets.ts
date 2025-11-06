@@ -3,13 +3,15 @@
  * Utilise TanStack Query pour le cache et l'optimisation
  */
 
- 
-// ^ Exception nécessaire: Le pattern "enabled after mount" requiert setState dans useEffect
-// pour activer TanStack Query APRÈS le montage et éviter "state update before mount"
+/* eslint-disable react-hooks/set-state-in-effect */
+// ^ Exception nécessaire: Les patterns suivants requièrent setState dans useEffect:
+// 1. "enabled after mount" pour activer TanStack Query APRÈS le montage
+// 2. Accumulation progressive des trajets en mode infinite scroll
+// 3. Reset conditionnel lors de vrais changements de filtres (pas au montage)
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTrajetsClient } from "@/lib/supabase/trajet-queries-client";
 import type { TrajetFilters } from "@/lib/validations/trajet";
@@ -34,6 +36,10 @@ export function useTrajets(options?: UseTrajetsOptions) {
   // Attendre le montage avant d'activer la query
   const [isMounted, setIsMounted] = useState(false);
 
+  // Tracker les filtres précédents pour détecter les vrais changements
+  // Initialiser avec des filtres normalisés (sans valeurs vides)
+  const prevFiltersRef = useRef<string>("{}");
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -56,11 +62,18 @@ export function useTrajets(options?: UseTrajetsOptions) {
   useEffect(() => {
     if (mode === "infinite" && currentPageTrajets.length > 0) {
       setAccumulatedTrajets((prev) => {
-        // Si c'est la page 1, remplacer (cas de changement de filtres)
-        if (page === 1) {
+        // Si c'est la page 1 ET qu'on n'a rien d'accumulé, initialiser
+        if (page === 1 && prev.length === 0) {
           return currentPageTrajets;
         }
-        // Sinon, accumuler en évitant les doublons
+        // Si c'est la page 1 ET qu'on a déjà des données, merger intelligemment
+        if (page === 1) {
+          const existingIds = new Set(prev.map((t) => t.id));
+          const newTrajets = currentPageTrajets.filter((t) => !existingIds.has(t.id));
+          // Si il y a de nouveaux trajets, les ajouter au début
+          return newTrajets.length > 0 ? [...newTrajets, ...prev] : prev;
+        }
+        // Page > 1 : accumuler normalement
         const existingIds = new Set(prev.map((t) => t.id));
         const newTrajets = currentPageTrajets.filter((t) => !existingIds.has(t.id));
         return [...prev, ...newTrajets];
@@ -69,15 +82,28 @@ export function useTrajets(options?: UseTrajetsOptions) {
   }, [mode, currentPageTrajets, page]);
 
   // Reset accumulated data when filters change in infinite mode
-  // Utilise JSON.stringify pour détecter les vrais changements de filtres (contenu)
-  // au lieu de la référence d'objet qui change à chaque render
+  // N'exécute le reset QUE si les filtres ont vraiment changé (pas au montage initial)
+  // Normalise les filtres en supprimant les valeurs vides/undefined pour éviter les faux positifs
   useEffect(() => {
-    if (mode === "infinite") {
+    // Normaliser les filtres : supprimer les clés vides/undefined/null
+    const normalizeFilters = (f: TrajetFilters) => {
+      const normalized: Record<string, string | undefined> = {};
+      Object.entries(f).forEach(([key, value]) => {
+        if (value !== "" && value !== null && value !== undefined) {
+          normalized[key] = value;
+        }
+      });
+      return JSON.stringify(normalized);
+    };
+
+    const currentFilters = normalizeFilters(filters);
+
+    if (mode === "infinite" && isMounted && currentFilters !== prevFiltersRef.current) {
       setAccumulatedTrajets([]);
       setPage(1);
+      prevFiltersRef.current = currentFilters;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filters), mode]);
+  }, [filters, mode, isMounted]);
 
   const trajets = mode === "infinite" ? accumulatedTrajets : currentPageTrajets;
   const hasNextPage = page < totalPages;
