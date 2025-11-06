@@ -55,7 +55,15 @@
       "mcp__playwright__browser_resize",
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_close",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_navigate_back",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(timeout 30 pnpm dev:*)",
+      "Bash(timeout 20 pnpm dev:*)",
+      "Bash(git restore:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
