@@ -294,6 +294,7 @@ export function TrajetFiltersDropdown({
                     placeholder="Tous les chauffeurs"
                     searchPlaceholder="Rechercher un chauffeur..."
                     emptyMessage="Aucun chauffeur trouvé."
+                    defaultOpen={true}
                   />
                 </div>
               </DropdownMenuSubContent>
@@ -327,6 +328,7 @@ export function TrajetFiltersDropdown({
                     placeholder="Tous les véhicules"
                     searchPlaceholder="Rechercher un véhicule..."
                     emptyMessage="Aucun véhicule trouvé."
+                    defaultOpen={true}
                   />
                 </div>
               </DropdownMenuSubContent>
@@ -362,6 +364,7 @@ export function TrajetFiltersDropdown({
                     placeholder="Toutes les destinations"
                     searchPlaceholder="Rechercher une destination..."
                     emptyMessage="Aucune destination trouvée."
+                    defaultOpen={true}
                   />
                 </div>
               </DropdownMenuSubContent>

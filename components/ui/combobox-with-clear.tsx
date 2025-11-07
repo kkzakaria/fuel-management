@@ -47,6 +47,8 @@ interface ComboboxWithClearProps {
   className?: string;
   /** Afficher le bouton clear */
   showClear?: boolean;
+  /** Ouvrir automatiquement au montage */
+  defaultOpen?: boolean;
 }
 
 export function ComboboxWithClear({
@@ -59,8 +61,16 @@ export function ComboboxWithClear({
   disabled = false,
   className,
   showClear = true,
+  defaultOpen = false,
 }: ComboboxWithClearProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(defaultOpen);
+
+  // Ouvrir automatiquement au montage si defaultOpen est true
+  React.useEffect(() => {
+    if (defaultOpen) {
+      setOpen(true);
+    }
+  }, [defaultOpen]);
 
   const selectedOption = options.find((option) => option.value === value);
   const hasValue = value && value !== "all";
