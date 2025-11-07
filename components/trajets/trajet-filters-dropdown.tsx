@@ -299,7 +299,7 @@ export function TrajetFiltersDropdown({
                             value={`${c.prenom} ${c.nom}`}
                             onSelect={() => {
                               onFiltersChange({
-                                chauffeurId: isSelected ? undefined : c.id
+                                chauffeurId: isSelected ? null : c.id
                               });
                             }}
                           >
@@ -344,7 +344,7 @@ export function TrajetFiltersDropdown({
                             value={`${v.immatriculation}${v.marque ? ` ${v.marque}` : ""}`}
                             onSelect={() => {
                               onFiltersChange({
-                                vehiculeId: isSelected ? undefined : v.id
+                                vehiculeId: isSelected ? null : v.id
                               });
                             }}
                           >
@@ -389,7 +389,7 @@ export function TrajetFiltersDropdown({
                             value={`${l.nom}${l.region ? ` ${l.region}` : ""}`}
                             onSelect={() => {
                               onFiltersChange({
-                                localiteArriveeId: isSelected ? undefined : l.id
+                                localiteArriveeId: isSelected ? null : l.id
                               });
                             }}
                           >
@@ -425,7 +425,7 @@ export function TrajetFiltersDropdown({
                   value={filters.statut || "all"}
                   onValueChange={(value) =>
                     onFiltersChange({
-                      statut: value === "all" ? undefined : (value as "en_cours" | "termine" | "annule"),
+                      statut: value === "all" ? null : (value as "en_cours" | "termine" | "annule"),
                     })
                   }
                 >
