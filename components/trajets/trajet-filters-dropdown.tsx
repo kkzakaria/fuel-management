@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
 // Type pour les mises à jour de filtres (format camelCase de Nuqs)
@@ -230,23 +231,25 @@ export function TrajetFiltersDropdown({
               <span>Chauffeur</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.chauffeur_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({ chauffeurId: value === "all" ? undefined : value })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Tous les chauffeurs
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {chauffeurs.map((chauffeur) => (
-                    <DropdownMenuRadioItem key={chauffeur.id} value={chauffeur.id}>
-                      {chauffeur.prenom} {chauffeur.nom}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Combobox
+                    options={[
+                      { value: "all", label: "Tous les chauffeurs" },
+                      ...chauffeurs.map((c) => ({
+                        value: c.id,
+                        label: `${c.prenom} ${c.nom}`,
+                      })),
+                    ]}
+                    value={filters.chauffeur_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({ chauffeurId: value === "all" ? undefined : value })
+                    }
+                    placeholder="Tous les chauffeurs"
+                    searchPlaceholder="Rechercher un chauffeur..."
+                    emptyMessage="Aucun chauffeur trouvé."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -258,28 +261,25 @@ export function TrajetFiltersDropdown({
               <span>Véhicule</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.vehicule_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({ vehiculeId: value === "all" ? undefined : value })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Tous les véhicules
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {vehicules.map((vehicule) => (
-                    <DropdownMenuRadioItem key={vehicule.id} value={vehicule.id}>
-                      {vehicule.immatriculation}
-                      {vehicule.marque && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({vehicule.marque})
-                        </span>
-                      )}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Combobox
+                    options={[
+                      { value: "all", label: "Tous les véhicules" },
+                      ...vehicules.map((v) => ({
+                        value: v.id,
+                        label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
+                      })),
+                    ]}
+                    value={filters.vehicule_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({ vehiculeId: value === "all" ? undefined : value })
+                    }
+                    placeholder="Tous les véhicules"
+                    searchPlaceholder="Rechercher un véhicule..."
+                    emptyMessage="Aucun véhicule trouvé."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -291,30 +291,27 @@ export function TrajetFiltersDropdown({
               <span>Destination</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.localite_arrivee_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({
-                      localiteArriveeId: value === "all" ? undefined : value,
-                    })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Toutes les destinations
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {localites.map((localite) => (
-                    <DropdownMenuRadioItem key={localite.id} value={localite.id}>
-                      {localite.nom}
-                      {localite.region && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({localite.region})
-                        </span>
-                      )}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Combobox
+                    options={[
+                      { value: "all", label: "Toutes les destinations" },
+                      ...localites.map((l) => ({
+                        value: l.id,
+                        label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+                      })),
+                    ]}
+                    value={filters.localite_arrivee_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({
+                        localiteArriveeId: value === "all" ? undefined : value,
+                      })
+                    }
+                    placeholder="Toutes les destinations"
+                    searchPlaceholder="Rechercher une destination..."
+                    emptyMessage="Aucune destination trouvée."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
