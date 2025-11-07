@@ -32,9 +32,20 @@ import {
 } from "@/components/ui/select";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
+// Type pour les mises à jour de filtres (format camelCase de Nuqs)
+type FilterUpdate = {
+  chauffeurId?: string | null;
+  vehiculeId?: string | null;
+  localiteArriveeId?: string | null;
+  dateDebut?: string | null;
+  dateFin?: string | null;
+  statut?: "en_cours" | "termine" | "annule" | null;
+  search?: string;
+};
+
 interface TrajetFiltersDropdownProps {
   filters: TrajetFilters;
-  onFiltersChange: (filters: Partial<TrajetFilters>) => void;
+  onFiltersChange: (filters: Partial<FilterUpdate>) => void;
   onClearFilters: () => void;
   chauffeurs?: Array<{ id: string; nom: string; prenom: string }>;
   vehicules?: Array<{ id: string; immatriculation: string; marque?: string | null }>;
@@ -54,11 +65,11 @@ export function TrajetFiltersDropdown({
   triggerLabel = "Filtrer",
 }: TrajetFiltersDropdownProps) {
   const handleDateDebutChange = (date: Date | undefined) => {
-    onFiltersChange({ date_debut: date?.toISOString() });
+    onFiltersChange({ dateDebut: date?.toISOString() });
   };
 
   const handleDateFinChange = (date: Date | undefined) => {
-    onFiltersChange({ date_fin: date?.toISOString() });
+    onFiltersChange({ dateFin: date?.toISOString() });
   };
 
   const handleCalendarChange = (
@@ -94,8 +105,8 @@ export function TrajetFiltersDropdown({
               <span>Période</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-0">
-                <div className="flex flex-col gap-3 p-3">
+              <DropdownMenuSubContent className="p-0" onInteractOutside={(e) => e.preventDefault()}>
+                <div className="flex flex-col gap-3 p-3" onClick={(e) => e.stopPropagation()}>
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Date début</p>
                     <Calendar
@@ -223,7 +234,7 @@ export function TrajetFiltersDropdown({
                 <DropdownMenuRadioGroup
                   value={filters.chauffeur_id || "all"}
                   onValueChange={(value) =>
-                    onFiltersChange({ chauffeur_id: value === "all" ? undefined : value })
+                    onFiltersChange({ chauffeurId: value === "all" ? undefined : value })
                   }
                 >
                   <DropdownMenuRadioItem value="all">
@@ -251,7 +262,7 @@ export function TrajetFiltersDropdown({
                 <DropdownMenuRadioGroup
                   value={filters.vehicule_id || "all"}
                   onValueChange={(value) =>
-                    onFiltersChange({ vehicule_id: value === "all" ? undefined : value })
+                    onFiltersChange({ vehiculeId: value === "all" ? undefined : value })
                   }
                 >
                   <DropdownMenuRadioItem value="all">
@@ -285,7 +296,7 @@ export function TrajetFiltersDropdown({
                   value={filters.localite_arrivee_id || "all"}
                   onValueChange={(value) =>
                     onFiltersChange({
-                      localite_arrivee_id: value === "all" ? undefined : value,
+                      localiteArriveeId: value === "all" ? undefined : value,
                     })
                   }
                 >
