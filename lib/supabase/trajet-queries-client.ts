@@ -39,7 +39,7 @@ export async function fetchTrajetsClient(options?: {
 
   // Appliquer les filtres
   if (options?.filters) {
-    const { chauffeur_id, vehicule_id, localite_arrivee_id, date_debut, date_fin, statut } =
+    const { chauffeur_id, vehicule_id, localite_arrivee_id, date_debut, date_fin, statut, search } =
       options.filters;
 
     if (chauffeur_id) {
@@ -59,6 +59,10 @@ export async function fetchTrajetsClient(options?: {
     }
     if (statut) {
       query = query.eq("statut", statut);
+    }
+    // Recherche par numéro de trajet (case insensitive, partiel)
+    if (search) {
+      query = query.ilike("numero_trajet", `%${search}%`);
     }
   }
 

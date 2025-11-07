@@ -158,6 +158,7 @@ export interface DestinationCost {
  */
 export interface ReportTrip {
   id: string;
+  numero_trajet: string;
   date: Date;
   chauffeur: string;
   vehicule: string;

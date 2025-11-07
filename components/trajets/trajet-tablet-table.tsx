@@ -60,6 +60,7 @@ export function TrajetTabletTable({ trajets, loading }: TrajetTabletTableProps) 
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>N° Trajet</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Chauffeur</TableHead>
               <TableHead>Véhicule</TableHead>
@@ -70,7 +71,7 @@ export function TrajetTabletTable({ trajets, loading }: TrajetTabletTableProps) 
           <TableBody>
             {[...Array(5)].map((_, i) => (
               <TableRow key={i}>
-                <TableCell colSpan={5} className="h-16">
+                <TableCell colSpan={6} className="h-16">
                   <Skeleton className="h-4 w-full" />
                 </TableCell>
               </TableRow>
@@ -94,6 +95,7 @@ export function TrajetTabletTable({ trajets, loading }: TrajetTabletTableProps) 
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>N° Trajet</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Chauffeur</TableHead>
             <TableHead>Véhicule</TableHead>
@@ -108,6 +110,9 @@ export function TrajetTabletTable({ trajets, loading }: TrajetTabletTableProps) 
               onClick={() => handleRowClick(trajet.id)}
               className="cursor-pointer hover:bg-muted/50 transition-colors"
             >
+              <TableCell>
+                <span className="font-mono text-sm font-medium">{trajet.numero_trajet}</span>
+              </TableCell>
               <TableCell>
                 {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
               </TableCell>

@@ -664,6 +664,7 @@ export async function getReportTrips(
     .select(
       `
       id,
+      numero_trajet,
       date_trajet,
       parcours_total,
       litrage_station,
@@ -721,6 +722,7 @@ export async function getReportTrips(
 
       return {
         id: trip.id,
+        numero_trajet: trip.numero_trajet,
         date: new Date(trip.date_trajet),
         chauffeur: `${chauffeur?.prenom || ""} ${chauffeur?.nom || ""}`.trim(),
         vehicule: vehicule?.immatriculation || "",

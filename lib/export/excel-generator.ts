@@ -237,6 +237,7 @@ function generateMonthlyExcel(
       ["DÉTAILS DES TRAJETS"],
       [""],
       [
+        "N° Trajet",
         "Date",
         "Chauffeur",
         "Véhicule",
@@ -255,6 +256,7 @@ function generateMonthlyExcel(
 
     report.detailedTrips.forEach((trip) => {
       tripsData.push([
+        trip.numero_trajet,
         format(trip.date, "d MMM yyyy", { locale: fr }),
         trip.chauffeur,
         trip.vehicule,
@@ -274,19 +276,20 @@ function generateMonthlyExcel(
     const wsTrips = XLSX.utils.aoa_to_sheet(tripsData);
 
     wsTrips["!cols"] = [
-      { wch: 12 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 8 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 20 },
-      { wch: 18 },
-      { wch: 18 },
-      { wch: 12 },
-      { wch: 30 },
+      { wch: 15 }, // N° Trajet
+      { wch: 12 }, // Date
+      { wch: 20 }, // Chauffeur
+      { wch: 15 }, // Véhicule
+      { wch: 15 }, // Départ
+      { wch: 15 }, // Destination
+      { wch: 8 },  // Km
+      { wch: 12 }, // Conteneurs
+      { wch: 12 }, // Carburant
+      { wch: 20 }, // Consommation
+      { wch: 18 }, // Coût Carburant
+      { wch: 18 }, // Coût Total
+      { wch: 12 }, // Statut
+      { wch: 30 }, // Alertes
     ];
 
     XLSX.utils.book_append_sheet(workbook, wsTrips, "Détails Trajets");
