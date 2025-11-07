@@ -6,6 +6,7 @@
 "use client";
 
 import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2 } from "lucide-react";
+import type { DropdownNavProps, DropdownProps } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,6 +23,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
 interface TrajetFiltersDropdownProps {
@@ -53,6 +61,18 @@ export function TrajetFiltersDropdown({
     onFiltersChange({ date_fin: date?.toISOString() });
   };
 
+  const handleCalendarChange = (
+    _value: string | number,
+    _e: React.ChangeEventHandler<HTMLSelectElement>
+  ) => {
+    const _event = {
+      target: {
+        value: String(_value),
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    _e(_event);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -75,14 +95,58 @@ export function TrajetFiltersDropdown({
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="p-0">
-                <div className="flex flex-col gap-2 p-3">
+                <div className="flex flex-col gap-3 p-3">
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Date début</p>
                     <Calendar
                       mode="single"
                       selected={filters.date_debut ? new Date(filters.date_debut) : undefined}
                       onSelect={handleDateDebutChange}
-                      initialFocus
+                      className="rounded-md border p-2"
+                      classNames={{
+                        month_caption: "mx-0",
+                      }}
+                      captionLayout="dropdown"
+                      defaultMonth={filters.date_debut ? new Date(filters.date_debut) : new Date()}
+                      startMonth={new Date(2020, 0)}
+                      endMonth={new Date(2030, 11)}
+                      hideNavigation
+                      components={{
+                        DropdownNav: (props: DropdownNavProps) => {
+                          return (
+                            <div className="flex w-full items-center gap-2">
+                              {props.children}
+                            </div>
+                          );
+                        },
+                        Dropdown: (props: DropdownProps) => {
+                          return (
+                            <Select
+                              value={String(props.value)}
+                              onValueChange={(value) => {
+                                if (props.onChange) {
+                                  handleCalendarChange(value, props.onChange);
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-fit font-medium first:grow">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
+                                {props.options?.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={String(option.value)}
+                                    disabled={option.disabled}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        },
+                      }}
                     />
                   </div>
                   {filters.date_debut && (
@@ -94,7 +158,51 @@ export function TrajetFiltersDropdown({
                           mode="single"
                           selected={filters.date_fin ? new Date(filters.date_fin) : undefined}
                           onSelect={handleDateFinChange}
-                          initialFocus
+                          className="rounded-md border p-2"
+                          classNames={{
+                            month_caption: "mx-0",
+                          }}
+                          captionLayout="dropdown"
+                          defaultMonth={filters.date_fin ? new Date(filters.date_fin) : new Date()}
+                          startMonth={new Date(2020, 0)}
+                          endMonth={new Date(2030, 11)}
+                          hideNavigation
+                          components={{
+                            DropdownNav: (props: DropdownNavProps) => {
+                              return (
+                                <div className="flex w-full items-center gap-2">
+                                  {props.children}
+                                </div>
+                              );
+                            },
+                            Dropdown: (props: DropdownProps) => {
+                              return (
+                                <Select
+                                  value={String(props.value)}
+                                  onValueChange={(value) => {
+                                    if (props.onChange) {
+                                      handleCalendarChange(value, props.onChange);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="h-8 w-fit font-medium first:grow">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
+                                    {props.options?.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={String(option.value)}
+                                        disabled={option.disabled}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              );
+                            },
+                          }}
                         />
                       </div>
                     </>
