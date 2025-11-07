@@ -36,6 +36,8 @@ interface TrajetFiltersProps {
   localites?: Array<{ id: string; nom: string; region?: string | null }>;
   /** Masquer le bouton de réinitialisation interne (utilisé dans les drawers) */
   hideClearButton?: boolean;
+  /** Afficher les filtres en colonne unique (pour les drawers) */
+  singleColumn?: boolean;
 }
 
 export function TrajetFilters({
@@ -46,6 +48,7 @@ export function TrajetFilters({
   vehicules = [],
   localites = [],
   hideClearButton = false,
+  singleColumn = false,
 }: TrajetFiltersProps) {
   const [dateDebut, setDateDebut] = useState<Date | undefined>(
     filters.date_debut ? new Date(filters.date_debut) : undefined
@@ -73,26 +76,28 @@ export function TrajetFilters({
     filters.statut;
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Filtres</h3>
-        {!hideClearButton && hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onClearFilters();
-              setDateDebut(undefined);
-              setDateFin(undefined);
-            }}
-          >
-            <X className="mr-2 h-4 w-4" />
-            Réinitialiser
-          </Button>
-        )}
-      </div>
+    <div className={singleColumn ? "space-y-4" : "space-y-4 rounded-lg border p-4"}>
+      {!singleColumn && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium">Filtres</h3>
+          {!hideClearButton && hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onClearFilters();
+                setDateDebut(undefined);
+                setDateFin(undefined);
+              }}
+            >
+              <X className="mr-2 h-4 w-4" />
+              Réinitialiser
+            </Button>
+          )}
+        </div>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className={singleColumn ? "space-y-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"}>
         {/* Date début */}
         <div className="space-y-2">
           <Label htmlFor="date-debut">Date début</Label>

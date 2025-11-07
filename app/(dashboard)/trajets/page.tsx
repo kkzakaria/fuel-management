@@ -8,7 +8,7 @@
 
 "use client"
 
-import { useCallback, startTransition, useMemo } from "react"
+import { useCallback, startTransition, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, Filter, X } from "lucide-react"
@@ -39,6 +39,7 @@ import type { TrajetListItem } from "@/components/trajets/trajet-table"
 
 export default function TrajetsPage() {
   const router = useRouter()
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Hook pour mobile (infinite scroll)
   const mobileData = useTrajets({
@@ -221,7 +222,7 @@ export default function TrajetsPage() {
           </div>
 
           {/* Drawer de filtres (desktop) */}
-          <Sheet>
+          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" className="relative">
                 <Filter className="mr-2 h-4 w-4" />
@@ -236,14 +237,14 @@ export default function TrajetsPage() {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+            <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col">
               <SheetHeader>
                 <SheetTitle>Filtres des trajets</SheetTitle>
                 <SheetDescription>
                   Filtrer par date, chauffeur, véhicule, destination ou statut
                 </SheetDescription>
               </SheetHeader>
-              <div className="py-6">
+              <div className="flex-1 overflow-y-auto py-6">
                 <TrajetFilters
                   filters={desktopData.filters}
                   onFiltersChange={desktopData.updateFilters}
@@ -252,20 +253,29 @@ export default function TrajetsPage() {
                   vehicules={vehicules}
                   localites={localites}
                   hideClearButton={true}
+                  singleColumn={true}
                 />
               </div>
-              {activeFiltersCount > 0 && (
-                <div className="border-t pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={desktopData.clearFilters}
-                    className="w-full"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Réinitialiser les filtres
-                  </Button>
-                </div>
-              )}
+              <div className="border-t pt-4 flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    desktopData.clearFilters()
+                  }}
+                  className="flex-1"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsFilterOpen(false)
+                  }}
+                  className="flex-1"
+                >
+                  Appliquer
+                </Button>
+              </div>
             </SheetContent>
           </Sheet>
 
