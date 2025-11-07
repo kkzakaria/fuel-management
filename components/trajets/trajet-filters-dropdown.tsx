@@ -6,7 +6,8 @@
 "use client";
 
 import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2 } from "lucide-react";
-import type { DropdownNavProps, DropdownProps } from "react-day-picker";
+import { startOfMonth, endOfMonth, subDays, startOfDay, endOfDay } from "date-fns";
+import type { DateRange, DropdownNavProps, DropdownProps } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -30,11 +31,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ComboboxWithClear } from "@/components/ui/combobox-with-clear";
 import type { TrajetFilters } from "@/lib/validations/trajet";
+
+// Type pour les mises à jour de filtres (format camelCase de Nuqs)
+type FilterUpdate = {
+  chauffeurId?: string | null;
+  vehiculeId?: string | null;
+  localiteArriveeId?: string | null;
+  dateDebut?: string | null;
+  dateFin?: string | null;
+  statut?: "en_cours" | "termine" | "annule" | null;
+  search?: string;
+};
 
 interface TrajetFiltersDropdownProps {
   filters: TrajetFilters;
-  onFiltersChange: (filters: Partial<TrajetFilters>) => void;
+  onFiltersChange: (filters: Partial<FilterUpdate>) => void;
   onClearFilters: () => void;
   chauffeurs?: Array<{ id: string; nom: string; prenom: string }>;
   vehicules?: Array<{ id: string; immatriculation: string; marque?: string | null }>;
@@ -53,14 +66,46 @@ export function TrajetFiltersDropdown({
   activeFiltersCount = 0,
   triggerLabel = "Filtrer",
 }: TrajetFiltersDropdownProps) {
-  const handleDateDebutChange = (date: Date | undefined) => {
-    onFiltersChange({ date_debut: date?.toISOString() });
+  // Convertir les filtres en DateRange pour le calendrier
+  const dateRange: DateRange | undefined = filters.date_debut || filters.date_fin
+    ? {
+        from: filters.date_debut ? new Date(filters.date_debut) : undefined,
+        to: filters.date_fin ? new Date(filters.date_fin) : undefined,
+      }
+    : undefined;
+
+  // Gérer les changements de plage de dates
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    if (!range) {
+      onFiltersChange({ dateDebut: null, dateFin: null });
+      return;
+    }
+
+    onFiltersChange({
+      dateDebut: range.from?.toISOString() ?? null,
+      dateFin: range.to?.toISOString() ?? null,
+    });
   };
 
-  const handleDateFinChange = (date: Date | undefined) => {
-    onFiltersChange({ date_fin: date?.toISOString() });
+  // Préréglages de dates
+  const today = new Date();
+  const datePresets = {
+    today: { from: startOfDay(today), to: endOfDay(today) },
+    last7days: { from: startOfDay(subDays(today, 6)), to: endOfDay(today) },
+    last30days: { from: startOfDay(subDays(today, 29)), to: endOfDay(today) },
+    thisMonth: { from: startOfMonth(today), to: endOfMonth(today) },
+    lastMonth: {
+      from: startOfMonth(subDays(startOfMonth(today), 1)),
+      to: endOfMonth(subDays(startOfMonth(today), 1)),
+    },
   };
 
+  const handleDatePreset = (preset: keyof typeof datePresets) => {
+    const range = datePresets[preset];
+    handleDateRangeChange(range);
+  };
+
+  // Helper pour gérer les changements de dropdown du calendrier
   const handleCalendarChange = (
     _value: string | number,
     _e: React.ChangeEventHandler<HTMLSelectElement>
@@ -72,6 +117,13 @@ export function TrajetFiltersDropdown({
     } as React.ChangeEvent<HTMLSelectElement>;
     _e(_event);
   };
+
+  // Vérifier si des filtres sont actifs
+  const hasDateFilter = filters.date_debut || filters.date_fin;
+  const hasChauffeurFilter = filters.chauffeur_id;
+  const hasVehiculeFilter = filters.vehicule_id;
+  const hasDestinationFilter = filters.localite_arrivee_id;
+  const hasStatutFilter = filters.statut;
 
   return (
     <DropdownMenu>
@@ -92,121 +144,124 @@ export function TrajetFiltersDropdown({
             <DropdownMenuSubTrigger>
               <CalendarIcon size={16} className="opacity-60" aria-hidden="true" />
               <span>Période</span>
+              {hasDateFilter && (
+                <span className="ml-auto flex h-2 w-2 rounded-full bg-primary" />
+              )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-0">
-                <div className="flex flex-col gap-3 p-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Date début</p>
-                    <Calendar
-                      mode="single"
-                      selected={filters.date_debut ? new Date(filters.date_debut) : undefined}
-                      onSelect={handleDateDebutChange}
-                      className="rounded-md border p-2"
-                      classNames={{
-                        month_caption: "mx-0",
-                      }}
-                      captionLayout="dropdown"
-                      defaultMonth={filters.date_debut ? new Date(filters.date_debut) : new Date()}
-                      startMonth={new Date(2020, 0)}
-                      endMonth={new Date(2030, 11)}
-                      hideNavigation
-                      components={{
-                        DropdownNav: (props: DropdownNavProps) => {
-                          return (
-                            <div className="flex w-full items-center gap-2">
-                              {props.children}
-                            </div>
-                          );
-                        },
-                        Dropdown: (props: DropdownProps) => {
-                          return (
-                            <Select
-                              value={String(props.value)}
-                              onValueChange={(value) => {
-                                if (props.onChange) {
-                                  handleCalendarChange(value, props.onChange);
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="h-8 w-fit font-medium first:grow">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
-                                {props.options?.map((option) => (
-                                  <SelectItem
-                                    key={option.value}
-                                    value={String(option.value)}
-                                    disabled={option.disabled}
-                                  >
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          );
-                        },
-                      }}
-                    />
+              <DropdownMenuSubContent className="p-0 w-auto" onInteractOutside={(e) => e.preventDefault()}>
+                <div className="flex" onClick={(e) => e.stopPropagation()}>
+                  {/* Colonne des préréglages */}
+                  <div className="border-r py-3 w-36">
+                    <div className="flex flex-col px-2 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start h-8 text-xs"
+                        onClick={() => handleDatePreset("today")}
+                      >
+                        Aujourd&apos;hui
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start h-8 text-xs"
+                        onClick={() => handleDatePreset("last7days")}
+                      >
+                        7 derniers jours
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start h-8 text-xs"
+                        onClick={() => handleDatePreset("last30days")}
+                      >
+                        30 derniers jours
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start h-8 text-xs"
+                        onClick={() => handleDatePreset("thisMonth")}
+                      >
+                        Ce mois
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start h-8 text-xs"
+                        onClick={() => handleDatePreset("lastMonth")}
+                      >
+                        Mois dernier
+                      </Button>
+                      {hasDateFilter && (
+                        <>
+                          <DropdownMenuSeparator className="my-1" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start h-8 text-xs text-muted-foreground"
+                            onClick={() => handleDateRangeChange(undefined)}
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Effacer
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  {filters.date_debut && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">Date fin</p>
-                        <Calendar
-                          mode="single"
-                          selected={filters.date_fin ? new Date(filters.date_fin) : undefined}
-                          onSelect={handleDateFinChange}
-                          className="rounded-md border p-2"
-                          classNames={{
-                            month_caption: "mx-0",
-                          }}
-                          captionLayout="dropdown"
-                          defaultMonth={filters.date_fin ? new Date(filters.date_fin) : new Date()}
-                          startMonth={new Date(2020, 0)}
-                          endMonth={new Date(2030, 11)}
-                          hideNavigation
-                          components={{
-                            DropdownNav: (props: DropdownNavProps) => {
-                              return (
-                                <div className="flex w-full items-center gap-2">
-                                  {props.children}
-                                </div>
-                              );
-                            },
-                            Dropdown: (props: DropdownProps) => {
-                              return (
-                                <Select
-                                  value={String(props.value)}
-                                  onValueChange={(value) => {
-                                    if (props.onChange) {
-                                      handleCalendarChange(value, props.onChange);
-                                    }
-                                  }}
+
+                  {/* Calendrier en mode range avec dropdowns mois/année */}
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={handleDateRangeChange}
+                    className="p-3"
+                    numberOfMonths={1}
+                    classNames={{
+                      month_caption: "mx-0",
+                    }}
+                    captionLayout="dropdown"
+                    startMonth={new Date(2020, 0)}
+                    endMonth={new Date(2030, 11)}
+                    hideNavigation
+                    components={{
+                      DropdownNav: (props: DropdownNavProps) => {
+                        return (
+                          <div className="flex w-full items-center gap-2">
+                            {props.children}
+                          </div>
+                        );
+                      },
+                      Dropdown: (props: DropdownProps) => {
+                        return (
+                          <Select
+                            value={String(props.value)}
+                            onValueChange={(value) => {
+                              if (props.onChange) {
+                                handleCalendarChange(value, props.onChange);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-fit font-medium first:grow">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
+                              {props.options?.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                  disabled={option.disabled}
                                 >
-                                  <SelectTrigger className="h-8 w-fit font-medium first:grow">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
-                                    {props.options?.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={String(option.value)}
-                                        disabled={option.disabled}
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              );
-                            },
-                          }}
-                        />
-                      </div>
-                    </>
-                  )}
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      },
+                    }}
+                  />
                 </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
@@ -217,25 +272,30 @@ export function TrajetFiltersDropdown({
             <DropdownMenuSubTrigger>
               <User size={16} className="opacity-60" aria-hidden="true" />
               <span>Chauffeur</span>
+              {hasChauffeurFilter && (
+                <span className="ml-auto flex h-2 w-2 rounded-full bg-primary" />
+              )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.chauffeur_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({ chauffeur_id: value === "all" ? undefined : value })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Tous les chauffeurs
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {chauffeurs.map((chauffeur) => (
-                    <DropdownMenuRadioItem key={chauffeur.id} value={chauffeur.id}>
-                      {chauffeur.prenom} {chauffeur.nom}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ComboboxWithClear
+                    options={[
+                      { value: "all", label: "Tous les chauffeurs" },
+                      ...chauffeurs.map((c) => ({
+                        value: c.id,
+                        label: `${c.prenom} ${c.nom}`,
+                      })),
+                    ]}
+                    value={filters.chauffeur_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({ chauffeurId: value === "all" ? undefined : value })
+                    }
+                    placeholder="Tous les chauffeurs"
+                    searchPlaceholder="Rechercher un chauffeur..."
+                    emptyMessage="Aucun chauffeur trouvé."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -245,30 +305,30 @@ export function TrajetFiltersDropdown({
             <DropdownMenuSubTrigger>
               <Truck size={16} className="opacity-60" aria-hidden="true" />
               <span>Véhicule</span>
+              {hasVehiculeFilter && (
+                <span className="ml-auto flex h-2 w-2 rounded-full bg-primary" />
+              )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.vehicule_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({ vehicule_id: value === "all" ? undefined : value })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Tous les véhicules
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {vehicules.map((vehicule) => (
-                    <DropdownMenuRadioItem key={vehicule.id} value={vehicule.id}>
-                      {vehicule.immatriculation}
-                      {vehicule.marque && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({vehicule.marque})
-                        </span>
-                      )}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ComboboxWithClear
+                    options={[
+                      { value: "all", label: "Tous les véhicules" },
+                      ...vehicules.map((v) => ({
+                        value: v.id,
+                        label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
+                      })),
+                    ]}
+                    value={filters.vehicule_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({ vehiculeId: value === "all" ? undefined : value })
+                    }
+                    placeholder="Tous les véhicules"
+                    searchPlaceholder="Rechercher un véhicule..."
+                    emptyMessage="Aucun véhicule trouvé."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -278,32 +338,32 @@ export function TrajetFiltersDropdown({
             <DropdownMenuSubTrigger>
               <MapPin size={16} className="opacity-60" aria-hidden="true" />
               <span>Destination</span>
+              {hasDestinationFilter && (
+                <span className="ml-auto flex h-2 w-2 rounded-full bg-primary" />
+              )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                <DropdownMenuRadioGroup
-                  value={filters.localite_arrivee_id || "all"}
-                  onValueChange={(value) =>
-                    onFiltersChange({
-                      localite_arrivee_id: value === "all" ? undefined : value,
-                    })
-                  }
-                >
-                  <DropdownMenuRadioItem value="all">
-                    Toutes les destinations
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuSeparator />
-                  {localites.map((localite) => (
-                    <DropdownMenuRadioItem key={localite.id} value={localite.id}>
-                      {localite.nom}
-                      {localite.region && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({localite.region})
-                        </span>
-                      )}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ComboboxWithClear
+                    options={[
+                      { value: "all", label: "Toutes les destinations" },
+                      ...localites.map((l) => ({
+                        value: l.id,
+                        label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+                      })),
+                    ]}
+                    value={filters.localite_arrivee_id || "all"}
+                    onValueChange={(value) =>
+                      onFiltersChange({
+                        localiteArriveeId: value === "all" ? undefined : value,
+                      })
+                    }
+                    placeholder="Toutes les destinations"
+                    searchPlaceholder="Rechercher une destination..."
+                    emptyMessage="Aucune destination trouvée."
+                  />
+                </div>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -313,6 +373,9 @@ export function TrajetFiltersDropdown({
             <DropdownMenuSubTrigger>
               <CheckCircle2 size={16} className="opacity-60" aria-hidden="true" />
               <span>Statut</span>
+              {hasStatutFilter && (
+                <span className="ml-auto flex h-2 w-2 rounded-full bg-primary" />
+              )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
