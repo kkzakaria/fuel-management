@@ -8,38 +8,29 @@
 
 "use client"
 
-import { useCallback, startTransition, useMemo, useState } from "react"
+import { useCallback, startTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Plus, Filter, X } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { DataTable } from "@/components/data-table"
 import { trajetColumns } from "@/components/trajets/trajet-columns"
 import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
 import { TrajetTabletTable } from "@/components/trajets/trajet-tablet-table"
 import { TrajetFilters } from "@/components/trajets/trajet-filters"
+import { TrajetFiltersDropdown } from "@/components/trajets/trajet-filters-dropdown"
 import { TrajetMobileSearch } from "@/components/trajets/trajet-mobile-search"
 import { InfiniteScroll } from "@/components/ui/infinite-scroll"
 import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { useTrajets } from "@/hooks/use-trajets"
 import { useTrajetFormData } from "@/hooks/use-trajet-form-data"
 import type { TrajetListItem } from "@/components/trajets/trajet-table"
 
 export default function TrajetsPage() {
   const router = useRouter()
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Hook pour mobile (infinite scroll)
   const mobileData = useTrajets({
@@ -221,63 +212,17 @@ export default function TrajetsPage() {
             />
           </div>
 
-          {/* Drawer de filtres (desktop) */}
-          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="relative">
-                <Filter className="mr-2 h-4 w-4" />
-                Filtrer
-                {activeFiltersCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-2 h-5 min-w-[20px] rounded-full px-1.5 text-xs"
-                  >
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col">
-              <SheetHeader>
-                <SheetTitle>Filtres des trajets</SheetTitle>
-                <SheetDescription>
-                  Filtrer par date, chauffeur, véhicule, destination ou statut
-                </SheetDescription>
-              </SheetHeader>
-              <div className="flex-1 overflow-y-auto py-6">
-                <TrajetFilters
-                  filters={desktopData.filters}
-                  onFiltersChange={desktopData.updateFilters}
-                  onClearFilters={desktopData.clearFilters}
-                  chauffeurs={chauffeurs}
-                  vehicules={vehicules}
-                  localites={localites}
-                  hideClearButton={true}
-                  singleColumn={true}
-                />
-              </div>
-              <div className="border-t pt-4 flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    desktopData.clearFilters()
-                  }}
-                  className="flex-1"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Réinitialiser
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsFilterOpen(false)
-                  }}
-                  className="flex-1"
-                >
-                  Appliquer
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
+          {/* Dropdown de filtres (desktop) */}
+          <TrajetFiltersDropdown
+            filters={desktopData.filters}
+            onFiltersChange={desktopData.updateFilters}
+            onClearFilters={desktopData.clearFilters}
+            chauffeurs={chauffeurs}
+            vehicules={vehicules}
+            localites={localites}
+            activeFiltersCount={activeFiltersCount}
+            triggerLabel="Filtrer"
+          />
 
           {/* Spacer flex */}
           <div className="flex-1" />
