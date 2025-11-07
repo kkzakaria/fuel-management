@@ -200,22 +200,48 @@ export default function TrajetsPage() {
       </div>
 
       {/* DESKTOP : DataTable complet */}
-      <div className="hidden xl:block">
+      <div className="hidden xl:block space-y-4">
+        {/* Header : Recherche + Filtres + Nouveau */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche */}
+          <div className="w-full max-w-sm">
+            <TrajetMobileSearch
+              value={desktopData.filters.search}
+              onSearchChange={(value) => desktopData.updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Spacer flex */}
+          <div className="flex-1" />
+
+          {/* Bouton Nouveau trajet */}
+          <Button asChild>
+            <Link href="/trajets/nouveau">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau trajet
+            </Link>
+          </Button>
+        </div>
+
+        {/* Filtres desktop (inline) */}
+        <TrajetFilters
+          filters={desktopData.filters}
+          onFiltersChange={desktopData.updateFilters}
+          onClearFilters={desktopData.clearFilters}
+          chauffeurs={chauffeurs}
+          vehicules={vehicules}
+          localites={localites}
+        />
+
+        {/* DataTable sans recherche interne */}
         <DataTable
           columns={trajetColumns}
           data={desktopData.trajets}
           isLoading={desktopData.loading}
-          searchKey="date_trajet"
-          searchPlaceholder="Rechercher par date..."
           onRowClick={handleRowClick}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
-          addButton={{
-            type: "link",
-            href: "/trajets/nouveau",
-            label: "Nouveau trajet",
-          }}
         />
       </div>
     </div>
