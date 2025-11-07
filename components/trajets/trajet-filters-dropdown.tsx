@@ -5,9 +5,10 @@
 
 "use client";
 
-import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2 } from "lucide-react";
+import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2, Check } from "lucide-react";
 import { startOfMonth, endOfMonth, subDays, startOfDay, endOfDay } from "date-fns";
 import type { DateRange, DropdownNavProps, DropdownProps } from "react-day-picker";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -31,7 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
 // Type pour les mises à jour de filtres (format camelCase de Nuqs)
@@ -277,24 +285,35 @@ export function TrajetFiltersDropdown({
               )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <MultiSelect
-                    options={chauffeurs.map((c) => ({
-                      value: c.id,
-                      label: `${c.prenom} ${c.nom}`,
-                    }))}
-                    value={filters.chauffeur_id ? [filters.chauffeur_id] : []}
-                    onValueChange={(values) =>
-                      onFiltersChange({ chauffeurId: values.length > 0 ? values[0] : undefined })
-                    }
-                    placeholder="Tous les chauffeurs"
-                    searchPlaceholder="Rechercher un chauffeur..."
-                    emptyMessage="Aucun chauffeur trouvé."
-                    mode="single"
-                    defaultOpen={true}
-                  />
-                </div>
+              <DropdownMenuSubContent className="p-0" onInteractOutside={(e) => e.preventDefault()}>
+                <Command onClick={(e) => e.stopPropagation()}>
+                  <CommandInput placeholder="Rechercher un chauffeur..." />
+                  <CommandList>
+                    <CommandEmpty>Aucun chauffeur trouvé.</CommandEmpty>
+                    <CommandGroup>
+                      {chauffeurs.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={c.id}
+                          keywords={[`${c.prenom} ${c.nom}`]}
+                          onSelect={() => {
+                            onFiltersChange({
+                              chauffeurId: filters.chauffeur_id === c.id ? undefined : c.id
+                            });
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              filters.chauffeur_id === c.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {c.prenom} {c.nom}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -309,24 +328,35 @@ export function TrajetFiltersDropdown({
               )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <MultiSelect
-                    options={vehicules.map((v) => ({
-                      value: v.id,
-                      label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
-                    }))}
-                    value={filters.vehicule_id ? [filters.vehicule_id] : []}
-                    onValueChange={(values) =>
-                      onFiltersChange({ vehiculeId: values.length > 0 ? values[0] : undefined })
-                    }
-                    placeholder="Tous les véhicules"
-                    searchPlaceholder="Rechercher un véhicule..."
-                    emptyMessage="Aucun véhicule trouvé."
-                    mode="single"
-                    defaultOpen={true}
-                  />
-                </div>
+              <DropdownMenuSubContent className="p-0" onInteractOutside={(e) => e.preventDefault()}>
+                <Command onClick={(e) => e.stopPropagation()}>
+                  <CommandInput placeholder="Rechercher un véhicule..." />
+                  <CommandList>
+                    <CommandEmpty>Aucun véhicule trouvé.</CommandEmpty>
+                    <CommandGroup>
+                      {vehicules.map((v) => (
+                        <CommandItem
+                          key={v.id}
+                          value={v.id}
+                          keywords={[`${v.immatriculation}${v.marque ? ` ${v.marque}` : ""}`]}
+                          onSelect={() => {
+                            onFiltersChange({
+                              vehiculeId: filters.vehicule_id === v.id ? undefined : v.id
+                            });
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              filters.vehicule_id === v.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {v.immatriculation}{v.marque ? ` (${v.marque})` : ""}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -341,26 +371,35 @@ export function TrajetFiltersDropdown({
               )}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <MultiSelect
-                    options={localites.map((l) => ({
-                      value: l.id,
-                      label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
-                    }))}
-                    value={filters.localite_arrivee_id ? [filters.localite_arrivee_id] : []}
-                    onValueChange={(values) =>
-                      onFiltersChange({
-                        localiteArriveeId: values.length > 0 ? values[0] : undefined,
-                      })
-                    }
-                    placeholder="Toutes les destinations"
-                    searchPlaceholder="Rechercher une destination..."
-                    emptyMessage="Aucune destination trouvée."
-                    mode="single"
-                    defaultOpen={true}
-                  />
-                </div>
+              <DropdownMenuSubContent className="p-0" onInteractOutside={(e) => e.preventDefault()}>
+                <Command onClick={(e) => e.stopPropagation()}>
+                  <CommandInput placeholder="Rechercher une destination..." />
+                  <CommandList>
+                    <CommandEmpty>Aucune destination trouvée.</CommandEmpty>
+                    <CommandGroup>
+                      {localites.map((l) => (
+                        <CommandItem
+                          key={l.id}
+                          value={l.id}
+                          keywords={[`${l.nom}${l.region ? ` ${l.region}` : ""}`]}
+                          onSelect={() => {
+                            onFiltersChange({
+                              localiteArriveeId: filters.localite_arrivee_id === l.id ? undefined : l.id
+                            });
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              filters.localite_arrivee_id === l.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {l.nom}{l.region ? ` (${l.region})` : ""}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
