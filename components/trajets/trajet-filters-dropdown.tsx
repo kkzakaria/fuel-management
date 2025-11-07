@@ -65,7 +65,7 @@ export function TrajetFiltersDropdown({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="start">
+      <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuGroup>
           {/* Sous-menu Période */}
           <DropdownMenuSub>
