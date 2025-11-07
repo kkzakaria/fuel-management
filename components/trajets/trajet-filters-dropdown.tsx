@@ -296,31 +296,40 @@ export function TrajetFiltersDropdown({
                   <CommandList>
                     <CommandEmpty>Aucun chauffeur trouvé.</CommandEmpty>
                     <CommandGroup>
-                      {chauffeurs.map((c) => {
-                        const isSelected = selectedChauffeurIds.includes(c.id);
-                        return (
-                          <CommandItem
-                            key={c.id}
-                            value={`${c.prenom} ${c.nom}`}
-                            onSelect={() => {
-                              const newSelection = isSelected
-                                ? selectedChauffeurIds.filter(id => id !== c.id)
-                                : [...selectedChauffeurIds, c.id];
-                              onFiltersChange({
-                                chauffeurIds: newSelection.length > 0 ? newSelection : []
-                              });
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                isSelected ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {c.prenom} {c.nom}
-                          </CommandItem>
-                        );
-                      })}
+                      {chauffeurs
+                        .slice()
+                        .sort((a, b) => {
+                          const aSelected = selectedChauffeurIds.includes(a.id);
+                          const bSelected = selectedChauffeurIds.includes(b.id);
+                          if (aSelected && !bSelected) return -1;
+                          if (!aSelected && bSelected) return 1;
+                          return `${a.prenom} ${a.nom}`.localeCompare(`${b.prenom} ${b.nom}`);
+                        })
+                        .map((c) => {
+                          const isSelected = selectedChauffeurIds.includes(c.id);
+                          return (
+                            <CommandItem
+                              key={c.id}
+                              value={`${c.prenom} ${c.nom}`}
+                              onSelect={() => {
+                                const newSelection = isSelected
+                                  ? selectedChauffeurIds.filter(id => id !== c.id)
+                                  : [...selectedChauffeurIds, c.id];
+                                onFiltersChange({
+                                  chauffeurIds: newSelection.length > 0 ? newSelection : []
+                                });
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  isSelected ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {c.prenom} {c.nom}
+                            </CommandItem>
+                          );
+                        })}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -344,31 +353,40 @@ export function TrajetFiltersDropdown({
                   <CommandList>
                     <CommandEmpty>Aucun véhicule trouvé.</CommandEmpty>
                     <CommandGroup>
-                      {vehicules.map((v) => {
-                        const isSelected = selectedVehiculeIds.includes(v.id);
-                        return (
-                          <CommandItem
-                            key={v.id}
-                            value={`${v.immatriculation}${v.marque ? ` ${v.marque}` : ""}`}
-                            onSelect={() => {
-                              const newSelection = isSelected
-                                ? selectedVehiculeIds.filter(id => id !== v.id)
-                                : [...selectedVehiculeIds, v.id];
-                              onFiltersChange({
-                                vehiculeIds: newSelection.length > 0 ? newSelection : []
-                              });
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                isSelected ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {v.immatriculation}{v.marque ? ` (${v.marque})` : ""}
-                          </CommandItem>
-                        );
-                      })}
+                      {vehicules
+                        .slice()
+                        .sort((a, b) => {
+                          const aSelected = selectedVehiculeIds.includes(a.id);
+                          const bSelected = selectedVehiculeIds.includes(b.id);
+                          if (aSelected && !bSelected) return -1;
+                          if (!aSelected && bSelected) return 1;
+                          return a.immatriculation.localeCompare(b.immatriculation);
+                        })
+                        .map((v) => {
+                          const isSelected = selectedVehiculeIds.includes(v.id);
+                          return (
+                            <CommandItem
+                              key={v.id}
+                              value={`${v.immatriculation}${v.marque ? ` ${v.marque}` : ""}`}
+                              onSelect={() => {
+                                const newSelection = isSelected
+                                  ? selectedVehiculeIds.filter(id => id !== v.id)
+                                  : [...selectedVehiculeIds, v.id];
+                                onFiltersChange({
+                                  vehiculeIds: newSelection.length > 0 ? newSelection : []
+                                });
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  isSelected ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {v.immatriculation}{v.marque ? ` (${v.marque})` : ""}
+                            </CommandItem>
+                          );
+                        })}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -392,31 +410,40 @@ export function TrajetFiltersDropdown({
                   <CommandList>
                     <CommandEmpty>Aucune destination trouvée.</CommandEmpty>
                     <CommandGroup>
-                      {localites.map((l) => {
-                        const isSelected = selectedLocaliteIds.includes(l.id);
-                        return (
-                          <CommandItem
-                            key={l.id}
-                            value={`${l.nom}${l.region ? ` ${l.region}` : ""}`}
-                            onSelect={() => {
-                              const newSelection = isSelected
-                                ? selectedLocaliteIds.filter(id => id !== l.id)
-                                : [...selectedLocaliteIds, l.id];
-                              onFiltersChange({
-                                localiteArriveeIds: newSelection.length > 0 ? newSelection : []
-                              });
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                isSelected ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {l.nom}{l.region ? ` (${l.region})` : ""}
-                          </CommandItem>
-                        );
-                      })}
+                      {localites
+                        .slice()
+                        .sort((a, b) => {
+                          const aSelected = selectedLocaliteIds.includes(a.id);
+                          const bSelected = selectedLocaliteIds.includes(b.id);
+                          if (aSelected && !bSelected) return -1;
+                          if (!aSelected && bSelected) return 1;
+                          return a.nom.localeCompare(b.nom);
+                        })
+                        .map((l) => {
+                          const isSelected = selectedLocaliteIds.includes(l.id);
+                          return (
+                            <CommandItem
+                              key={l.id}
+                              value={`${l.nom}${l.region ? ` ${l.region}` : ""}`}
+                              onSelect={() => {
+                                const newSelection = isSelected
+                                  ? selectedLocaliteIds.filter(id => id !== l.id)
+                                  : [...selectedLocaliteIds, l.id];
+                                onFiltersChange({
+                                  localiteArriveeIds: newSelection.length > 0 ? newSelection : []
+                                });
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  isSelected ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {l.nom}{l.region ? ` (${l.region})` : ""}
+                            </CommandItem>
+                          );
+                        })}
                     </CommandGroup>
                   </CommandList>
                 </Command>
