@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ComboboxWithClear } from "@/components/ui/combobox-with-clear";
+import { MultiSelect } from "@/components/ui/multi-select";
 import type { TrajetFilters } from "@/lib/validations/trajet";
 
 // Type pour les mises à jour de filtres (format camelCase de Nuqs)
@@ -279,21 +279,19 @@ export function TrajetFiltersDropdown({
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
                 <div onClick={(e) => e.stopPropagation()}>
-                  <ComboboxWithClear
-                    options={[
-                      { value: "all", label: "Tous les chauffeurs" },
-                      ...chauffeurs.map((c) => ({
-                        value: c.id,
-                        label: `${c.prenom} ${c.nom}`,
-                      })),
-                    ]}
-                    value={filters.chauffeur_id || "all"}
-                    onValueChange={(value) =>
-                      onFiltersChange({ chauffeurId: value === "all" ? undefined : value })
+                  <MultiSelect
+                    options={chauffeurs.map((c) => ({
+                      value: c.id,
+                      label: `${c.prenom} ${c.nom}`,
+                    }))}
+                    value={filters.chauffeur_id ? [filters.chauffeur_id] : []}
+                    onValueChange={(values) =>
+                      onFiltersChange({ chauffeurId: values.length > 0 ? values[0] : undefined })
                     }
                     placeholder="Tous les chauffeurs"
                     searchPlaceholder="Rechercher un chauffeur..."
                     emptyMessage="Aucun chauffeur trouvé."
+                    mode="single"
                     defaultOpen={true}
                   />
                 </div>
@@ -313,21 +311,19 @@ export function TrajetFiltersDropdown({
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
                 <div onClick={(e) => e.stopPropagation()}>
-                  <ComboboxWithClear
-                    options={[
-                      { value: "all", label: "Tous les véhicules" },
-                      ...vehicules.map((v) => ({
-                        value: v.id,
-                        label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
-                      })),
-                    ]}
-                    value={filters.vehicule_id || "all"}
-                    onValueChange={(value) =>
-                      onFiltersChange({ vehiculeId: value === "all" ? undefined : value })
+                  <MultiSelect
+                    options={vehicules.map((v) => ({
+                      value: v.id,
+                      label: `${v.immatriculation}${v.marque ? ` (${v.marque})` : ""}`,
+                    }))}
+                    value={filters.vehicule_id ? [filters.vehicule_id] : []}
+                    onValueChange={(values) =>
+                      onFiltersChange({ vehiculeId: values.length > 0 ? values[0] : undefined })
                     }
                     placeholder="Tous les véhicules"
                     searchPlaceholder="Rechercher un véhicule..."
                     emptyMessage="Aucun véhicule trouvé."
+                    mode="single"
                     defaultOpen={true}
                   />
                 </div>
@@ -347,23 +343,21 @@ export function TrajetFiltersDropdown({
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="p-3" onInteractOutside={(e) => e.preventDefault()}>
                 <div onClick={(e) => e.stopPropagation()}>
-                  <ComboboxWithClear
-                    options={[
-                      { value: "all", label: "Toutes les destinations" },
-                      ...localites.map((l) => ({
-                        value: l.id,
-                        label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
-                      })),
-                    ]}
-                    value={filters.localite_arrivee_id || "all"}
-                    onValueChange={(value) =>
+                  <MultiSelect
+                    options={localites.map((l) => ({
+                      value: l.id,
+                      label: `${l.nom}${l.region ? ` (${l.region})` : ""}`,
+                    }))}
+                    value={filters.localite_arrivee_id ? [filters.localite_arrivee_id] : []}
+                    onValueChange={(values) =>
                       onFiltersChange({
-                        localiteArriveeId: value === "all" ? undefined : value,
+                        localiteArriveeId: values.length > 0 ? values[0] : undefined,
                       })
                     }
                     placeholder="Toutes les destinations"
                     searchPlaceholder="Rechercher une destination..."
                     emptyMessage="Aucune destination trouvée."
+                    mode="single"
                     defaultOpen={true}
                   />
                 </div>
