@@ -1,9 +1,10 @@
 /**
  * Parsers Nuqs pour la page Trajets
- * Gère 7 paramètres: chauffeurId, vehiculeId, localiteArriveeId, dateDebut, dateFin, statut, search
+ * Gère 7 paramètres: chauffeurIds, vehiculeIds, localiteArriveeIds, dateDebut, dateFin, statut, search
+ * Note: Les IDs sont maintenant des arrays pour supporter la sélection multiple
  */
 
-import { createUuidSearchParam } from "../serializers/uuid";
+import { createUuidArraySearchParam } from "../serializers/uuid";
 import { createDateStringSearchParam } from "../serializers/date";
 import { createEnumSearchParam } from "../serializers/enum";
 import { paginationSearchParams, searchSearchParam } from "../hooks";
@@ -15,10 +16,10 @@ const TRAJET_STATUT_VALUES = ["en_cours", "termine", "annule"] as const;
  * Définition des paramètres URL pour la page Trajets
  */
 export const trajetSearchParams = {
-  // Filtres de relation (UUIDs)
-  chauffeurId: createUuidSearchParam(),
-  vehiculeId: createUuidSearchParam(),
-  localiteArriveeId: createUuidSearchParam(),
+  // Filtres de relation (UUIDs multiples)
+  chauffeurIds: createUuidArraySearchParam(),
+  vehiculeIds: createUuidArraySearchParam(),
+  localiteArriveeIds: createUuidArraySearchParam(),
 
   // Filtres de date (format ISO string pour compatibilité avec API)
   dateDebut: createDateStringSearchParam(),
@@ -38,9 +39,9 @@ export const trajetSearchParams = {
  * Type pour les filtres de trajet (compatible avec l'API existante)
  */
 export type TrajetSearchParams = {
-  chauffeurId: string | null;
-  vehiculeId: string | null;
-  localiteArriveeId: string | null;
+  chauffeurIds: string[];
+  vehiculeIds: string[];
+  localiteArriveeIds: string[];
   dateDebut: string | null;
   dateFin: string | null;
   statut: (typeof TRAJET_STATUT_VALUES)[number] | null;
@@ -51,17 +52,19 @@ export type TrajetSearchParams = {
 
 /**
  * Convertit les search params Nuqs vers le format TrajetFilters de l'API
- * Supprime les valeurs null/undefined pour correspondre au format attendu
+ * Joint les arrays d'IDs en strings séparées par des virgules
  */
 export function trajetSearchParamsToFilters(
   params: Partial<TrajetSearchParams>
 ): Record<string, string | undefined> {
   const filters: Record<string, string | undefined> = {};
 
-  if (params.chauffeurId) filters["chauffeur_id"] = params.chauffeurId;
-  if (params.vehiculeId) filters["vehicule_id"] = params.vehiculeId;
-  if (params.localiteArriveeId)
-    filters["localite_arrivee_id"] = params.localiteArriveeId;
+  if (params.chauffeurIds && params.chauffeurIds.length > 0)
+    filters["chauffeur_id"] = params.chauffeurIds.join(",");
+  if (params.vehiculeIds && params.vehiculeIds.length > 0)
+    filters["vehicule_id"] = params.vehiculeIds.join(",");
+  if (params.localiteArriveeIds && params.localiteArriveeIds.length > 0)
+    filters["localite_arrivee_id"] = params.localiteArriveeIds.join(",");
   if (params.dateDebut) filters["date_debut"] = params.dateDebut;
   if (params.dateFin) filters["date_fin"] = params.dateFin;
   if (params.statut) filters["statut"] = params.statut;

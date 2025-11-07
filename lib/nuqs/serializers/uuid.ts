@@ -24,8 +24,31 @@ export const parseAsUuid = createParser({
 });
 
 /**
+ * Parse et valide un array d'UUIDs depuis l'URL (séparés par des virgules)
+ * Retourne un array vide si aucun UUID valide
+ */
+export const parseAsUuidArray = createParser({
+  parse: (value: string) => {
+    if (!value) return [];
+    const uuids = value.split(",").filter((uuid) => UUID_REGEX.test(uuid.trim()));
+    return uuids.length > 0 ? uuids : [];
+  },
+  serialize: (value: string[]) => {
+    if (!value || value.length === 0) return "";
+    return value.join(",");
+  },
+}).withDefault([]);
+
+/**
  * Helper pour créer un paramètre UUID optionnel (null par défaut)
  */
 export function createUuidSearchParam() {
   return parseAsUuid;
+}
+
+/**
+ * Helper pour créer un paramètre UUID array ([] par défaut)
+ */
+export function createUuidArraySearchParam() {
+  return parseAsUuidArray;
 }

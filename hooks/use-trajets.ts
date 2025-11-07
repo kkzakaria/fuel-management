@@ -115,9 +115,9 @@ export function useTrajets(options?: UseTrajetsOptions) {
 
   // Fonction helper pour mettre à jour les filtres via Nuqs
   const updateFilters = (newFilters: {
-    chauffeurId?: string | null;
-    vehiculeId?: string | null;
-    localiteArriveeId?: string | null;
+    chauffeurIds?: string[];
+    vehiculeIds?: string[];
+    localiteArriveeIds?: string[];
     dateDebut?: string | null;
     dateFin?: string | null;
     statut?: "en_cours" | "termine" | "annule" | null;
@@ -128,9 +128,9 @@ export function useTrajets(options?: UseTrajetsOptions) {
 
   const clearFilters = () => {
     setSearchParams({
-      chauffeurId: null,
-      vehiculeId: null,
-      localiteArriveeId: null,
+      chauffeurIds: [],
+      vehiculeIds: [],
+      localiteArriveeIds: [],
       dateDebut: null,
       dateFin: null,
       statut: null,
@@ -172,12 +172,18 @@ export function useTrajets(options?: UseTrajetsOptions) {
   };
 
   // Créer un objet filters compatible avec l'ancienne API (snake_case)
-  // pour éviter de casser les composants existants
+  // Joint les arrays d'IDs en strings séparées par des virgules
   const compatibleFilters = useMemo(
     () => ({
-      chauffeur_id: searchParams.chauffeurId ?? undefined,
-      vehicule_id: searchParams.vehiculeId ?? undefined,
-      localite_arrivee_id: searchParams.localiteArriveeId ?? undefined,
+      chauffeur_id: searchParams.chauffeurIds && searchParams.chauffeurIds.length > 0
+        ? searchParams.chauffeurIds.join(",")
+        : undefined,
+      vehicule_id: searchParams.vehiculeIds && searchParams.vehiculeIds.length > 0
+        ? searchParams.vehiculeIds.join(",")
+        : undefined,
+      localite_arrivee_id: searchParams.localiteArriveeIds && searchParams.localiteArriveeIds.length > 0
+        ? searchParams.localiteArriveeIds.join(",")
+        : undefined,
       date_debut: searchParams.dateDebut ?? undefined,
       date_fin: searchParams.dateFin ?? undefined,
       statut: searchParams.statut ?? undefined,

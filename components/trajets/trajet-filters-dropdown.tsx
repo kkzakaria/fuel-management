@@ -44,9 +44,9 @@ import type { TrajetFilters } from "@/lib/validations/trajet";
 
 // Type pour les mises à jour de filtres (format camelCase de Nuqs)
 type FilterUpdate = {
-  chauffeurId?: string | null;
-  vehiculeId?: string | null;
-  localiteArriveeId?: string | null;
+  chauffeurIds?: string[];
+  vehiculeIds?: string[];
+  localiteArriveeIds?: string[];
   dateDebut?: string | null;
   dateFin?: string | null;
   statut?: "en_cours" | "termine" | "annule" | null;
@@ -128,10 +128,15 @@ export function TrajetFiltersDropdown({
 
   // Vérifier si des filtres sont actifs
   const hasDateFilter = filters.date_debut || filters.date_fin;
-  const hasChauffeurFilter = filters.chauffeur_id;
-  const hasVehiculeFilter = filters.vehicule_id;
-  const hasDestinationFilter = filters.localite_arrivee_id;
+  const hasChauffeurFilter = filters.chauffeur_id && filters.chauffeur_id.length > 0;
+  const hasVehiculeFilter = filters.vehicule_id && filters.vehicule_id.length > 0;
+  const hasDestinationFilter = filters.localite_arrivee_id && filters.localite_arrivee_id.length > 0;
   const hasStatutFilter = filters.statut;
+
+  // Convertir les chaînes séparées par virgules en arrays pour la sélection multiple
+  const selectedChauffeurIds = filters.chauffeur_id ? filters.chauffeur_id.split(",") : [];
+  const selectedVehiculeIds = filters.vehicule_id ? filters.vehicule_id.split(",") : [];
+  const selectedLocaliteIds = filters.localite_arrivee_id ? filters.localite_arrivee_id.split(",") : [];
 
   return (
     <DropdownMenu>
@@ -292,14 +297,17 @@ export function TrajetFiltersDropdown({
                     <CommandEmpty>Aucun chauffeur trouvé.</CommandEmpty>
                     <CommandGroup>
                       {chauffeurs.map((c) => {
-                        const isSelected = filters.chauffeur_id === c.id;
+                        const isSelected = selectedChauffeurIds.includes(c.id);
                         return (
                           <CommandItem
                             key={c.id}
                             value={`${c.prenom} ${c.nom}`}
                             onSelect={() => {
+                              const newSelection = isSelected
+                                ? selectedChauffeurIds.filter(id => id !== c.id)
+                                : [...selectedChauffeurIds, c.id];
                               onFiltersChange({
-                                chauffeurId: isSelected ? null : c.id
+                                chauffeurIds: newSelection.length > 0 ? newSelection : []
                               });
                             }}
                           >
@@ -337,14 +345,17 @@ export function TrajetFiltersDropdown({
                     <CommandEmpty>Aucun véhicule trouvé.</CommandEmpty>
                     <CommandGroup>
                       {vehicules.map((v) => {
-                        const isSelected = filters.vehicule_id === v.id;
+                        const isSelected = selectedVehiculeIds.includes(v.id);
                         return (
                           <CommandItem
                             key={v.id}
                             value={`${v.immatriculation}${v.marque ? ` ${v.marque}` : ""}`}
                             onSelect={() => {
+                              const newSelection = isSelected
+                                ? selectedVehiculeIds.filter(id => id !== v.id)
+                                : [...selectedVehiculeIds, v.id];
                               onFiltersChange({
-                                vehiculeId: isSelected ? null : v.id
+                                vehiculeIds: newSelection.length > 0 ? newSelection : []
                               });
                             }}
                           >
@@ -382,14 +393,17 @@ export function TrajetFiltersDropdown({
                     <CommandEmpty>Aucune destination trouvée.</CommandEmpty>
                     <CommandGroup>
                       {localites.map((l) => {
-                        const isSelected = filters.localite_arrivee_id === l.id;
+                        const isSelected = selectedLocaliteIds.includes(l.id);
                         return (
                           <CommandItem
                             key={l.id}
                             value={`${l.nom}${l.region ? ` ${l.region}` : ""}`}
                             onSelect={() => {
+                              const newSelection = isSelected
+                                ? selectedLocaliteIds.filter(id => id !== l.id)
+                                : [...selectedLocaliteIds, l.id];
                               onFiltersChange({
-                                localiteArriveeId: isSelected ? null : l.id
+                                localiteArriveeIds: newSelection.length > 0 ? newSelection : []
                               });
                             }}
                           >

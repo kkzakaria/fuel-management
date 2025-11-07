@@ -53,9 +53,15 @@ export default function TrajetsPage() {
   const activeFiltersCount = useMemo(() => {
     const filters = mobileData.filters
     let count = 0
-    if (filters.chauffeur_id) count++
-    if (filters.vehicule_id) count++
-    if (filters.localite_arrivee_id) count++
+    if (filters.chauffeur_id && filters.chauffeur_id.length > 0) {
+      count += filters.chauffeur_id.split(",").length
+    }
+    if (filters.vehicule_id && filters.vehicule_id.length > 0) {
+      count += filters.vehicule_id.split(",").length
+    }
+    if (filters.localite_arrivee_id && filters.localite_arrivee_id.length > 0) {
+      count += filters.localite_arrivee_id.split(",").length
+    }
     if (filters.date_debut || filters.date_fin) count++
     if (filters.statut) count++
     return count
