@@ -92,7 +92,7 @@ export interface DataTableProps<TData> {
   /** Callback appelé lors du clic sur une ligne */
   onRowClick?: (row: TData) => void
 
-  /** Activer la sélection multiple avec checkboxes */
+  /** Activer la sélection multiple avec checkboxes (réservé pour usage futur) */
   enableSelection?: boolean
 
   /** Activer le contrôle de visibilité des colonnes */

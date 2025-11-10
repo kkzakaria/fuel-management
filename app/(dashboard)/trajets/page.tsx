@@ -17,7 +17,7 @@ import { DataTable } from "@/components/data-table"
 import { trajetColumns } from "@/components/trajets/trajet-columns"
 import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
 import { TrajetTabletTable } from "@/components/trajets/trajet-tablet-table"
-import { TrajetFilters } from "@/components/trajets/trajet-filters"
+import { TrajetFiltersStacked } from "@/components/trajets/trajet-filters-stacked"
 import { TrajetFiltersDropdown } from "@/components/trajets/trajet-filters-dropdown"
 import { TrajetMobileSearch } from "@/components/trajets/trajet-mobile-search"
 import { InfiniteScroll } from "@/components/ui/infinite-scroll"
@@ -115,14 +115,12 @@ export default function TrajetsPage() {
             title="Filtres des trajets"
             description="Filtrer par date, chauffeur, véhicule, destination ou statut"
           >
-            <TrajetFilters
+            <TrajetFiltersStacked
               filters={mobileData.filters}
               onFiltersChange={mobileData.updateFilters}
-              onClearFilters={mobileData.clearFilters}
               chauffeurs={chauffeurs}
               vehicules={vehicules}
               localites={localites}
-              hideClearButton={true}
             />
           </MobileFilterDrawer>
 
@@ -179,14 +177,12 @@ export default function TrajetsPage() {
             description="Filtrer par date, chauffeur, véhicule, destination ou statut"
             showOnTablet={true}
           >
-            <TrajetFilters
+            <TrajetFiltersStacked
               filters={desktopData.filters}
               onFiltersChange={desktopData.updateFilters}
-              onClearFilters={desktopData.clearFilters}
               chauffeurs={chauffeurs}
               vehicules={vehicules}
               localites={localites}
-              hideClearButton={true}
             />
           </MobileFilterDrawer>
 

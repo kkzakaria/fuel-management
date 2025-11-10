@@ -42,14 +42,30 @@ export async function fetchTrajetsClient(options?: {
     const { chauffeur_id, vehicule_id, localite_arrivee_id, date_debut, date_fin, statut, search } =
       options.filters;
 
+    // Filtres par ID (support sélection multiple avec IDs séparés par virgules)
     if (chauffeur_id) {
-      query = query.eq("chauffeur_id", chauffeur_id);
+      const ids = chauffeur_id.split(",").map(id => id.trim());
+      if (ids.length === 1) {
+        query = query.eq("chauffeur_id", ids[0]);
+      } else {
+        query = query.in("chauffeur_id", ids);
+      }
     }
     if (vehicule_id) {
-      query = query.eq("vehicule_id", vehicule_id);
+      const ids = vehicule_id.split(",").map(id => id.trim());
+      if (ids.length === 1) {
+        query = query.eq("vehicule_id", ids[0]);
+      } else {
+        query = query.in("vehicule_id", ids);
+      }
     }
     if (localite_arrivee_id) {
-      query = query.eq("localite_arrivee_id", localite_arrivee_id);
+      const ids = localite_arrivee_id.split(",").map(id => id.trim());
+      if (ids.length === 1) {
+        query = query.eq("localite_arrivee_id", ids[0]);
+      } else {
+        query = query.in("localite_arrivee_id", ids);
+      }
     }
     if (date_debut) {
       query = query.gte("date_trajet", date_debut);
