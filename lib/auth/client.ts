@@ -43,29 +43,39 @@ export function useUser() {
 export function useUserProfile() {
   const { user, loading: userLoading } = useUser();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Dériver l'état de chargement au lieu d'utiliser setState dans l'effet
+  const loading = userLoading || profileLoading;
 
   useEffect(() => {
     if (userLoading) return;
 
     if (!user) {
-      setProfile(null);
-      setLoading(false);
+      // Ne pas appeler setState synchrone ici - l'état initial est déjà null
       return;
     }
 
     const supabase = createClient();
 
-    // Get user profile
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
+    // Utiliser une promesse asynchrone pour éviter le setState synchrone
+    (async () => {
+      setProfileLoading(true);
+
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
         setProfile(data as UserProfile);
-        setLoading(false);
-      });
+      } catch {
+        setProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    })();
   }, [user, userLoading]);
 
   return { profile, loading };

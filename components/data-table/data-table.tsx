@@ -62,7 +62,7 @@ import { DataTableToolbar } from "./data-table-toolbar"
  *   searchPlaceholder="Rechercher par nom..."
  *   filterColumns={[{ key: "status", label: "Statut" }]}
  *   onRowClick={(row) => router.push(`/details/${row.id}`)}
- *   enableSelection
+ *   enableSelection // Pour usage futur - sélection multiple avec checkboxes
  *   actions={(table) => (
  *     <Button onClick={() => exportData(table.getSelectedRowModel().rows)}>
  *       Exporter
@@ -81,7 +81,7 @@ export function DataTable<TData>({
   pageSize = 10,
   pageSizeOptions = [10, 20, 50, 100],
   onRowClick,
-  enableSelection: _enableSelection = false,
+  enableSelection: _enableSelection = false, // Réservé pour usage futur - sélection multiple
   enableColumnVisibility = true,
   stickyHeader = false,
   actions,
