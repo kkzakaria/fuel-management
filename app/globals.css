@@ -3,6 +3,33 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/**
+ * Optimisation animations pour drawers empilés
+ * Target: <200ms pour toutes les transitions
+ */
+@layer utilities {
+  /* Animation ultra-rapide pour drawers */
+  .animate-drawer-fast {
+    animation-duration: 150ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Transition rapide pour éléments interactifs */
+  .transition-fast {
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Will-change pour performances (GPU acceleration) */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
