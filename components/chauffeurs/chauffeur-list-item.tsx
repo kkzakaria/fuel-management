@@ -9,7 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Eye, Edit, Trash2, Phone } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -57,10 +57,10 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
             <span className="text-base font-semibold truncate">
               {chauffeur.prenom} {chauffeur.nom}
             </span>
-            <Badge
+            <StatusBadge
               variant={
                 chauffeur.statut === "actif"
-                  ? "default"
+                  ? "success"
                   : chauffeur.statut === "inactif"
                     ? "secondary"
                     : "destructive"
@@ -68,7 +68,7 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
               className="text-sm shrink-0"
             >
               {chauffeur.statut}
-            </Badge>
+            </StatusBadge>
           </div>
 
           {/* Ligne 2 : Téléphone */}

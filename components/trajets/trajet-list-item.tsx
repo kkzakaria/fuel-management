@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronRight, Eye, Pencil, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,11 +36,11 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
   };
 
   const getStatutBadge = (statut: string | null) => {
-    if (!statut) return <Badge variant="outline" className="text-sm">Inconnu</Badge>;
+    if (!statut) return <StatusBadge variant="outline" className="text-sm">Inconnu</StatusBadge>;
 
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      en_cours: "secondary",
-      termine: "default",
+    const variants: Record<string, "success" | "info" | "destructive"> = {
+      en_cours: "info",
+      termine: "success",
       annule: "destructive",
     };
 
@@ -51,9 +51,9 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
     };
 
     return (
-      <Badge variant={variants[statut] || "default"} className="text-sm">
+      <StatusBadge variant={variants[statut] || "info"} className="text-sm">
         {labels[statut] || statut}
-      </Badge>
+      </StatusBadge>
     );
   };
 

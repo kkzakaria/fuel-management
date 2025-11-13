@@ -9,7 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Eye, Edit, Trash2, Truck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,10 +51,10 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
             <span className="text-base font-bold truncate">
               {vehicule.immatriculation}
             </span>
-            <Badge
+            <StatusBadge
               variant={
                 vehicule.statut === "actif"
-                  ? "default"
+                  ? "success"
                   : vehicule.statut === "maintenance"
                     ? "secondary"
                     : vehicule.statut === "inactif"
@@ -64,7 +64,7 @@ export function VehiculeListItem({ vehicule }: VehiculeListItemProps) {
               className="text-sm shrink-0"
             >
               {vehicule.statut}
-            </Badge>
+            </StatusBadge>
           </div>
 
           {/* Ligne 2 : Marque/Modèle */}

@@ -9,7 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Eye, Edit, Trash2, Phone } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -63,10 +63,10 @@ export function SousTraitantListItem({ sousTraitant }: SousTraitantListItemProps
             <span className="text-base font-semibold truncate">
               {sousTraitant.nom_entreprise}
             </span>
-            <Badge
+            <StatusBadge
               variant={
                 sousTraitant.statut === "actif"
-                  ? "default"
+                  ? "success"
                   : sousTraitant.statut === "blackliste"
                     ? "destructive"
                     : "secondary"
@@ -74,7 +74,7 @@ export function SousTraitantListItem({ sousTraitant }: SousTraitantListItemProps
               className="text-sm shrink-0"
             >
               {sousTraitant.statut === "actif" ? "Actif" : sousTraitant.statut === "blackliste" ? "Blacklisté" : "Inactif"}
-            </Badge>
+            </StatusBadge>
           </div>
 
           {/* Ligne 2 : Téléphone */}
