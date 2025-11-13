@@ -8,7 +8,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Eye, Edit, Trash2, Phone, IdCard } from "lucide-react";
+import { ChevronRight, Eye, Edit, Trash2, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,12 +40,12 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
   return (
     <>
       <div
-        className="flex items-center gap-3 p-4 border-b hover:bg-muted/50 active:bg-muted cursor-pointer transition-all duration-200 active:scale-[0.98]"
+        className="flex items-center gap-3 p-3 border-b hover:bg-muted/50 active:bg-muted cursor-pointer transition-all duration-200 active:scale-[0.98]"
         onClick={handleClick}
       >
         {/* Avatar */}
-        <Avatar className="h-12 w-12">
-          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+        <Avatar className="h-10 w-10">
+          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
             {initiales}
           </AvatarFallback>
         </Avatar>
@@ -74,31 +74,10 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
           {/* Ligne 2 : Téléphone */}
           {chauffeur.telephone && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Phone className="h-3 w-3" />
+              <Phone className="h-4 w-4" />
               <span>{chauffeur.telephone}</span>
             </div>
           )}
-
-          {/* Ligne 3 : N° Permis + Date embauche */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            {chauffeur.numero_permis && (
-              <>
-                <div className="flex items-center gap-1.5">
-                  <IdCard className="h-3 w-3" />
-                  <span>{chauffeur.numero_permis}</span>
-                </div>
-                {chauffeur.date_embauche && <span>•</span>}
-              </>
-            )}
-            {chauffeur.date_embauche && (
-              <span>
-                Depuis {new Date(chauffeur.date_embauche).toLocaleDateString("fr-FR", {
-                  month: "short",
-                  year: "numeric"
-                })}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Actions */}
