@@ -89,7 +89,7 @@ export function Sidebar({ userProfile }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 overflow-hidden border-r bg-card lg:block">
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[180px] overflow-hidden border-r bg-card lg:block">
         <div className="flex h-full flex-col overflow-hidden">
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
