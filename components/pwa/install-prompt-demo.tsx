@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Download, Share, Plus, Smartphone } from "lucide-react";
-import { useInstallPrompt } from "@/hooks/use-install-prompt";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,90 +12,44 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+type ScreenSize = "mobile" | "tablet" | "desktop";
+type Platform = "ios" | "android" | "desktop";
+
+interface InstallPromptDemoProps {
+  screenSize?: ScreenSize;
+  platform?: Platform;
+  showIOSInstructions?: boolean;
+}
+
 /**
- * Composant responsive pour promouvoir l'installation de la PWA
- * Adapte automatiquement l'UI selon le format d'écran :
- * - Mobile : Banner compact en bas (au-dessus de la bottom nav)
- * - Tablette : Card medium en bas à droite
- * - Desktop : Card large en bas à droite avec plus de détails
+ * Composant de démo pour visualiser le InstallPrompt
+ * sur différentes tailles d'écran sans dépendance au hook
  */
-export function InstallPrompt() {
-  const {
-    isInstallable,
-    platform,
-    canPromptInstall,
-    shouldShowIOSInstructions,
-    promptInstall,
-  } = useInstallPrompt();
-
-  const [isVisible, setIsVisible] = useState(false);
+export function InstallPromptDemo({
+  screenSize = "mobile",
+  platform = "android",
+  showIOSInstructions = false,
+}: InstallPromptDemoProps) {
+  const [isVisible, setIsVisible] = useState(true);
   const [isInstalling, setIsInstalling] = useState(false);
-  const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">(
-    "desktop"
-  );
 
-  // Détecter la taille d'écran
-  useEffect(() => {
-    const updateScreenSize = () => {
-      const width = window.innerWidth;
-      if (width < 640) {
-        setScreenSize("mobile");
-      } else if (width < 1024) {
-        setScreenSize("tablet");
-      } else {
-        setScreenSize("desktop");
-      }
-    };
+  const canPromptInstall = platform !== "ios";
 
-    updateScreenSize();
-    window.addEventListener("resize", updateScreenSize);
-    return () => window.removeEventListener("resize", updateScreenSize);
-  }, []);
-
-  // Gérer la visibilité avec délai
-  useEffect(() => {
-    if (!isInstallable) return;
-
-    // Vérifier si déjà refusé récemment (dans les 7 derniers jours)
-    const dismissed = localStorage.getItem("pwa-install-dismissed");
-    if (dismissed) {
-      const dismissedDate = parseInt(dismissed);
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      if (dismissedDate > sevenDaysAgo) {
-        return;
-      }
-    }
-
-    // Afficher avec un délai de 3 secondes
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [isInstallable]);
-
-  // Ne pas afficher si pas installable, déjà caché, ou pas encore visible
-  if (!isInstallable || !isVisible) {
-    return null;
-  }
-
-  const handleInstall = async () => {
-    if (canPromptInstall) {
-      setIsInstalling(true);
-      const result = await promptInstall();
-
-      if (result.success && result.outcome === "accepted") {
-        setIsVisible(false);
-      }
+  const handleInstall = () => {
+    setIsInstalling(true);
+    setTimeout(() => {
       setIsInstalling(false);
-    }
+      alert("Installation simulée avec succès !");
+    }, 1500);
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Stocker le refus pour 7 jours
-    localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
+
+  if (!isVisible) {
+    return null;
+  }
 
   // Mobile : Banner compact en bas (au-dessus de la bottom nav)
   if (screenSize === "mobile") {
@@ -125,7 +78,7 @@ export function InstallPrompt() {
                 </p>
 
                 {/* iOS Instructions */}
-                {shouldShowIOSInstructions && (
+                {showIOSInstructions && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
                     <Share className="h-3 w-3" />
                     <span>Puis &quot;Sur l&apos;écran d&apos;accueil&quot;</span>
@@ -213,7 +166,7 @@ export function InstallPrompt() {
           </div>
 
           {/* iOS Instructions */}
-          {shouldShowIOSInstructions && (
+          {showIOSInstructions && (
             <div className="space-y-2 p-3 bg-muted rounded-lg">
               <p className="text-sm font-medium">Installation sur iOS :</p>
               <ol className="text-sm text-muted-foreground space-y-1 pl-4 list-decimal">
@@ -241,7 +194,7 @@ export function InstallPrompt() {
             </Button>
           )}
 
-          {!canPromptInstall && !shouldShowIOSInstructions && (
+          {!canPromptInstall && !showIOSInstructions && (
             <Button variant="outline" className="w-full" onClick={handleDismiss}>
               J&apos;ai compris
             </Button>
@@ -338,7 +291,7 @@ export function InstallPrompt() {
         </div>
 
         {/* iOS Instructions */}
-        {shouldShowIOSInstructions && (
+        {showIOSInstructions && (
           <div className="space-y-3 p-4 bg-muted rounded-lg">
             <p className="text-sm font-medium flex items-center gap-2">
               <Share className="h-4 w-4" />
