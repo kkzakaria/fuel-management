@@ -45,7 +45,7 @@ export function Header({ user, userProfile }: HeaderProps) {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
+          <SheetContent side="left" className="w-[180px] p-0">
             <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
             <MobileSidebarContent
               userProfile={userProfile}

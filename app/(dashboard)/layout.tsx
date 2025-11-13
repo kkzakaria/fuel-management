@@ -42,7 +42,7 @@ export default async function DashboardLayout({
       <Sidebar userProfile={profile} />
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-[180px]">
         {/* Header */}
         <Header user={user} userProfile={profile} />
 
