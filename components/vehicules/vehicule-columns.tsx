@@ -111,10 +111,10 @@ export const vehiculeColumns: ColumnDef<Vehicule>[] = [
     cell: ({ row }) => {
       const marque = row.original.marque || "Marque inconnue"
       const modele = row.original.modele || ""
+      const vehicule = modele ? `${marque} ${modele}` : marque
       return (
-        <div>
-          <div className="font-medium">{marque}</div>
-          {modele && <div className="text-sm text-muted-foreground">{modele}</div>}
+        <div className="font-medium truncate" title={vehicule}>
+          {vehicule}
         </div>
       )
     },
