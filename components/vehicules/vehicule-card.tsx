@@ -80,34 +80,19 @@ export function VehiculeCard({ vehicule }: VehiculeCardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 mb-4">
-            <Truck className="h-10 w-10 text-muted-foreground" />
-            <div>
-              <p className="font-medium">
+          <div className="space-y-3">
+            {/* Ligne 1 : Marque/Modèle */}
+            <div className="flex items-center gap-2">
+              <Truck className="h-5 w-5 text-muted-foreground shrink-0" />
+              <span className="text-base font-medium truncate">
                 {vehicule.marque || "Marque inconnue"}{" "}
                 {vehicule.modele || ""}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {vehicule.annee || "Année inconnue"}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Type carburant</span>
-              <Badge variant="outline">{vehicule.type_carburant || "N/A"}</Badge>
-            </div>
-
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Kilométrage</span>
-              <span className="font-medium">
-                {(vehicule.kilometrage_actuel || 0).toLocaleString("fr-FR")} km
               </span>
             </div>
 
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Statut</span>
+            {/* Ligne 2 : Statut */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Statut</span>
               <Badge
                 variant={
                   vehicule.statut === "actif"

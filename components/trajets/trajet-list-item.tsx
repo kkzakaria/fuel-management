@@ -60,55 +60,29 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
   return (
     <>
       <div
-        className="flex items-center gap-3 p-4 border-b hover:bg-muted/50 active:bg-muted cursor-pointer transition-all duration-200 active:scale-[0.98]"
+        className="flex items-center gap-3 p-3 border-b hover:bg-muted/50 active:bg-muted cursor-pointer transition-all duration-200 active:scale-[0.98]"
         onClick={handleClick}
       >
         {/* Contenu principal */}
-        <div className="flex-1 min-w-0 space-y-2">
-          {/* Ligne 1 : Numéro + Date + Statut */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono font-semibold text-primary">
-                {trajet.numero_trajet}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
-              </span>
-            </div>
-            {getStatutBadge(trajet.statut)}
+        <div className="flex-1 min-w-0 space-y-1.5">
+          {/* Ligne 1 : Numéro + Date */}
+          <div className="flex items-center gap-2">
+            <span className="text-base font-mono font-semibold text-primary">
+              {trajet.numero_trajet}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {format(new Date(trajet.date_trajet), "dd MMM yyyy", { locale: fr })}
+            </span>
           </div>
 
           {/* Ligne 2 : Trajet */}
-          <div className="text-base font-semibold truncate">
+          <div className="text-base font-medium truncate">
             {trajet.localite_depart?.nom || "Départ"} → {trajet.localite_arrivee?.nom || "Arrivée"}
           </div>
 
-          {/* Ligne 3 : Chauffeur + Véhicule */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="truncate">
-              {trajet.chauffeur
-                ? `${trajet.chauffeur.prenom} ${trajet.chauffeur.nom}`
-                : "Non assigné"}
-            </span>
-            <span>•</span>
-            <span className="truncate">
-              {trajet.vehicule?.immatriculation || "Non assigné"}
-            </span>
-          </div>
-
-          {/* Ligne 4 : Métriques */}
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{trajet.parcours_total}</span> km
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{trajet.litrage_station || "-"}</span> L
-            </span>
-            {trajet.consommation_au_100 && (
-              <span className="text-muted-foreground">
-                {trajet.consommation_au_100.toFixed(1)} L/100km
-              </span>
-            )}
+          {/* Ligne 3 : Statut + Alerte */}
+          <div className="flex items-center gap-2">
+            {getStatutBadge(trajet.statut)}
             <TrajetAlertBadge
               trajet={{
                 ecart_litrage: trajet.ecart_litrage ?? null,
