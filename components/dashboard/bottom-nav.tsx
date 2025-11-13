@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   TruckIcon,
   Users,
+  Car,
   Building2,
   FileText,
   Settings,
@@ -42,6 +43,12 @@ const navItems: NavItem[] = [
     title: "Chauffeurs",
     href: "/chauffeurs",
     icon: Users,
+    roles: ["admin", "gestionnaire"],
+  },
+  {
+    title: "Véhicules",
+    href: "/vehicules",
+    icon: Car,
     roles: ["admin", "gestionnaire"],
   },
   {
