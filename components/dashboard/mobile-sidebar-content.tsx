@@ -7,6 +7,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -91,14 +92,18 @@ export function MobileSidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-24 items-center justify-center border-b px-6">
         <Link
           href="/"
           onClick={onClose}
-          className="flex items-center gap-2 font-semibold"
+          className="flex items-center p-2"
         >
-          <TruckIcon className="h-6 w-6" />
-          <span>Transport Manager</span>
+          <Image
+            src="/logo.png"
+            alt="Logo Transport Manager"
+            width={120}
+            height={65}
+          />
         </Link>
       </div>
 

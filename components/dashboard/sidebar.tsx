@@ -92,16 +92,14 @@ export function Sidebar({ userProfile }: SidebarProps) {
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-[180px] overflow-hidden border-r bg-card lg:block">
         <div className="flex h-full flex-col overflow-hidden">
           {/* Logo */}
-          <div className="flex h-16 items-center border-b px-6">
-            <Link href="/" className="flex items-center gap-3 font-semibold">
+          <div className="flex h-16 items-center justify-center border-b px-6">
+            <Link href="/" className="flex items-center p-2">
               <Image
-                src="/logo-suivi-carburant.png"
-                alt="Logo Suivi Carburant"
-                width={40}
-                height={40}
-                className="rounded-full"
+                src="/logo.png"
+                alt="Logo Transport Manager"
+                width={100}
+                height={54}
               />
-              <span>Transport Manager</span>
             </Link>
           </div>
 

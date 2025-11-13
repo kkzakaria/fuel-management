@@ -8,7 +8,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, TruckIcon } from "lucide-react";
+import Image from "next/image";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -55,9 +56,13 @@ export function Header({ user, userProfile }: HeaderProps) {
         </Sheet>
 
         {/* Logo - Mobile and Tablet only */}
-        <Link href="/" className="flex items-center gap-2 lg:hidden">
-          <TruckIcon className="h-6 w-6" />
-          <span className="font-semibold">Transport Manager</span>
+        <Link href="/" className="flex items-center lg:hidden p-1">
+          <Image
+            src="/logo.png"
+            alt="Logo Transport Manager"
+            width={80}
+            height={43}
+          />
         </Link>
 
         {/* Spacer */}
