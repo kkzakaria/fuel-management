@@ -11,9 +11,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  TruckIcon,
+  Route,
   Users,
-  Car,
+  Truck,
   Building2,
   FileText,
   Settings,
@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   {
     title: "Trajets",
     href: "/trajets",
-    icon: TruckIcon,
+    icon: Route,
     roles: ["admin", "gestionnaire", "chauffeur", "personnel"],
   },
   {
@@ -48,7 +48,7 @@ const navItems: NavItem[] = [
   {
     title: "Véhicules",
     href: "/vehicules",
-    icon: Car,
+    icon: Truck,
     roles: ["admin", "gestionnaire"],
   },
   {
