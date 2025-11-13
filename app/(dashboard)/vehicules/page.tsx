@@ -1,38 +1,54 @@
 /**
  * Page de liste des véhicules
- * Affiche les véhicules sous forme de cartes avec filtres
+ * Affiche la table avec filtres et pagination via DataTable
  */
 
 "use client";
 
-import Link from "next/link";
-import { Plus, Truck } from "lucide-react";
+import { useCallback, useState, startTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+
+import { DataTable } from "@/components/data-table";
+import { vehiculeColumns } from "@/components/vehicules/vehicule-columns";
+import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
+import { VehiculeForm } from "@/components/vehicules/vehicule-form";
+import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { VehiculeCard } from "@/components/vehicules/vehicule-card";
-import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
-import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useVehicules } from "@/hooks/use-vehicules";
 import { useUserRole } from "@/hooks/use-user-role";
+import type { Vehicule } from "@/lib/supabase/types";
 
 export default function VehiculesPage() {
+  const router = useRouter();
   const { canManageVehicles } = useUserRole();
-  const {
-    vehicules,
-    loading,
-    error,
-    filters,
-    updateFilters,
-    clearFilters,
-    count,
-    refresh,
-  } = useVehicules({
-    pageSize: 20,
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { vehicules, loading, error, filters, updateFilters, clearFilters, refresh } = useVehicules({
+    pageSize: 100, // DataTable gère la pagination en local
     autoRefresh: 60000, // Refresh every minute
   });
+
+  // Handler pour la navigation vers les détails
+  const handleRowClick = useCallback((vehicule: Vehicule) => {
+    startTransition(() => {
+      router.push(`/vehicules/${vehicule.id}`);
+    });
+  }, [router]);
+
+  // Handler pour fermer le dialogue et rafraîchir les données
+  const handleSuccess = useCallback(() => {
+    setDialogOpen(false);
+    refresh();
+  }, [refresh]);
 
   if (error) {
     return (
@@ -62,106 +78,90 @@ export default function VehiculesPage() {
             Gestion de la flotte et maintenance
           </p>
         </div>
+        {/* Bouton mobile/tablette uniquement */}
         {canManageVehicles && (
-          <Button asChild>
-            <Link href="/vehicules/nouveau">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau véhicule
-            </Link>
+          <Button
+            onClick={() => setDialogOpen(true)}
+            size="sm"
+            className="md:hidden"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="sr-only">Nouveau véhicule</span>
           </Button>
         )}
       </div>
 
-      {/* Pull to Refresh Wrapper */}
-      <PullToRefresh onRefresh={refresh}>
-        {/* Statistiques rapides */}
-        <div className="grid gap-4 md:grid-cols-3 mb-4 sm:mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total véhicules</p>
-              <p className="text-3xl font-bold">{count}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Actifs</p>
-              <p className="text-3xl font-bold">
-                {vehicules.filter((v) => v.statut === "actif").length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">En maintenance</p>
-              <p className="text-3xl font-bold">
-                {vehicules.filter((v) => v.statut === "maintenance").length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtres */}
-      <MobileFilterDrawer
-        activeFiltersCount={
-          [filters.statut, filters.type_carburant, filters.search].filter(Boolean).length
-        }
-        onClearFilters={clearFilters}
-        title="Filtrer les véhicules"
-        description="Affiner vos résultats par statut, type de carburant et recherche"
-      >
-        <VehiculeFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onClearFilters={clearFilters}
-        />
-      </MobileFilterDrawer>
-
-      {/* Grille de cartes (Desktop) */}
+      {/* Desktop: DataTable avec toutes les fonctionnalités */}
       <div className="hidden md:block">
-        {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-48" />
-            ))}
-          </div>
-        ) : vehicules.length === 0 ? (
-          <div className="rounded-md border border-dashed p-8 text-center">
-            <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
-            <p className="text-sm text-muted-foreground">
-              Commencez par ajouter un nouveau véhicule.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {vehicules.map((vehicule) => (
-              <VehiculeCard key={vehicule.id} vehicule={vehicule} />
-            ))}
-          </div>
-        )}
+        <DataTable
+          columns={vehiculeColumns}
+          data={vehicules}
+          isLoading={loading}
+          searchKey="immatriculation"
+          searchPlaceholder="Rechercher un véhicule..."
+          filterColumns={[
+            {
+              key: "statut",
+              label: "Statut",
+              options: [
+                { label: "Actif", value: "actif" },
+                { label: "Maintenance", value: "maintenance" },
+                { label: "Inactif", value: "inactif" },
+                { label: "Réformé", value: "reforme" },
+              ],
+            },
+            {
+              key: "type_carburant",
+              label: "Carburant",
+              options: [
+                { label: "Diesel", value: "diesel" },
+                { label: "Essence", value: "essence" },
+                { label: "Hybride", value: "hybride" },
+                { label: "Électrique", value: "electrique" },
+              ],
+            },
+          ]}
+          onRowClick={handleRowClick}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+          addButton={{
+            type: "dialog",
+            onClick: () => setDialogOpen(true),
+            label: "Nouveau véhicule",
+            permission: canManageVehicles,
+          }}
+        />
       </div>
 
-      {/* Liste (Mobile) */}
-      <div className="md:hidden">
+      {/* Mobile/Tablette: Vue en liste avec filtres */}
+      <div className="md:hidden space-y-4">
+        {/* Filtres mobile */}
+        <MobileFilterDrawer
+          activeFiltersCount={
+            [filters.statut, filters.type_carburant, filters.search].filter(Boolean).length
+          }
+          onClearFilters={clearFilters}
+          title="Filtrer les véhicules"
+          description="Affiner vos résultats par statut, type de carburant et recherche"
+        >
+          <VehiculeFilters
+            filters={filters}
+            onFiltersChange={updateFilters}
+            onClearFilters={clearFilters}
+          />
+        </MobileFilterDrawer>
+
+        {/* Liste */}
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
             ))}
           </div>
         ) : vehicules.length === 0 ? (
           <div className="rounded-md border p-8 text-center">
-            <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">Aucun véhicule</h3>
-            <p className="text-sm text-muted-foreground">
-              Commencez par ajouter un nouveau véhicule.
-            </p>
+            <p className="text-muted-foreground">Aucun véhicule trouvé</p>
           </div>
         ) : (
           <div className="rounded-md border overflow-hidden">
@@ -171,7 +171,16 @@ export default function VehiculesPage() {
           </div>
         )}
       </div>
-      </PullToRefresh>
+
+      {/* Dialogue de création */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouveau véhicule</DialogTitle>
+          </DialogHeader>
+          <VehiculeForm onSuccess={handleSuccess} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
