@@ -1,19 +1,25 @@
 /**
  * Page de liste des véhicules
- * Affiche la table avec filtres et pagination via DataTable
+ * Mobile : Recherche + Filtres drawer + Liste + FAB
+ * Tablette : Recherche + Filtres drawer + Table + Bouton ajout
+ * Desktop : Recherche + Filtres dropdown + DataTable + Bouton ajout
  */
 
 "use client";
 
-import { useCallback, useState, startTransition } from "react";
+import { useCallback, useState, startTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { DataTable } from "@/components/data-table";
 import { vehiculeColumns } from "@/components/vehicules/vehicule-columns";
 import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
 import { VehiculeForm } from "@/components/vehicules/vehicule-form";
-import { VehiculeFilters } from "@/components/vehicules/vehicule-filters";
+import { VehiculeFiltersStacked } from "@/components/vehicules/vehicule-filters-stacked";
+import { VehiculeFiltersDropdown } from "@/components/vehicules/vehicule-filters-dropdown";
+import { VehiculeMobileSearch } from "@/components/vehicules/vehicule-mobile-search";
+import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -22,7 +28,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVehicules } from "@/hooks/use-vehicules";
 import { useUserRole } from "@/hooks/use-user-role";
@@ -33,9 +38,18 @@ export default function VehiculesPage() {
   const { canManageVehicles } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { vehicules, loading, error, filters, updateFilters, clearFilters, refresh } = useVehicules({
-    pageSize: 100, // DataTable gère la pagination en local
-    autoRefresh: 60000, // Refresh every minute
+    pageSize: 100,
+    autoRefresh: 60000,
   });
+
+  // Calculer le nombre de filtres actifs
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.statut) count++;
+    if (filters.type_carburant) count++;
+    if (filters.search) count++;
+    return count;
+  }, [filters]);
 
   // Handler pour la navigation vers les détails
   const handleRowClick = useCallback((vehicule: Vehicule) => {
@@ -70,87 +84,41 @@ export default function VehiculesPage() {
 
   return (
     <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold sm:text-3xl">Véhicules</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Gestion de la flotte et maintenance
-          </p>
-        </div>
-        {/* Bouton mobile/tablette uniquement */}
-        {canManageVehicles && (
-          <Button
-            onClick={() => setDialogOpen(true)}
-            size="sm"
-            className="md:hidden"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">Nouveau véhicule</span>
-          </Button>
-        )}
-      </div>
-
-      {/* Desktop: DataTable avec toutes les fonctionnalités */}
-      <div className="hidden md:block">
-        <DataTable
-          columns={vehiculeColumns}
-          data={vehicules}
-          isLoading={loading}
-          searchKey="immatriculation"
-          searchPlaceholder="Rechercher un véhicule..."
-          filterColumns={[
-            {
-              key: "statut",
-              label: "Statut",
-              options: [
-                { label: "Actif", value: "actif" },
-                { label: "Maintenance", value: "maintenance" },
-                { label: "Inactif", value: "inactif" },
-                { label: "Réformé", value: "reforme" },
-              ],
-            },
-            {
-              key: "type_carburant",
-              label: "Carburant",
-              options: [
-                { label: "Diesel", value: "diesel" },
-                { label: "Essence", value: "essence" },
-                { label: "Hybride", value: "hybride" },
-                { label: "Électrique", value: "electrique" },
-              ],
-            },
-          ]}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
-          addButton={{
-            type: "dialog",
-            onClick: () => setDialogOpen(true),
-            label: "Nouveau véhicule",
-            permission: canManageVehicles,
-          }}
-        />
-      </div>
-
-      {/* Mobile/Tablette: Vue en liste avec filtres */}
+      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Liste */}
       <div className="md:hidden space-y-4">
-        {/* Filtres mobile */}
-        <MobileFilterDrawer
-          activeFiltersCount={
-            [filters.statut, filters.type_carburant, filters.search].filter(Boolean).length
-          }
-          onClearFilters={clearFilters}
-          title="Filtrer les véhicules"
-          description="Affiner vos résultats par statut, type de carburant et recherche"
-        >
-          <VehiculeFilters
-            filters={filters}
-            onFiltersChange={updateFilters}
+        {/* Header : Recherche + Filtres + Ajout */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche mobile */}
+          <div className="flex-1">
+            <VehiculeMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Drawer de filtres mobile */}
+          <MobileFilterDrawer
+            activeFiltersCount={activeFiltersCount}
             onClearFilters={clearFilters}
-          />
-        </MobileFilterDrawer>
+            title="Filtres des véhicules"
+            description="Filtrer par statut et type de carburant"
+          >
+            <VehiculeFiltersStacked
+              filters={filters}
+              onFiltersChange={updateFilters}
+            />
+          </MobileFilterDrawer>
+
+          {/* Bouton Nouveau véhicule (icône seulement) */}
+          {canManageVehicles && (
+            <Button asChild size="icon" className="shrink-0">
+              <Link href="/vehicules/nouveau">
+                <Plus className="h-5 w-5" />
+                <span className="sr-only">Nouveau véhicule</span>
+              </Link>
+            </Button>
+          )}
+        </div>
 
         {/* Liste */}
         {loading ? (
@@ -170,6 +138,98 @@ export default function VehiculesPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* TABLETTE : Recherche + Filtres drawer + Table + Nouveau */}
+      <div className="hidden md:block xl:hidden space-y-4">
+        {/* Header : Recherche + Filtres + Nouveau */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche */}
+          <div className="flex-1">
+            <VehiculeMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Drawer de filtres (tablette) */}
+          <MobileFilterDrawer
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearFilters}
+            title="Filtres des véhicules"
+            description="Filtrer par statut et type de carburant"
+            showOnTablet={true}
+          >
+            <VehiculeFiltersStacked
+              filters={filters}
+              onFiltersChange={updateFilters}
+            />
+          </MobileFilterDrawer>
+
+          {/* Bouton Nouveau véhicule */}
+          {canManageVehicles && (
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau véhicule
+            </Button>
+          )}
+        </div>
+
+        {/* Table complète */}
+        <DataTable
+          columns={vehiculeColumns}
+          data={vehicules}
+          isLoading={loading}
+          onRowClick={handleRowClick}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
+      </div>
+
+      {/* DESKTOP : Recherche + Filtres dropdown + DataTable + Nouveau */}
+      <div className="hidden xl:block space-y-4">
+        {/* Header : Recherche + Filtres dropdown + Nouveau */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche */}
+          <div className="w-full max-w-sm">
+            <VehiculeMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Dropdown de filtres (desktop) */}
+          <VehiculeFiltersDropdown
+            filters={filters}
+            onFiltersChange={updateFilters}
+            onClearFilters={clearFilters}
+            activeFiltersCount={activeFiltersCount}
+            triggerLabel="Filtrer"
+          />
+
+          {/* Spacer flex */}
+          <div className="flex-1" />
+
+          {/* Bouton Nouveau véhicule */}
+          {canManageVehicles && (
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau véhicule
+            </Button>
+          )}
+        </div>
+
+        {/* DataTable sans recherche interne */}
+        <DataTable
+          columns={vehiculeColumns}
+          data={vehicules}
+          isLoading={loading}
+          onRowClick={handleRowClick}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
       </div>
 
       {/* Dialogue de création */}

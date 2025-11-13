@@ -1,46 +1,64 @@
 /**
- * Page: Liste des sous-traitants
- * Route: /sous-traitance
+ * Page de liste des sous-traitants
+ * Mobile : Recherche + Filtres drawer + Liste + FAB
+ * Tablette : Recherche + Filtres drawer + Table + Bouton ajout
+ * Desktop : Recherche + Filtres dropdown + DataTable + Bouton ajout
  */
 
-'use client'
+"use client";
 
-import { useCallback, useState, startTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useState, startTransition, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
-import { DataTable } from '@/components/data-table'
-import { sousTraitantColumns } from '@/components/sous-traitants/sous-traitant-columns'
-import { SousTraitantListItem } from '@/components/sous-traitants/sous-traitant-list-item'
-import { SousTraitantForm } from '@/components/sous-traitants/sous-traitant-form'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { DataTable } from "@/components/data-table";
+import { sousTraitantColumns } from "@/components/sous-traitants/sous-traitant-columns";
+import { SousTraitantListItem } from "@/components/sous-traitants/sous-traitant-list-item";
+import { SousTraitantForm } from "@/components/sous-traitants/sous-traitant-form";
+import { SousTraitantFiltersStacked } from "@/components/sous-traitants/sous-traitant-filters-stacked";
+import { SousTraitantFiltersDropdown } from "@/components/sous-traitants/sous-traitant-filters-dropdown";
+import { SousTraitantMobileSearch } from "@/components/sous-traitants/sous-traitant-mobile-search";
+import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useSousTraitants } from '@/hooks/use-sous-traitants'
-import type { SousTraitant } from '@/lib/supabase/types'
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSousTraitants } from "@/hooks/use-sous-traitants";
+import type { SousTraitant } from "@/lib/supabase/types";
 
 export default function SousTraitancePage() {
-  const router = useRouter()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const { sousTraitants, loading, error, refresh } = useSousTraitants()
+  const router = useRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { sousTraitants, loading, error, filters, updateFilters, clearFilters, refresh } = useSousTraitants({
+    autoRefresh: 60000,
+  });
+
+  // Calculer le nombre de filtres actifs
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.statut) count++;
+    if (filters.search) count++;
+    return count;
+  }, [filters]);
 
   // Handler pour la navigation vers les détails
   const handleRowClick = useCallback((sousTraitant: SousTraitant) => {
     startTransition(() => {
-      router.push(`/sous-traitance/${sousTraitant.id}`)
-    })
-  }, [router])
+      router.push(`/sous-traitance/${sousTraitant.id}`);
+    });
+  }, [router]);
 
   // Handler pour fermer le dialogue et rafraîchir les données
   const handleSuccess = useCallback(() => {
-    setDialogOpen(false)
-    refresh()
-  }, [refresh])
+    setDialogOpen(false);
+    refresh();
+  }, [refresh]);
 
   if (error) {
     return (
@@ -57,52 +75,46 @@ export default function SousTraitancePage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* En-tête */}
-      <div className="min-w-0">
-        <h1 className="text-2xl font-bold sm:text-3xl">Sous-traitants</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Gestion des partenaires de transport
-        </p>
-      </div>
+      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Liste */}
+      <div className="md:hidden space-y-4">
+        {/* Header : Recherche + Filtres + Ajout */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche mobile */}
+          <div className="flex-1">
+            <SousTraitantMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
 
-      {/* Desktop: DataTable avec toutes les fonctionnalités */}
-      <div className="hidden md:block">
-        <DataTable
-          columns={sousTraitantColumns}
-          data={sousTraitants}
-          isLoading={loading}
-          searchKey="nom_entreprise"
-          searchPlaceholder="Rechercher un sous-traitant..."
-          filterColumns={[
-            {
-              key: 'statut',
-              label: 'Statut',
-              options: [
-                { label: 'Actif', value: 'actif' },
-                { label: 'Inactif', value: 'inactif' },
-                { label: 'Blacklisté', value: 'blackliste' },
-              ],
-            },
-          ]}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
-          addButton={{
-            type: 'dialog',
-            onClick: () => setDialogOpen(true),
-            label: 'Nouveau sous-traitant',
-          }}
-        />
-      </div>
+          {/* Drawer de filtres mobile */}
+          <MobileFilterDrawer
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearFilters}
+            title="Filtres des sous-traitants"
+            description="Filtrer par statut"
+          >
+            <SousTraitantFiltersStacked
+              filters={filters}
+              onFiltersChange={updateFilters}
+            />
+          </MobileFilterDrawer>
 
-      {/* Mobile: Vue en cartes */}
-      <div className="md:hidden">
+          {/* Bouton Nouveau sous-traitant (icône seulement) */}
+          <Button asChild size="icon" className="shrink-0">
+            <Link href="/sous-traitance/nouveau">
+              <Plus className="h-5 w-5" />
+              <span className="sr-only">Nouveau sous-traitant</span>
+            </Link>
+          </Button>
+        </div>
+
+        {/* Liste */}
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
@@ -111,12 +123,10 @@ export default function SousTraitancePage() {
           </div>
         ) : sousTraitants.length === 0 ? (
           <div className="rounded-md border p-8 text-center">
-            <p className="text-muted-foreground">
-              Aucun sous-traitant trouvé
-            </p>
+            <p className="text-muted-foreground">Aucun sous-traitant trouvé</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="rounded-md border overflow-hidden">
             {sousTraitants.map((sousTraitant) => (
               <SousTraitantListItem
                 key={sousTraitant.id}
@@ -126,6 +136,94 @@ export default function SousTraitancePage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* TABLETTE : Recherche + Filtres drawer + Table + Nouveau */}
+      <div className="hidden md:block xl:hidden space-y-4">
+        {/* Header : Recherche + Filtres + Nouveau */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche */}
+          <div className="flex-1">
+            <SousTraitantMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Drawer de filtres (tablette) */}
+          <MobileFilterDrawer
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearFilters}
+            title="Filtres des sous-traitants"
+            description="Filtrer par statut"
+            showOnTablet={true}
+          >
+            <SousTraitantFiltersStacked
+              filters={filters}
+              onFiltersChange={updateFilters}
+            />
+          </MobileFilterDrawer>
+
+          {/* Bouton Nouveau sous-traitant */}
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau sous-traitant
+          </Button>
+        </div>
+
+        {/* Table complète */}
+        <DataTable
+          columns={sousTraitantColumns}
+          data={sousTraitants}
+          isLoading={loading}
+          onRowClick={handleRowClick}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
+      </div>
+
+      {/* DESKTOP : Recherche + Filtres dropdown + DataTable + Nouveau */}
+      <div className="hidden xl:block space-y-4">
+        {/* Header : Recherche + Filtres dropdown + Nouveau */}
+        <div className="flex items-center gap-3">
+          {/* Barre de recherche */}
+          <div className="w-full max-w-sm">
+            <SousTraitantMobileSearch
+              value={filters.search}
+              onSearchChange={(value) => updateFilters({ search: value })}
+            />
+          </div>
+
+          {/* Dropdown de filtres (desktop) */}
+          <SousTraitantFiltersDropdown
+            filters={filters}
+            onFiltersChange={updateFilters}
+            onClearFilters={clearFilters}
+            activeFiltersCount={activeFiltersCount}
+            triggerLabel="Filtrer"
+          />
+
+          {/* Spacer flex */}
+          <div className="flex-1" />
+
+          {/* Bouton Nouveau sous-traitant */}
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau sous-traitant
+          </Button>
+        </div>
+
+        {/* DataTable sans recherche interne */}
+        <DataTable
+          columns={sousTraitantColumns}
+          data={sousTraitants}
+          isLoading={loading}
+          onRowClick={handleRowClick}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          stickyHeader
+        />
       </div>
 
       {/* Dialogue de création */}
@@ -138,5 +236,5 @@ export default function SousTraitancePage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

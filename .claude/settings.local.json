@@ -63,7 +63,8 @@
       "Bash(timeout 30 pnpm dev:*)",
       "Bash(timeout 20 pnpm dev:*)",
       "Bash(git restore:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []
