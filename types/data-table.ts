@@ -1,8 +1,33 @@
-import { Column, ColumnDef, Table } from "@tanstack/react-table"
-import { ReactNode } from "react"
+import {
+  type Column,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type Table,
+  type VisibilityState,
+} from "@tanstack/react-table"
+import { type ReactNode } from "react"
 
 /**
- * Configuration pour une colonne filtrable avec facettes
+ * Option de filtre pour les filtres facettés
+ */
+export interface FilterOption {
+  label: string
+  value: string
+  icon?: React.ComponentType<{ className?: string }>
+}
+
+/**
+ * Configuration d'une colonne filtrable
+ */
+export interface FilterableColumn {
+  id: string
+  title: string
+  options: FilterOption[]
+}
+
+/**
+ * Configuration pour une colonne filtrable avec facettes (ancien format - compatibilité)
  */
 export interface FilterConfig {
   /** Clé de la colonne à filtrer */
@@ -50,65 +75,77 @@ export interface AddButtonDialogConfig {
 
 /**
  * Configuration pour le bouton d'ajout dans la toolbar
- *
- * @example
- * // Navigation vers une route
- * addButton={{ type: "link", href: "/trajets/nouveau", label: "Nouveau trajet" }}
- *
- * @example
- * // Ouverture d'un dialogue
- * addButton={{ type: "dialog", onClick: () => setDialogOpen(true), label: "Nouveau trajet" }}
  */
 export type AddButtonConfig = AddButtonLinkConfig | AddButtonDialogConfig
 
 /**
- * Props du composant DataTable
+ * Configuration de la toolbar DataTable
  */
-export interface DataTableProps<TData> {
-  /** Colonnes du tableau (TanStack Table ColumnDef) */
-  columns: ColumnDef<TData, unknown>[]
+export interface DataTableToolbarConfig<TData> {
+  searchKey?: string
+  searchPlaceholder?: string
+  filterableColumns?: FilterableColumn[]
+  onAdd?: () => void
+  addLabel?: string
+  addButton?: AddButtonConfig
+  onImport?: (data: TData[]) => Promise<void>
+  onExport?: () => void
+  enableExport?: boolean
+  enableImport?: boolean
+}
 
-  /** Données à afficher */
+/**
+ * Props du composant DataTable principal
+ */
+export interface DataTableProps<TData, TValue = unknown> {
+  columns: ColumnDef<TData, TValue>[]
   data: TData[]
 
-  /** État de chargement - affiche un skeleton si true */
-  isLoading?: boolean
+  // Configuration de la toolbar
+  toolbar?: DataTableToolbarConfig<TData>
 
-  /** Clé de la colonne pour la recherche globale (ex: "name", "email") */
-  searchKey?: string
-
-  /** Placeholder pour le champ de recherche */
-  searchPlaceholder?: string
-
-  /** Configuration des filtres par colonne */
-  filterColumns?: FilterConfig[]
-
-  /** Taille de page par défaut */
+  // Pagination
   pageSize?: number
-
-  /** Options de taille de page */
   pageSizeOptions?: number[]
+  enablePagination?: boolean
 
-  /** Callback appelé lors du clic sur une ligne */
-  onRowClick?: (row: TData) => void
+  // Pagination serveur
+  manualPagination?: boolean
+  pageCount?: number
 
-  /** Activer la sélection multiple avec checkboxes (réservé pour usage futur) */
-  enableSelection?: boolean
+  // Sélection
+  enableRowSelection?: boolean
+  onRowSelectionChange?: (selectedRows: TData[]) => void
 
-  /** Activer le contrôle de visibilité des colonnes */
+  // Tri
+  enableSorting?: boolean
+
+  // Visibilité des colonnes
   enableColumnVisibility?: boolean
 
-  /** Rendre l'en-tête du tableau fixe lors du scroll */
+  // États
+  isLoading?: boolean
+  emptyMessage?: string
+
+  // Avancé
+  getRowId?: (row: TData) => string
+  onRowClick?: (row: TData) => void
   stickyHeader?: boolean
 
-  /** Composant d'actions personnalisées affiché dans la toolbar */
-  actions?: (table: Table<TData>) => ReactNode
+  // État initial depuis l'URL (intégration nuqs)
+  initialColumnFilters?: ColumnFiltersState
+  initialSorting?: SortingState
+  initialColumnVisibility?: VisibilityState
+  initialPagination?: { pageIndex: number; pageSize: number }
 
-  /** Configuration du bouton d'ajout affiché dans la toolbar */
-  addButton?: AddButtonConfig
-
-  /** Callback pour les lignes sélectionnées (si enableSelection = true) */
-  onSelectionChange?: (selectedRows: TData[]) => void
+  // Callbacks pour les changements d'état
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void
+  onSortingChange?: (sorting: SortingState) => void
+  onColumnVisibilityChange?: (visibility: VisibilityState) => void
+  onPaginationChange?: (pagination: {
+    pageIndex: number
+    pageSize: number
+  }) => void
 }
 
 /**
@@ -116,6 +153,8 @@ export interface DataTableProps<TData> {
  */
 export interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  config?: DataTableToolbarConfig<TData>
+  // Ancien format - compatibilité
   searchKey?: string
   searchPlaceholder?: string
   filterColumns?: FilterConfig[]
@@ -135,9 +174,26 @@ export interface DataTablePaginationProps<TData> {
 /**
  * Props du composant DataTableColumnHeader
  */
-export interface DataTableColumnHeaderProps<TData> {
-  column: Column<TData>
+export interface DataTableColumnHeaderProps<TData, TValue = unknown>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  column: Column<TData, TValue>
   title: string
+}
+
+/**
+ * Props du composant DataTableFacetedFilter
+ */
+export interface DataTableFacetedFilterProps<TData, TValue> {
+  column?: Column<TData, TValue>
+  title?: string
+  options: FilterOption[]
+}
+
+/**
+ * Props du composant DataTableViewOptions
+ */
+export interface DataTableViewOptionsProps<TData> {
+  table: Table<TData>
 }
 
 /**
@@ -146,13 +202,42 @@ export interface DataTableColumnHeaderProps<TData> {
 export interface DataTableSkeletonProps {
   /** Nombre de colonnes à afficher */
   columnCount?: number
-
   /** Nombre de lignes à afficher */
   rowCount?: number
-
   /** Afficher la colonne de sélection */
   showSelection?: boolean
-
   /** Afficher la colonne d'actions */
   showActions?: boolean
+}
+
+/**
+ * Format d'export
+ */
+export type ExportFormat = "csv" | "excel"
+
+/**
+ * Configuration d'export
+ */
+export interface ExportConfig {
+  filename?: string
+  format: ExportFormat
+  selectedOnly?: boolean
+}
+
+/**
+ * Résultat d'import
+ */
+export interface ImportResult<TData> {
+  data: TData[]
+  errors: ImportError[]
+  success: boolean
+}
+
+/**
+ * Erreur d'import
+ */
+export interface ImportError {
+  row: number
+  field?: string
+  message: string
 }

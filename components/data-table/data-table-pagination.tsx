@@ -1,18 +1,14 @@
+"use client"
+
+import { Table } from "@tanstack/react-table"
 import {
-  ChevronFirstIcon,
-  ChevronLastIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react"
-import { useId, useMemo } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination"
 import {
   Select,
   SelectContent,
@@ -20,136 +16,94 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DataTablePaginationProps } from "@/types/data-table"
+
+interface DataTablePaginationProps<TData> {
+  table: Table<TData>
+  pageSizeOptions?: number[]
+}
 
 /**
  * Contrôles de pagination du DataTable
- *
- * @example
- * <DataTablePagination table={table} pageSizeOptions={[10, 20, 50]} />
  */
 export function DataTablePagination<TData>({
   table,
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = [10, 20, 30, 40, 50],
 }: DataTablePaginationProps<TData>) {
-  const id = useId()
-
-  // Memoize les valeurs pour éviter les re-calculs pendant le render (React 19 strict)
-  const paginationState = table.getState().pagination
-  const rowCount = useMemo(() => table.getRowCount(), [table])
-  const canPreviousPage = useMemo(() => table.getCanPreviousPage(), [table])
-  const canNextPage = useMemo(() => table.getCanNextPage(), [table])
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
+  const totalCount = table.getFilteredRowModel().rows.length
 
   return (
-    <div className="flex items-center justify-between gap-8">
-      {/* Sélecteur de taille de page */}
-      <div className="flex items-center gap-3">
-        <Label htmlFor={id} className="max-sm:sr-only">
-          Lignes par page
-        </Label>
-        <Select
-          value={paginationState.pageSize.toString()}
-          onValueChange={(value) => {
-            table.setPageSize(Number(value))
-          }}
-        >
-          <SelectTrigger id={id} className="w-fit whitespace-nowrap">
-            <SelectValue placeholder="Sélectionner le nombre de résultats" />
-          </SelectTrigger>
-          <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
-            {pageSizeOptions.map((pageSize) => (
-              <SelectItem key={pageSize} value={pageSize.toString()}>
-                {pageSize}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="flex items-center justify-between px-2">
+      <div className="flex-1 text-sm text-muted-foreground">
+        {selectedCount > 0 && (
+          <span>
+            {selectedCount} sur {totalCount} ligne(s) sélectionnée(s)
+          </span>
+        )}
       </div>
-
-      {/* Information de pagination */}
-      <div className="flex grow justify-end text-sm whitespace-nowrap text-muted-foreground">
-        <p
-          className="text-sm whitespace-nowrap text-muted-foreground"
-          aria-live="polite"
-        >
-          <span className="text-foreground">
-            {paginationState.pageIndex * paginationState.pageSize + 1}
-            -
-            {Math.min(
-              Math.max(
-                paginationState.pageIndex * paginationState.pageSize +
-                  paginationState.pageSize,
-                0
-              ),
-              rowCount
-            )}
-          </span>{" "}
-          sur{" "}
-          <span className="text-foreground">{rowCount.toString()}</span>
-        </p>
-      </div>
-
-      {/* Boutons de pagination */}
-      <div>
-        <Pagination>
-          <PaginationContent>
-            {/* Première page */}
-            <PaginationItem>
-              <Button
-                size="icon"
-                variant="outline"
-                className="disabled:pointer-events-none disabled:opacity-50"
-                onClick={() => table.firstPage()}
-                disabled={!canPreviousPage}
-                aria-label="Aller à la première page"
-              >
-                <ChevronFirstIcon size={16} aria-hidden="true" />
-              </Button>
-            </PaginationItem>
-
-            {/* Page précédente */}
-            <PaginationItem>
-              <Button
-                size="icon"
-                variant="outline"
-                className="disabled:pointer-events-none disabled:opacity-50"
-                onClick={() => table.previousPage()}
-                disabled={!canPreviousPage}
-                aria-label="Aller à la page précédente"
-              >
-                <ChevronLeftIcon size={16} aria-hidden="true" />
-              </Button>
-            </PaginationItem>
-
-            {/* Page suivante */}
-            <PaginationItem>
-              <Button
-                size="icon"
-                variant="outline"
-                className="disabled:pointer-events-none disabled:opacity-50"
-                onClick={() => table.nextPage()}
-                disabled={!canNextPage}
-                aria-label="Aller à la page suivante"
-              >
-                <ChevronRightIcon size={16} aria-hidden="true" />
-              </Button>
-            </PaginationItem>
-
-            {/* Dernière page */}
-            <PaginationItem>
-              <Button
-                size="icon"
-                variant="outline"
-                className="disabled:pointer-events-none disabled:opacity-50"
-                onClick={() => table.lastPage()}
-                disabled={!canNextPage}
-                aria-label="Aller à la dernière page"
-              >
-                <ChevronLastIcon size={16} aria-hidden="true" />
-              </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="flex items-center space-x-2">
+          <p className="text-sm font-medium">Lignes par page</p>
+          <Select
+            value={`${table.getState().pagination.pageSize}`}
+            onValueChange={(value) => {
+              table.setPageSize(Number(value))
+            }}
+          >
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {pageSizeOptions.map((pageSize) => (
+                <SelectItem key={pageSize} value={`${pageSize}`}>
+                  {pageSize}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+          Page {table.getState().pagination.pageIndex + 1} sur{" "}
+          {table.getPageCount()}
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="hidden h-8 w-8 p-0 lg:flex"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="sr-only">Aller à la première page</span>
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="sr-only">Aller à la page précédente</span>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <span className="sr-only">Aller à la page suivante</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="hidden h-8 w-8 p-0 lg:flex"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            <span className="sr-only">Aller à la dernière page</span>
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )

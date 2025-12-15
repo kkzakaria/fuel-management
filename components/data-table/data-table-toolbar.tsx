@@ -1,154 +1,132 @@
-import {
-  CircleXIcon,
-  Columns3Icon,
-  FilterIcon,
-  ListFilterIcon,
-  Plus,
-} from "lucide-react"
+"use client"
+
+import * as React from "react"
+import { Download, Plus, Upload, X } from "lucide-react"
 import Link from "next/link"
-import { useId, useMemo, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { DataTableToolbarProps } from "@/types/data-table"
+import { DataTableViewOptions } from "@/components/data-table/data-table-view-options"
+import { DataTableFacetedFilter } from "@/components/data-table/data-table-faceted-filter"
+import type { DataTableToolbarProps } from "@/types/data-table"
+import { exportToCSV, exportToExcel } from "@/lib/utils/export-utils"
+import { parseCSV, parseExcel } from "@/lib/utils/import-utils"
+import { toast } from "sonner"
 
 /**
- * Barre d'outils du DataTable avec recherche, filtres et actions
- *
- * @example
- * <DataTableToolbar
- *   table={table}
- *   searchKey="name"
- *   searchPlaceholder="Rechercher par nom..."
- *   filterColumns={[{ key: "status", label: "Statut" }]}
- *   enableColumnVisibility
- *   actions={<Button>Exporter</Button>}
- * />
+ * Barre d'outils du DataTable avec recherche, filtres, import/export et actions
  */
 export function DataTableToolbar<TData>({
   table,
-  searchKey,
-  searchPlaceholder = "Rechercher...",
-  filterColumns = [],
-  enableColumnVisibility = true,
+  config,
+  // Ancien format - compatibilité
+  searchKey: legacySearchKey,
+  searchPlaceholder: legacySearchPlaceholder,
   actions,
-  addButton,
+  addButton: legacyAddButton,
 }: DataTableToolbarProps<TData>) {
-  const id = useId()
-  const inputRef = useRef<HTMLInputElement>(null)
+  // Utiliser la nouvelle config ou les props legacy
+  const searchKey = config?.searchKey ?? legacySearchKey
+  const searchPlaceholder = config?.searchPlaceholder ?? legacySearchPlaceholder ?? "Rechercher..."
+  const addButton = config?.addButton ?? legacyAddButton
+
+  const isFiltered = table.getState().columnFilters.length > 0
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const isCSV = file.name.endsWith(".csv")
+      const result = isCSV
+        ? await parseCSV<TData>(file)
+        : await parseExcel<TData>(file)
+
+      if (result.success && result.data.length > 0 && config?.onImport) {
+        await config.onImport(result.data)
+        toast.success(`${result.data.length} lignes importées avec succès`)
+      } else if (result.errors.length > 0 && result.errors[0]) {
+        toast.error(`Erreur d'import: ${result.errors[0].message}`)
+      }
+    } catch {
+      toast.error("Échec de l'import du fichier")
+    }
+
+    // Réinitialiser l'input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleExport = (format: "csv" | "excel") => {
+    const hasSelection = table.getFilteredSelectedRowModel().rows.length > 0
+    const selectedCount = table.getFilteredSelectedRowModel().rows.length
+    const totalCount = table.getFilteredRowModel().rows.length
+
+    if (format === "csv") {
+      exportToCSV(table, "export.csv", hasSelection)
+    } else {
+      exportToExcel(table, "export.xlsx", hasSelection)
+    }
+
+    toast.success(
+      hasSelection
+        ? `${selectedCount} lignes sélectionnées exportées`
+        : `${totalCount} lignes exportées`
+    )
+  }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        {/* Barre de recherche */}
+    <div className="flex items-center justify-between">
+      <div className="flex flex-1 items-center space-x-2">
         {searchKey && (
-          <div className="relative">
-            <Input
-              id={`${id}-search`}
-              ref={inputRef}
-              className={cn(
-                "peer min-w-60 ps-9",
-                Boolean(table.getColumn(searchKey)?.getFilterValue()) && "pe-9"
-              )}
-              value={
-                (table.getColumn(searchKey)?.getFilterValue() ?? "") as string
-              }
-              onChange={(e) =>
-                table.getColumn(searchKey)?.setFilterValue(e.target.value)
-              }
-              placeholder={searchPlaceholder}
-              type="text"
-              aria-label={searchPlaceholder}
-            />
-            <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-              <ListFilterIcon size={16} aria-hidden="true" />
-            </div>
-            {Boolean(table.getColumn(searchKey)?.getFilterValue()) && (
-              <button
-                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label="Effacer la recherche"
-                onClick={() => {
-                  table.getColumn(searchKey)?.setFilterValue("")
-                  if (inputRef.current) {
-                    inputRef.current.focus()
-                  }
-                }}
-              >
-                <CircleXIcon size={16} aria-hidden="true" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Filtres par colonne */}
-        {filterColumns.map((filterConfig) => (
-          <FilterPopover
-            key={filterConfig.key}
-            table={table}
-            filterConfig={filterConfig}
-            id={id}
+          <Input
+            placeholder={searchPlaceholder}
+            value={
+              (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn(searchKey)?.setFilterValue(event.target.value)
+            }
+            className="h-8 w-[150px] lg:w-[250px]"
           />
-        ))}
-
-        {/* Toggle visibilité des colonnes */}
-        {enableColumnVisibility && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Columns3Icon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                Colonnes
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Afficher les colonnes</DropdownMenuLabel>
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                      onSelect={(event) => event.preventDefault()}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        )}
+        {config?.filterableColumns?.map((filterColumn) => {
+          const column = table.getColumn(filterColumn.id)
+          return column ? (
+            <DataTableFacetedFilter
+              key={filterColumn.id}
+              column={column}
+              title={filterColumn.title}
+              options={filterColumn.options}
+            />
+          ) : null
+        })}
+        {isFiltered && (
+          <Button
+            variant="ghost"
+            onClick={() => table.resetColumnFilters()}
+            className="h-8 px-2 lg:px-3"
+          >
+            Réinitialiser
+            <X className="ml-2 h-4 w-4" />
+          </Button>
         )}
       </div>
+      <div className="flex items-center space-x-2">
+        {/* Bouton d'ajout - nouveau format (config.onAdd) */}
+        {config?.onAdd && (
+          <Button onClick={config.onAdd} size="sm" className="h-8">
+            <Plus className="mr-2 h-4 w-4" />
+            {config.addLabel ?? "Ajouter"}
+          </Button>
+        )}
 
-      {/* Actions personnalisées */}
-      <div className="flex items-center gap-3">
-        {/* Bouton d'ajout */}
+        {/* Bouton d'ajout - format legacy (addButton) */}
         {addButton && addButton.permission !== false && (
           addButton.type === "link" ? (
-            <Button asChild>
+            <Button asChild size="sm" className="h-8">
               <Link href={addButton.href}>
                 {addButton.icon ? (
                   <addButton.icon className="mr-2 h-4 w-4" />
@@ -159,7 +137,7 @@ export function DataTableToolbar<TData>({
               </Link>
             </Button>
           ) : (
-            <Button onClick={addButton.onClick}>
+            <Button onClick={addButton.onClick} size="sm" className="h-8">
               {addButton.icon ? (
                 <addButton.icon className="mr-2 h-4 w-4" />
               ) : (
@@ -170,129 +148,47 @@ export function DataTableToolbar<TData>({
           )
         )}
 
-        {/* Autres actions */}
+        {/* Import */}
+        {config?.enableImport && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Importer
+            </Button>
+          </>
+        )}
+
+        {/* Export */}
+        {config?.enableExport && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8"
+            onClick={() => handleExport("csv")}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Exporter
+          </Button>
+        )}
+
+        {/* Actions personnalisées legacy */}
         {actions}
+
+        {/* Options de vue */}
+        <DataTableViewOptions table={table} />
       </div>
     </div>
-  )
-}
-
-/**
- * Popover de filtrage par facettes avec checkboxes
- */
-function FilterPopover<TData>({
-  table,
-  filterConfig,
-  id,
-}: {
-  table: DataTableToolbarProps<TData>["table"]
-  filterConfig: NonNullable<DataTableToolbarProps<TData>["filterColumns"]>[number]
-  id: string
-}) {
-  const column = table.getColumn(filterConfig.key)
-
-  // Obtenir les valeurs uniques de la colonne
-  const uniqueValues = useMemo(() => {
-    if (!column) return []
-
-    // Si des options sont fournies, les utiliser
-    if (filterConfig.options && filterConfig.options.length > 0) {
-      return filterConfig.options.map((opt: { label: string; value: string }) => opt.value)
-    }
-
-    // Sinon, extraire les valeurs uniques de la colonne
-    const values = Array.from(column.getFacetedUniqueValues().keys())
-    return values.sort()
-  }, [column, filterConfig.options])
-
-  // Obtenir les compteurs pour chaque valeur
-  const valueCounts = useMemo(() => {
-    if (!column) return new Map()
-    return column.getFacetedUniqueValues()
-     
-  }, [column])
-
-  // Obtenir les valeurs sélectionnées
-  const selectedValues = useMemo(() => {
-    const filterValue = column?.getFilterValue() as string[]
-    return filterValue ?? []
-     
-  }, [column])
-
-  const handleValueChange = (checked: boolean, value: string) => {
-    if (!column) return
-
-    const filterValue = column.getFilterValue() as string[]
-    const newFilterValue = filterValue ? [...filterValue] : []
-
-    if (checked) {
-      newFilterValue.push(value)
-    } else {
-      const index = newFilterValue.indexOf(value)
-      if (index > -1) {
-        newFilterValue.splice(index, 1)
-      }
-    }
-
-    column.setFilterValue(newFilterValue.length ? newFilterValue : undefined)
-  }
-
-  if (!column) return null
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <FilterIcon
-            className="-ms-1 opacity-60"
-            size={16}
-            aria-hidden="true"
-          />
-          {filterConfig.label}
-          {selectedValues.length > 0 && (
-            <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
-              {selectedValues.length}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto min-w-36 p-3" align="start">
-        <div className="space-y-3">
-          <div className="text-xs font-medium text-muted-foreground">
-            Filtres
-          </div>
-          <div className="space-y-3">
-            {uniqueValues.map((value: string, i: number) => {
-              // Obtenir le label depuis les options ou utiliser la valeur
-              const option = filterConfig.options?.find(
-                (opt: { label: string; value: string }) => opt.value === value
-              )
-              const label = option?.label ?? String(value)
-
-              return (
-                <div key={value} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`${id}-${filterConfig.key}-${i}`}
-                    checked={selectedValues.includes(String(value))}
-                    onCheckedChange={(checked: boolean) =>
-                      handleValueChange(checked, String(value))
-                    }
-                  />
-                  <Label
-                    htmlFor={`${id}-${filterConfig.key}-${i}`}
-                    className="flex grow justify-between gap-2 font-normal"
-                  >
-                    {label}{" "}
-                    <span className="ms-2 text-xs text-muted-foreground">
-                      {valueCounts.get(value) ?? 0}
-                    </span>
-                  </Label>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }

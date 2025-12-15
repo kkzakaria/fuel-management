@@ -1,61 +1,71 @@
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+"use client"
+
+import { Column } from "@tanstack/react-table"
+import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { DataTableColumnHeaderProps } from "@/types/data-table"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+interface DataTableColumnHeaderProps<TData, TValue>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  column: Column<TData, TValue>
+  title: string
+}
 
 /**
- * En-tête de colonne triable avec indicateurs visuels
- *
- * @example
- * const columns = [
- *   {
- *     accessorKey: "name",
- *     header: ({ column }) => (
- *       <DataTableColumnHeader column={column} title="Nom" />
- *     ),
- *   },
- * ]
+ * En-tête de colonne triable avec menu dropdown
  */
-export function DataTableColumnHeader<TData>({
+export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
-}: DataTableColumnHeaderProps<TData>) {
+  className,
+}: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
-    return <span>{title}</span>
+    return <div className={cn("font-bold", className)}>{title}</div>
   }
 
   return (
-    <div
-      className={cn(
-        "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
-      )}
-      onClick={column.getToggleSortingHandler()}
-      onKeyDown={(e) => {
-        // Gestion du clavier pour l'accessibilité
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          column.getToggleSortingHandler()?.(e)
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      aria-label={`Trier par ${title}`}
-    >
-      <span>{title}</span>
-      {column.getIsSorted() === "asc" && (
-        <ChevronUpIcon
-          className="shrink-0 opacity-60"
-          size={16}
-          aria-hidden="true"
-        />
-      )}
-      {column.getIsSorted() === "desc" && (
-        <ChevronDownIcon
-          className="shrink-0 opacity-60"
-          size={16}
-          aria-hidden="true"
-        />
-      )}
+    <div className={cn("flex items-center space-x-2", className)}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            <span className="font-bold">{title}</span>
+            {column.getIsSorted() === "desc" ? (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ChevronsUpDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+            <ArrowUp className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+            Croissant
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+            <ArrowDown className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+            Décroissant
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
+            <EyeOff className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+            Masquer
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }
