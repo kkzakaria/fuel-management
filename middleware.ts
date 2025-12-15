@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session if expired
+  // Refresh session if expired - this is the main purpose of middleware
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -45,34 +45,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // If user is authenticated
-  if (user) {
-    // Get user profile to check if active
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, is_active")
-      .eq("id", user.id)
-      .single();
-
-    // If account is not active, sign out and redirect to login
-    if (!profile || !profile.is_active) {
-      await supabase.auth.signOut();
-      const redirectUrl = new URL("/login", request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // If authenticated user tries to access login, redirect to dashboard
-    if (pathname === "/login") {
-      const redirectUrl = new URL("/", request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Check role-based access for /register (admin only)
-    if (pathname === "/register" && profile.role !== "admin") {
-      const redirectUrl = new URL("/", request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
+  // If authenticated user tries to access login, redirect to dashboard
+  if (user && pathname === "/login") {
+    const redirectUrl = new URL("/", request.url);
+    return NextResponse.redirect(redirectUrl);
   }
+
+  // Note: Role-based access and is_active checks are handled in the dashboard layout
+  // This avoids RLS issues in middleware and follows Supabase recommendations
 
   return supabaseResponse;
 }

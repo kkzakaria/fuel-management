@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
@@ -31,7 +32,7 @@ export async function login(values: z.infer<typeof loginSchema>) {
     const { email, password } = validatedFields.data;
     const supabase = await createClient();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -40,19 +41,8 @@ export async function login(values: z.infer<typeof loginSchema>) {
       return { error: "Email ou mot de passe incorrect" };
     }
 
-    // Check if user account is active
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_active")
-      .eq("id", data.user.id)
-      .single();
-
-    if (!profile || !profile.is_active) {
-      // Sign out if account is not active
-      await supabase.auth.signOut();
-      return { error: "Compte désactivé. Contactez l'administrateur." };
-    }
-
+    // Note: is_active check is handled in the dashboard layout
+    // This avoids RLS issues during login
     return { success: true };
   } catch {
     return { error: "Une erreur est survenue" };

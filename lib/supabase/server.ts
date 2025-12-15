@@ -50,7 +50,7 @@ export const createClient = async () => {
             })
           } catch {
             // Cookie setting can fail in Server Components
-            // This is expected behavior in some contexts
+            // This is expected behavior when using middleware to refresh sessions
           }
         },
       },
