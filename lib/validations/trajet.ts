@@ -34,7 +34,13 @@ export const createTrajetSchema = z.object({
   }).refine((date) => {
     const d = new Date(date);
     return !isNaN(d.getTime());
-  }, "Format de date invalide"),
+  }, "Format de date invalide").refine((date) => {
+    const inputDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+  }, "La date du trajet doit être aujourd'hui ou ultérieure"),
 
   chauffeur_id: z.string({
     required_error: "Le chauffeur est requis",
