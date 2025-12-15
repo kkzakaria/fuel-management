@@ -1,25 +1,22 @@
 /**
  * Page de liste des véhicules
- * Mobile : Recherche + Filtres drawer + Liste + FAB
- * Tablette : Recherche + Filtres drawer + Table + Bouton ajout
- * Desktop : Recherche + Filtres dropdown + DataTable + Bouton ajout
+ * Utilise le nouveau système de toolbar responsive intégré
+ *
+ * Mobile : Recherche + Filtres drawer + Liste cards
+ * Tablette/Desktop : Recherche + Filtres dropdown + DataTable
  */
 
 "use client";
 
 import { useCallback, useState, startTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Plus } from "lucide-react";
 
-import { DataTable } from "@/components/data-table";
+import { DataTable, DataTableToolbar } from "@/components/data-table";
 import { vehiculeColumns } from "@/components/vehicules/vehicule-columns";
 import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
 import { VehiculeForm } from "@/components/vehicules/vehicule-form";
 import { VehiculeFiltersStacked } from "@/components/vehicules/vehicule-filters-stacked";
 import { VehiculeFiltersDropdown } from "@/components/vehicules/vehicule-filters-dropdown";
-import { VehiculeMobileSearch } from "@/components/vehicules/vehicule-mobile-search";
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -83,44 +80,49 @@ export default function VehiculesPage() {
   }
 
   return (
-    <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Liste */}
-      <div className="md:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Ajout */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche mobile */}
-          <div className="flex-1">
-            <VehiculeMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres mobile */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={clearFilters}
-            title="Filtres des véhicules"
-            description="Filtrer par statut et type de carburant"
-          >
+    <div className="container space-y-4 py-4 sm:space-y-6 sm:py-6">
+      {/* === TOOLBAR RESPONSIVE UNIFIÉE === */}
+      <DataTableToolbar
+        externalSearch={{
+          value: filters.search ?? "",
+          onChange: (value) => updateFilters({ search: value }),
+          placeholder: "Rechercher un véhicule...",
+        }}
+        responsiveFilters={{
+          mobileContent: (
             <VehiculeFiltersStacked
               filters={filters}
               onFiltersChange={updateFilters}
             />
-          </MobileFilterDrawer>
+          ),
+          desktopContent: (
+            <VehiculeFiltersDropdown
+              filters={filters}
+              onFiltersChange={updateFilters}
+              onClearFilters={clearFilters}
+              activeFiltersCount={activeFiltersCount}
+              triggerLabel="Filtrer"
+            />
+          ),
+          activeCount: activeFiltersCount,
+          onClear: clearFilters,
+          drawerTitle: "Filtres des véhicules",
+          drawerDescription: "Filtrer par statut et type de carburant",
+        }}
+        addButton={
+          canManageVehicles
+            ? {
+                type: "dialog",
+                onClick: () => setDialogOpen(true),
+                label: "Nouveau véhicule",
+              }
+            : undefined
+        }
+        enableColumnVisibility={false}
+      />
 
-          {/* Bouton Nouveau véhicule (icône seulement) */}
-          {canManageVehicles && (
-            <Button asChild size="icon" className="shrink-0">
-              <Link href="/vehicules/nouveau">
-                <Plus className="h-5 w-5" />
-                <span className="sr-only">Nouveau véhicule</span>
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        {/* Liste */}
+      {/* === MOBILE : Liste cards === */}
+      <div className="md:hidden">
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
@@ -132,7 +134,7 @@ export default function VehiculesPage() {
             <p className="text-muted-foreground">Aucun véhicule trouvé</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
+          <div className="overflow-hidden rounded-md border">
             {vehicules.map((vehicule) => (
               <VehiculeListItem key={vehicule.id} vehicule={vehicule} />
             ))}
@@ -140,42 +142,8 @@ export default function VehiculesPage() {
         )}
       </div>
 
-      {/* TABLETTE : Recherche + Filtres drawer + Table + Nouveau */}
-      <div className="hidden md:block xl:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Nouveau */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="flex-1">
-            <VehiculeMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres (tablette) */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={clearFilters}
-            title="Filtres des véhicules"
-            description="Filtrer par statut et type de carburant"
-            showOnTablet={true}
-          >
-            <VehiculeFiltersStacked
-              filters={filters}
-              onFiltersChange={updateFilters}
-            />
-          </MobileFilterDrawer>
-
-          {/* Bouton Nouveau véhicule */}
-          {canManageVehicles && (
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau véhicule
-            </Button>
-          )}
-        </div>
-
-        {/* Table complète */}
+      {/* === TABLETTE & DESKTOP : DataTable === */}
+      <div className="hidden md:block">
         <DataTable
           columns={vehiculeColumns}
           data={vehicules}
@@ -184,57 +152,13 @@ export default function VehiculesPage() {
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
-        />
-      </div>
-
-      {/* DESKTOP : Recherche + Filtres dropdown + DataTable + Nouveau */}
-      <div className="hidden xl:block space-y-4">
-        {/* Header : Recherche + Filtres dropdown + Nouveau */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="w-full max-w-sm">
-            <VehiculeMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Dropdown de filtres (desktop) */}
-          <VehiculeFiltersDropdown
-            filters={filters}
-            onFiltersChange={updateFilters}
-            onClearFilters={clearFilters}
-            activeFiltersCount={activeFiltersCount}
-            triggerLabel="Filtrer"
-          />
-
-          {/* Spacer flex */}
-          <div className="flex-1" />
-
-          {/* Bouton Nouveau véhicule */}
-          {canManageVehicles && (
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau véhicule
-            </Button>
-          )}
-        </div>
-
-        {/* DataTable sans recherche interne */}
-        <DataTable
-          columns={vehiculeColumns}
-          data={vehicules}
-          isLoading={loading}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
+          hideToolbar
         />
       </div>
 
       {/* Dialogue de création */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nouveau véhicule</DialogTitle>
           </DialogHeader>
