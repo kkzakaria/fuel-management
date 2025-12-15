@@ -195,8 +195,8 @@ export async function fetchMissionsSousTraitanceClient(options?: {
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération missions sous-traitance:", error);
-    throw error;
+    console.error("Erreur récupération missions sous-traitance:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des missions de sous-traitance");
   }
 
   return {
@@ -229,8 +229,8 @@ export async function fetchMissionSousTraitanceByIdClient(missionId: string) {
     .single();
 
   if (error) {
-    console.error("Erreur récupération mission sous-traitance:", error);
-    throw error;
+    console.error("Erreur récupération mission sous-traitance:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération de la mission de sous-traitance");
   }
 
   return data;

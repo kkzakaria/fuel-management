@@ -87,8 +87,8 @@ export async function fetchTrajetsClient(options?: {
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération trajets:", error);
-    throw error;
+    console.error("Erreur récupération trajets:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des trajets");
   }
 
   return {
@@ -125,8 +125,8 @@ export async function fetchTrajetByIdClient(trajetId: string) {
     .single();
 
   if (error) {
-    console.error("Erreur récupération trajet:", error);
-    throw error;
+    console.error("Erreur récupération trajet:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération du trajet");
   }
 
   return data;
@@ -145,8 +145,8 @@ export async function fetchChauffeursActifsClient() {
     .order("nom");
 
   if (error) {
-    console.error("Erreur récupération chauffeurs:", error);
-    throw error;
+    console.error("Erreur récupération chauffeurs:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des chauffeurs");
   }
 
   return data || [];
@@ -165,8 +165,8 @@ export async function fetchVehiculesActifsClient() {
     .order("immatriculation");
 
   if (error) {
-    console.error("Erreur récupération véhicules:", error);
-    throw error;
+    console.error("Erreur récupération véhicules:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des véhicules");
   }
 
   return data || [];
@@ -184,8 +184,8 @@ export async function fetchLocalitesClient() {
     .order("nom");
 
   if (error) {
-    console.error("Erreur récupération localités:", error);
-    throw error;
+    console.error("Erreur récupération localités:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des localités");
   }
 
   return data || [];
@@ -203,8 +203,8 @@ export async function fetchTypeConteneursClient() {
     .order("taille_pieds");
 
   if (error) {
-    console.error("Erreur récupération types conteneurs:", error);
-    throw error;
+    console.error("Erreur récupération types conteneurs:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des types de conteneurs");
   }
 
   return data || [];
@@ -241,8 +241,8 @@ export async function fetchTrajetsStatsClient(options?: {
   const { data, error } = await query;
 
   if (error) {
-    console.error("Erreur récupération statistiques:", error);
-    throw error;
+    console.error("Erreur récupération statistiques:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des statistiques");
   }
 
   // Calculer les statistiques

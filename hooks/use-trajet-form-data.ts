@@ -71,8 +71,9 @@ export function useTrajetFormData() {
         setLocalites(localitesData);
         setTypeConteneurs(typeConteneursData);
       } catch (err) {
-        setError(err as Error);
-        console.error("Erreur chargement données formulaire:", err);
+        const error = err instanceof Error ? err : new Error("Erreur inconnue lors du chargement des données");
+        setError(error);
+        console.error("Erreur chargement données formulaire:", error.message);
       } finally {
         setLoading(false);
       }

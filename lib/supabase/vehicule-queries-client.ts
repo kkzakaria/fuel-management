@@ -55,8 +55,8 @@ export async function fetchVehiculesClient(options?: {
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération véhicules:", error);
-    throw error;
+    console.error("Erreur récupération véhicules:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des véhicules");
   }
 
   return {
@@ -85,8 +85,8 @@ export async function fetchVehiculeByIdClient(vehiculeId: string) {
     .single();
 
   if (error) {
-    console.error("Erreur récupération véhicule:", error);
-    throw error;
+    console.error("Erreur récupération véhicule:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération du véhicule");
   }
 
   return data;
@@ -131,8 +131,8 @@ export async function fetchVehiculeTrajetsClient(
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération trajets véhicule:", error);
-    throw error;
+    console.error("Erreur récupération trajets véhicule:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des trajets du véhicule");
   }
 
   return {
@@ -157,8 +157,8 @@ export async function fetchVehiculesActifsClient() {
     .order("immatriculation");
 
   if (error) {
-    console.error("Erreur récupération véhicules actifs:", error);
-    throw error;
+    console.error("Erreur récupération véhicules actifs:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des véhicules actifs");
   }
 
   return data || [];
