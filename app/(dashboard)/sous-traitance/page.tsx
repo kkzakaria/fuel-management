@@ -1,25 +1,22 @@
 /**
  * Page de liste des sous-traitants
- * Mobile : Recherche + Filtres drawer + Liste + FAB
- * Tablette : Recherche + Filtres drawer + Table + Bouton ajout
- * Desktop : Recherche + Filtres dropdown + DataTable + Bouton ajout
+ * Utilise le nouveau système de toolbar responsive intégré
+ *
+ * Mobile : Recherche + Filtres drawer + Liste cards
+ * Tablette/Desktop : Recherche + Filtres dropdown + DataTable
  */
 
 "use client";
 
 import { useCallback, useState, startTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Plus } from "lucide-react";
 
-import { DataTable } from "@/components/data-table";
+import { DataTable, DataTableToolbar } from "@/components/data-table";
 import { sousTraitantColumns } from "@/components/sous-traitants/sous-traitant-columns";
 import { SousTraitantListItem } from "@/components/sous-traitants/sous-traitant-list-item";
 import { SousTraitantForm } from "@/components/sous-traitants/sous-traitant-form";
 import { SousTraitantFiltersStacked } from "@/components/sous-traitants/sous-traitant-filters-stacked";
 import { SousTraitantFiltersDropdown } from "@/components/sous-traitants/sous-traitant-filters-dropdown";
-import { SousTraitantMobileSearch } from "@/components/sous-traitants/sous-traitant-mobile-search";
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -79,42 +76,45 @@ export default function SousTraitancePage() {
   }
 
   return (
-    <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Liste */}
-      <div className="md:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Ajout */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche mobile */}
-          <div className="flex-1">
-            <SousTraitantMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres mobile */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={clearFilters}
-            title="Filtres des sous-traitants"
-            description="Filtrer par statut"
-          >
+    <div className="container space-y-4 py-4 sm:space-y-6 sm:py-6">
+      {/* === TOOLBAR RESPONSIVE UNIFIÉE === */}
+      <DataTableToolbar
+        externalSearch={{
+          value: filters.search ?? "",
+          onChange: (value) => updateFilters({ search: value }),
+          placeholder: "Rechercher un sous-traitant...",
+        }}
+        responsiveFilters={{
+          mobileContent: (
             <SousTraitantFiltersStacked
               filters={filters}
               onFiltersChange={updateFilters}
             />
-          </MobileFilterDrawer>
+          ),
+          desktopContent: (
+            <SousTraitantFiltersDropdown
+              filters={filters}
+              onFiltersChange={updateFilters}
+              onClearFilters={clearFilters}
+              activeFiltersCount={activeFiltersCount}
+              triggerLabel="Filtrer"
+            />
+          ),
+          activeCount: activeFiltersCount,
+          onClear: clearFilters,
+          drawerTitle: "Filtres des sous-traitants",
+          drawerDescription: "Filtrer par statut",
+        }}
+        addButton={{
+          type: "dialog",
+          onClick: () => setDialogOpen(true),
+          label: "Nouveau sous-traitant",
+        }}
+        enableColumnVisibility={false}
+      />
 
-          {/* Bouton Nouveau sous-traitant (icône seulement) */}
-          <Button asChild size="icon" className="shrink-0">
-            <Link href="/sous-traitance/nouveau">
-              <Plus className="h-5 w-5" />
-              <span className="sr-only">Nouveau sous-traitant</span>
-            </Link>
-          </Button>
-        </div>
-
-        {/* Liste */}
+      {/* === MOBILE : Liste cards === */}
+      <div className="md:hidden">
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
@@ -126,7 +126,7 @@ export default function SousTraitancePage() {
             <p className="text-muted-foreground">Aucun sous-traitant trouvé</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
+          <div className="overflow-hidden rounded-md border">
             {sousTraitants.map((sousTraitant) => (
               <SousTraitantListItem
                 key={sousTraitant.id}
@@ -138,40 +138,8 @@ export default function SousTraitancePage() {
         )}
       </div>
 
-      {/* TABLETTE : Recherche + Filtres drawer + Table + Nouveau */}
-      <div className="hidden md:block xl:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Nouveau */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="flex-1">
-            <SousTraitantMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres (tablette) */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={clearFilters}
-            title="Filtres des sous-traitants"
-            description="Filtrer par statut"
-            showOnTablet={true}
-          >
-            <SousTraitantFiltersStacked
-              filters={filters}
-              onFiltersChange={updateFilters}
-            />
-          </MobileFilterDrawer>
-
-          {/* Bouton Nouveau sous-traitant */}
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau sous-traitant
-          </Button>
-        </div>
-
-        {/* Table complète */}
+      {/* === TABLETTE & DESKTOP : DataTable === */}
+      <div className="hidden md:block">
         <DataTable
           columns={sousTraitantColumns}
           data={sousTraitants}
@@ -180,55 +148,13 @@ export default function SousTraitancePage() {
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
-        />
-      </div>
-
-      {/* DESKTOP : Recherche + Filtres dropdown + DataTable + Nouveau */}
-      <div className="hidden xl:block space-y-4">
-        {/* Header : Recherche + Filtres dropdown + Nouveau */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="w-full max-w-sm">
-            <SousTraitantMobileSearch
-              value={filters.search}
-              onSearchChange={(value) => updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Dropdown de filtres (desktop) */}
-          <SousTraitantFiltersDropdown
-            filters={filters}
-            onFiltersChange={updateFilters}
-            onClearFilters={clearFilters}
-            activeFiltersCount={activeFiltersCount}
-            triggerLabel="Filtrer"
-          />
-
-          {/* Spacer flex */}
-          <div className="flex-1" />
-
-          {/* Bouton Nouveau sous-traitant */}
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau sous-traitant
-          </Button>
-        </div>
-
-        {/* DataTable sans recherche interne */}
-        <DataTable
-          columns={sousTraitantColumns}
-          data={sousTraitants}
-          isLoading={loading}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
+          hideToolbar // La toolbar est gérée séparément ci-dessus
         />
       </div>
 
       {/* Dialogue de création */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nouveau sous-traitant</DialogTitle>
           </DialogHeader>

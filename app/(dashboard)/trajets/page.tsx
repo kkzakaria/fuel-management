@@ -1,27 +1,25 @@
 /**
  * Page de liste des trajets
  * Affiche la table avec filtres et pagination via DataTable
- * Mobile : Recherche + Filtres drawer + Infinite scroll + FAB
- * Tablette : Table simplifiée 5 colonnes
- * Desktop : DataTable complet
+ * Utilise le nouveau système de toolbar responsive intégré
+ *
+ * Mobile : Recherche + Filtres drawer + Infinite scroll + Cards
+ * Tablette : Recherche + Filtres drawer + Table simplifiée
+ * Desktop : Recherche + Filtres dropdown + DataTable complet
  */
 
 "use client"
 
 import { useCallback, startTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Plus } from "lucide-react"
 
-import { DataTable } from "@/components/data-table"
+import { DataTable, DataTableToolbar } from "@/components/data-table"
 import { trajetColumns } from "@/components/trajets/trajet-columns"
 import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
 import { TrajetTabletTable } from "@/components/trajets/trajet-tablet-table"
 import { TrajetFiltersStacked } from "@/components/trajets/trajet-filters-stacked"
 import { TrajetFiltersDropdown } from "@/components/trajets/trajet-filters-dropdown"
-import { TrajetMobileSearch } from "@/components/trajets/trajet-mobile-search"
 import { InfiniteScroll } from "@/components/ui/infinite-scroll"
-import { MobileFilterDrawer } from "@/components/ui/mobile-filter-drawer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -95,26 +93,16 @@ export default function TrajetsPage() {
   }
 
   return (
-    <div className="container py-4 space-y-4 sm:py-6 sm:space-y-6">
-      {/* MOBILE : Recherche + Filtres drawer + Bouton ajout + Infinite scroll */}
-      <div className="md:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Ajout (une seule ligne) */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche mobile */}
-          <div className="flex-1">
-            <TrajetMobileSearch
-              value={mobileData.filters.search}
-              onSearchChange={(value) => mobileData.updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres mobile */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={mobileData.clearFilters}
-            title="Filtres des trajets"
-            description="Filtrer par date, chauffeur, véhicule, destination ou statut"
-          >
+    <div className="container space-y-4 py-4 sm:space-y-6 sm:py-6">
+      {/* === TOOLBAR RESPONSIVE UNIFIÉE === */}
+      <DataTableToolbar
+        externalSearch={{
+          value: mobileData.filters.search ?? "",
+          onChange: (value) => mobileData.updateFilters({ search: value }),
+          placeholder: "Rechercher un trajet...",
+        }}
+        responsiveFilters={{
+          mobileContent: (
             <TrajetFiltersStacked
               filters={mobileData.filters}
               onFiltersChange={mobileData.updateFilters}
@@ -122,18 +110,34 @@ export default function TrajetsPage() {
               vehicules={vehicules}
               localites={localites}
             />
-          </MobileFilterDrawer>
+          ),
+          desktopContent: (
+            <TrajetFiltersDropdown
+              filters={desktopData.filters}
+              onFiltersChange={desktopData.updateFilters}
+              onClearFilters={desktopData.clearFilters}
+              chauffeurs={chauffeurs}
+              vehicules={vehicules}
+              localites={localites}
+              activeFiltersCount={activeFiltersCount}
+              triggerLabel="Filtrer"
+            />
+          ),
+          activeCount: activeFiltersCount,
+          onClear: mobileData.clearFilters,
+          drawerTitle: "Filtres des trajets",
+          drawerDescription: "Filtrer par date, chauffeur, véhicule, destination ou statut",
+        }}
+        addButton={{
+          type: "link",
+          href: "/trajets/nouveau",
+          label: "Nouveau trajet",
+        }}
+        enableColumnVisibility={false}
+      />
 
-          {/* Bouton Nouveau trajet (icône seulement) */}
-          <Button asChild size="icon" className="shrink-0">
-            <Link href="/trajets/nouveau">
-              <Plus className="h-5 w-5" />
-              <span className="sr-only">Nouveau trajet</span>
-            </Link>
-          </Button>
-        </div>
-
-        {/* Liste avec infinite scroll */}
+      {/* === MOBILE : Liste avec infinite scroll (cards) === */}
+      <div className="md:hidden">
         {mobileData.loading && mobileData.trajets.length === 0 ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
@@ -157,88 +161,16 @@ export default function TrajetsPage() {
         )}
       </div>
 
-      {/* TABLETTE : Table simplifiée 5 colonnes avec drawer de filtres */}
-      <div className="hidden md:block xl:hidden space-y-4">
-        {/* Header : Recherche + Filtres + Nouveau (une seule ligne) */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="flex-1">
-            <TrajetMobileSearch
-              value={desktopData.filters.search}
-              onSearchChange={(value) => desktopData.updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Drawer de filtres (tablette) */}
-          <MobileFilterDrawer
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={desktopData.clearFilters}
-            title="Filtres des trajets"
-            description="Filtrer par date, chauffeur, véhicule, destination ou statut"
-            showOnTablet={true}
-          >
-            <TrajetFiltersStacked
-              filters={desktopData.filters}
-              onFiltersChange={desktopData.updateFilters}
-              chauffeurs={chauffeurs}
-              vehicules={vehicules}
-              localites={localites}
-            />
-          </MobileFilterDrawer>
-
-          {/* Bouton Nouveau trajet */}
-          <Button asChild>
-            <Link href="/trajets/nouveau">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau trajet
-            </Link>
-          </Button>
-        </div>
-
-        {/* Table simplifiée */}
+      {/* === TABLETTE : Table simplifiée 5 colonnes === */}
+      <div className="hidden md:block xl:hidden">
         <TrajetTabletTable
           trajets={desktopData.trajets}
           loading={desktopData.loading}
         />
       </div>
 
-      {/* DESKTOP : DataTable complet */}
-      <div className="hidden xl:block space-y-4">
-        {/* Header : Recherche + Filtres dropdown + Nouveau */}
-        <div className="flex items-center gap-3">
-          {/* Barre de recherche */}
-          <div className="w-full max-w-sm">
-            <TrajetMobileSearch
-              value={desktopData.filters.search}
-              onSearchChange={(value) => desktopData.updateFilters({ search: value })}
-            />
-          </div>
-
-          {/* Dropdown de filtres (desktop) */}
-          <TrajetFiltersDropdown
-            filters={desktopData.filters}
-            onFiltersChange={desktopData.updateFilters}
-            onClearFilters={desktopData.clearFilters}
-            chauffeurs={chauffeurs}
-            vehicules={vehicules}
-            localites={localites}
-            activeFiltersCount={activeFiltersCount}
-            triggerLabel="Filtrer"
-          />
-
-          {/* Spacer flex */}
-          <div className="flex-1" />
-
-          {/* Bouton Nouveau trajet */}
-          <Button asChild>
-            <Link href="/trajets/nouveau">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau trajet
-            </Link>
-          </Button>
-        </div>
-
-        {/* DataTable sans recherche interne */}
+      {/* === DESKTOP : DataTable complet === */}
+      <div className="hidden xl:block">
         <DataTable
           columns={trajetColumns}
           data={desktopData.trajets}
@@ -247,6 +179,7 @@ export default function TrajetsPage() {
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
           stickyHeader
+          hideToolbar // La toolbar est gérée séparément ci-dessus
         />
       </div>
     </div>

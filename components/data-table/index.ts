@@ -39,4 +39,8 @@ export type {
   DataTableSkeletonProps,
   DataTableToolbarProps,
   FilterConfig,
+  // Nouveaux types pour le mode responsive
+  ExternalSearchConfig,
+  ResponsiveFiltersConfig,
+  AddButtonConfig,
 } from "@/types/data-table"

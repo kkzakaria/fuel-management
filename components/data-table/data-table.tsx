@@ -87,6 +87,10 @@ export function DataTable<TData>({
   actions,
   addButton,
   onSelectionChange,
+  // Nouvelles props responsives
+  externalSearch,
+  responsiveFilters,
+  hideToolbar = false,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -163,6 +167,10 @@ export function DataTable<TData>({
         enableColumnVisibility={enableColumnVisibility}
         actions={actions?.(table)}
         addButton={addButton}
+        // Nouvelles props responsives
+        externalSearch={externalSearch}
+        responsiveFilters={responsiveFilters}
+        hideToolbar={hideToolbar}
       />
 
       {/* Tableau */}
