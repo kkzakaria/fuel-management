@@ -4,9 +4,10 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrajetDetails } from "@/components/trajets/trajet-details";
+import { TrajetActions } from "@/components/trajets/trajet-actions";
 import { getTrajetById } from "@/lib/supabase/queries";
 
 interface TrajetPageProps {
@@ -46,20 +47,15 @@ export default async function TrajetPage({ params }: TrajetPageProps) {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/trajets/${id}/modifier`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
-            </Link>
-          </Button>
-          <Button variant="destructive" asChild>
-            <Link href={`/trajets/${id}/supprimer`}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </Link>
-          </Button>
-        </div>
+        <TrajetActions
+          trajetId={id}
+          statut={trajet.statut}
+          kmDebut={trajet.km_debut}
+          kmFin={trajet.km_fin}
+          litragePrevu={trajet.litrage_prevu}
+          fraisPeage={trajet.frais_peage}
+          autresFrais={trajet.autres_frais}
+        />
       </div>
 
       {/* Détails */}
