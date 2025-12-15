@@ -18,30 +18,35 @@ Instructions pour appliquer les migrations à votre projet Supabase.
 2. **Appliquez les migrations dans l'ordre**:
 
    #### Migration 1: Schema initial (8 tables principales)
+
    ```bash
    # Copiez le contenu de: supabase/migrations/20250118000001_create_initial_schema.sql
    # Collez dans l'éditeur SQL et exécutez
    ```
 
    #### Migration 2: Profiles et authentification
+
    ```bash
    # Copiez le contenu de: supabase/migrations/20250118000002_create_profiles_and_auth.sql
    # Collez dans l'éditeur SQL et exécutez
    ```
 
    #### Migration 3: RLS Policies
+
    ```bash
    # Copiez le contenu de: supabase/migrations/20250118000003_create_rls_policies.sql
    # Collez dans l'éditeur SQL et exécutez
    ```
 
    #### Migration 4: Seed data
+
    ```bash
    # Copiez le contenu de: supabase/migrations/20250118000004_seed_data.sql
    # Collez dans l'éditeur SQL et exécutez
    ```
 
    #### Migration 5: Test users (optionnel)
+
    ```bash
    # Copiez le contenu de: supabase/migrations/20250118000005_seed_test_users.sql
    # Collez dans l'éditeur SQL et exécutez
@@ -70,22 +75,43 @@ supabase gen types typescript --local > lib/supabase/database.types.ts
 
 ## Création des utilisateurs de test
 
-Après avoir appliqué toutes les migrations:
+### Option 1: Via le script automatique (Recommandé pour local)
+
+```bash
+# 1. Démarrer Supabase local
+supabase start
+
+# 2. Appliquer les migrations et seed data
+supabase db reset
+
+# 3. Créer les utilisateurs de test
+pnpm seed:users
+```
+
+Le script `seed:users` va:
+
+- Supprimer les utilisateurs de test existants (identifiés par @transport.ci)
+- Créer les 5 utilisateurs avec leurs rôles
+- Lier les chauffeurs à leurs profils si disponibles
+- Afficher un résumé avec les identifiants
+
+### Option 2: Via le Dashboard (Production)
 
 1. **Créez les utilisateurs dans le Dashboard**:
    - Allez sur: Authentication → Users → Add user
 
 2. **Créez les 5 utilisateurs de test**:
 
-   | Email | Mot de passe | Rôle à assigner |
-   |-------|-------------|-----------------|
-   | admin@transport.ci | Admin123! | admin |
-   | gestionnaire@transport.ci | Gestion123! | gestionnaire |
-   | chauffeur1@transport.ci | Chauffeur123! | chauffeur |
-   | chauffeur2@transport.ci | Chauffeur123! | chauffeur |
-   | personnel@transport.ci | Personnel123! | personnel |
+   | Email                     | Mot de passe  | Rôle à assigner |
+   | ------------------------- | ------------- | --------------- |
+   | admin@transport.ci        | Admin123!     | admin           |
+   | gestionnaire@transport.ci | Gestion123!   | gestionnaire    |
+   | chauffeur1@transport.ci   | Chauffeur123! | chauffeur       |
+   | chauffeur2@transport.ci   | Chauffeur123! | chauffeur       |
+   | personnel@transport.ci    | Personnel123! | personnel       |
 
 3. **Exécutez la fonction de création de profiles**:
+
    ```sql
    SELECT public.create_test_profiles();
    ```
@@ -94,6 +120,16 @@ Après avoir appliqué toutes les migrations:
    ```sql
    SELECT * FROM public.profiles;
    ```
+
+### Identifiants de connexion
+
+| Rôle         | Email                     | Mot de passe  | Nom                   |
+| ------------ | ------------------------- | ------------- | --------------------- |
+| Admin        | admin@transport.ci        | Admin123!     | Système Admin         |
+| Gestionnaire | gestionnaire@transport.ci | Gestion123!   | Jean-Marc Kouassi     |
+| Chauffeur 1  | chauffeur1@transport.ci   | Chauffeur123! | Jean-Baptiste Kouassi |
+| Chauffeur 2  | chauffeur2@transport.ci   | Chauffeur123! | Mamadou Coulibaly     |
+| Personnel    | personnel@transport.ci    | Personnel123! | Christelle N'Guessan  |
 
 ## Vérification post-migration
 
@@ -126,27 +162,31 @@ WHERE trigger_schema = 'public';
 
 ## Fichiers de migration
 
-| Fichier | Description |
-|---------|-------------|
-| `20250118000001_create_initial_schema.sql` | Crée les 8 tables principales + indexes + triggers |
-| `20250118000002_create_profiles_and_auth.sql` | Table profiles + fonctions d'auth + helpers |
-| `20250118000003_create_rls_policies.sql` | Policies RLS pour les 4 rôles |
-| `20250118000004_seed_data.sql` | Données initiales (localités, conteneurs, test data) |
-| `20250118000005_seed_test_users.sql` | Fonction pour créer les profiles de test |
+| Fichier                                       | Description                                          |
+| --------------------------------------------- | ---------------------------------------------------- |
+| `20250118000001_create_initial_schema.sql`    | Crée les 8 tables principales + indexes + triggers   |
+| `20250118000002_create_profiles_and_auth.sql` | Table profiles + fonctions d'auth + helpers          |
+| `20250118000003_create_rls_policies.sql`      | Policies RLS pour les 4 rôles                        |
+| `20250118000004_seed_data.sql`                | Données initiales (localités, conteneurs, test data) |
+| `20250118000005_seed_test_users.sql`          | Fonction pour créer les profiles de test             |
 
 ## Dépannage
 
 ### Erreur: "relation already exists"
+
 - Certaines tables existent déjà. Supprimez-les ou utilisez `DROP TABLE IF EXISTS` avant la migration.
 
 ### Erreur: "permission denied"
+
 - Vérifiez que vous êtes connecté en tant qu'admin sur le dashboard.
 
 ### RLS empêche les queries
+
 - Désactivez temporairement RLS pour tester: `ALTER TABLE nom_table DISABLE ROW LEVEL SECURITY;`
 - Réactivez ensuite: `ALTER TABLE nom_table ENABLE ROW LEVEL SECURITY;`
 
 ### Types TypeScript vides
+
 - Les types auto-générés ne fonctionneront qu'après application des migrations.
 - Utilisez `lib/supabase/types.ts` comme référence en attendant.
 
@@ -162,6 +202,7 @@ Après avoir appliqué toutes les migrations:
 ## Support
 
 Pour toute question sur les migrations:
+
 - Consultez la documentation Supabase: https://supabase.com/docs
 - Vérifiez les logs dans le dashboard Supabase
 - Référez-vous au fichier `PLAN_DEVELOPPEMENT.md` pour la stratégie de migration
