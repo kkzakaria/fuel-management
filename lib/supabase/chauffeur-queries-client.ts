@@ -52,8 +52,8 @@ export async function fetchChauffeursClient(options?: {
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération chauffeurs:", error);
-    throw error;
+    console.error("Erreur récupération chauffeurs:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des chauffeurs");
   }
 
   return {
@@ -82,8 +82,8 @@ export async function fetchChauffeurByIdClient(chauffeurId: string) {
     .single();
 
   if (error) {
-    console.error("Erreur récupération chauffeur:", error);
-    throw error;
+    console.error("Erreur récupération chauffeur:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération du chauffeur");
   }
 
   return data;
@@ -127,8 +127,8 @@ export async function fetchChauffeurTrajetsClient(
     .range(from, to);
 
   if (error) {
-    console.error("Erreur récupération trajets chauffeur:", error);
-    throw error;
+    console.error("Erreur récupération trajets chauffeur:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des trajets du chauffeur");
   }
 
   return {
@@ -153,8 +153,8 @@ export async function fetchChauffeursActifsClient() {
     .order("nom");
 
   if (error) {
-    console.error("Erreur récupération chauffeurs actifs:", error);
-    throw error;
+    console.error("Erreur récupération chauffeurs actifs:", error.message, error.code, error.details, error.hint);
+    throw new Error(error.message || "Erreur lors de la récupération des chauffeurs actifs");
   }
 
   return data || [];
