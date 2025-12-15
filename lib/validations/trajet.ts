@@ -57,10 +57,11 @@ export const createTrajetSchema = z.object({
   }).nonnegative("Le kilométrage ne peut pas être négatif")
     .int("Le kilométrage doit être un nombre entier"),
 
-  km_fin: z.number({
-    required_error: "Le kilométrage de retour est requis",
-  }).nonnegative("Le kilométrage ne peut pas être négatif")
-    .int("Le kilométrage doit être un nombre entier"),
+  km_fin: z.number()
+    .nonnegative("Le kilométrage ne peut pas être négatif")
+    .int("Le kilométrage doit être un nombre entier")
+    .optional()
+    .nullable(),
 
   litrage_prevu: z.number({
     required_error: "Le litrage prévu est requis",
@@ -97,8 +98,11 @@ export const createTrajetSchema = z.object({
     .min(1, "Au moins un conteneur est requis")
     .max(20, "Maximum 20 conteneurs par trajet"),
 }).refine((data) => {
-  // Validation: km_fin doit être supérieur à km_debut
-  return data.km_fin > data.km_debut;
+  // Validation: km_fin doit être supérieur à km_debut (seulement si km_fin est fourni)
+  if (data.km_fin !== undefined && data.km_fin !== null) {
+    return data.km_fin > data.km_debut;
+  }
+  return true;
 }, {
   message: "Le kilométrage de retour doit être supérieur au kilométrage de départ",
   path: ["km_fin"],
@@ -128,7 +132,8 @@ export const updateTrajetSchema = z.object({
   km_fin: z.number()
     .nonnegative("Le kilométrage ne peut pas être négatif")
     .int("Le kilométrage doit être un nombre entier")
-    .optional(),
+    .optional()
+    .nullable(),
 
   litrage_prevu: z.number()
     .positive("Le litrage prévu doit être positif")
@@ -162,7 +167,7 @@ export const updateTrajetSchema = z.object({
     .nullable(),
 }).refine((data) => {
   // Validation conditionnelle: si km_debut et km_fin sont fournis, km_fin > km_debut
-  if (data.km_debut !== undefined && data.km_fin !== undefined) {
+  if (data.km_debut !== undefined && data.km_fin !== undefined && data.km_fin !== null) {
     return data.km_fin > data.km_debut;
   }
   return true;
@@ -193,6 +198,38 @@ export const updateConteneursSchema = z.object({
 });
 
 /**
+ * Schéma pour l'enregistrement du retour d'un trajet
+ * Contient les informations disponibles uniquement après le voyage
+ */
+export const trajetRetourSchema = z.object({
+  km_fin: z.number({
+    required_error: "Le kilométrage de retour est requis",
+  }).nonnegative("Le kilométrage ne peut pas être négatif")
+    .int("Le kilométrage doit être un nombre entier"),
+
+  litrage_station: z.number({
+    required_error: "Le litrage acheté est requis",
+  }).positive("Le litrage acheté doit être positif"),
+
+  prix_litre: z.number({
+    required_error: "Le prix au litre est requis",
+  }).positive("Le prix au litre doit être positif"),
+
+  frais_peage: z.number()
+    .nonnegative("Les frais de péage ne peuvent pas être négatifs")
+    .optional(),
+
+  autres_frais: z.number()
+    .nonnegative("Les autres frais ne peuvent pas être négatifs")
+    .optional(),
+
+  observations: z.string()
+    .max(1000, "Les observations ne peuvent pas dépasser 1000 caractères")
+    .optional()
+    .nullable(),
+});
+
+/**
  * Schéma pour les filtres de recherche de trajets
  */
 export const trajetFiltersSchema = z.object({
@@ -217,6 +254,7 @@ export const trajetFiltersSchema = z.object({
 export type CreateTrajetInput = z.infer<typeof createTrajetSchema>;
 export type UpdateTrajetInput = z.infer<typeof updateTrajetSchema>;
 export type DeleteTrajetInput = z.infer<typeof deleteTrajetSchema>;
+export type TrajetRetourInput = z.infer<typeof trajetRetourSchema>;
 export type UpdateConteneursInput = z.infer<typeof updateConteneursSchema>;
 export type TrajetFilters = z.infer<typeof trajetFiltersSchema>;
 export type ConteneurInput = z.infer<typeof conteneurSchema>;

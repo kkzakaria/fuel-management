@@ -68,7 +68,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
       localite_depart_id: trajet?.localite_depart_id || "",
       localite_arrivee_id: trajet?.localite_arrivee_id || "",
       km_debut: trajet?.km_debut || 0,
-      km_fin: trajet?.km_fin || 0,
+      km_fin: trajet?.km_fin ?? undefined,
       litrage_prevu: trajet?.litrage_prevu || undefined,
       litrage_station: trajet?.litrage_station || undefined,
       prix_litre: trajet?.prix_litre || undefined,
@@ -364,36 +364,41 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               )}
             />
 
-            {/* KM fin */}
-            <FormField
-              control={form.control}
-              name="km_fin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kilométrage retour *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormDescription>Kilométrage au compteur au retour</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* KM fin - Uniquement en mode édition */}
+            {isEditing && (
+              <FormField
+                control={form.control}
+                name="km_fin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kilométrage retour *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>Kilométrage au compteur au retour</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
-            {/* Distance calculée */}
-            <div className="md:col-span-2">
-              <div className="rounded-lg bg-muted p-3 flex items-center gap-2">
-                <Calculator className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Distance parcourue: {calculs.distance} km
-                </span>
+            {/* Distance calculée - Uniquement en mode édition */}
+            {isEditing && calculs.distance > 0 && (
+              <div className="md:col-span-2">
+                <div className="rounded-lg bg-muted p-3 flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    Distance parcourue: {calculs.distance} km
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -427,28 +432,30 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
                 )}
               />
 
-              {/* Litrage acheté */}
-              <FormField
-                control={form.control}
-                name="litrage_station"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Litrage acheté</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        placeholder="0"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}
-                      />
-                    </FormControl>
-                    <FormDescription>Litres réellement achetés</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Litrage acheté - Uniquement en mode édition */}
+              {isEditing && (
+                <FormField
+                  control={form.control}
+                  name="litrage_station"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Litrage acheté</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="0"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}
+                        />
+                      </FormControl>
+                      <FormDescription>Litres réellement achetés</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Prix au litre */}
               <FormField
@@ -474,34 +481,36 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
               />
             </div>
 
-            {/* Calculs carburant */}
-            <div className="space-y-2">
-              <div className="rounded-lg bg-muted p-3 space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Écart litrage:</span>
-                  <span className={`font-medium ${calculs.ecartLitrage && Math.abs(calculs.ecartLitrage) > 10 ? "text-destructive" : ""}`}>
-                    {calculs.ecartLitrage !== null ? `${calculs.ecartLitrage.toFixed(1)} L` : "-"}
-                  </span>
+            {/* Calculs carburant - Uniquement en mode édition */}
+            {isEditing && (
+              <div className="space-y-2">
+                <div className="rounded-lg bg-muted p-3 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Écart litrage:</span>
+                    <span className={`font-medium ${calculs.ecartLitrage && Math.abs(calculs.ecartLitrage) > 10 ? "text-destructive" : ""}`}>
+                      {calculs.ecartLitrage !== null ? `${calculs.ecartLitrage.toFixed(1)} L` : "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Consommation au 100km:</span>
+                    <span className="font-medium">
+                      {calculs.consommationAu100 !== null ? `${calculs.consommationAu100.toFixed(2)} L/100km` : "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Montant carburant:</span>
+                    <span className="font-medium">
+                      {calculs.montantCarburant !== null
+                        ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(calculs.montantCarburant)
+                        : "-"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Consommation au 100km:</span>
-                  <span className="font-medium">
-                    {calculs.consommationAu100 !== null ? `${calculs.consommationAu100.toFixed(2)} L/100km` : "-"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Montant carburant:</span>
-                  <span className="font-medium">
-                    {calculs.montantCarburant !== null
-                      ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(calculs.montantCarburant)
-                      : "-"}
-                  </span>
-                </div>
+                {calculs.ecartLitrage && Math.abs(calculs.ecartLitrage) > 10 && (
+                  <p className="text-sm text-destructive">⚠️ Alerte: Écart de carburant supérieur à 10L</p>
+                )}
               </div>
-              {calculs.ecartLitrage && Math.abs(calculs.ecartLitrage) > 10 && (
-                <p className="text-sm text-destructive">⚠️ Alerte: Écart de carburant supérieur à 10L</p>
-              )}
-            </div>
+            )}
           </CardContent>
         </Card>
 

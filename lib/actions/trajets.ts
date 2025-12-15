@@ -17,6 +17,7 @@ import {
   updateTrajetSchema,
   deleteTrajetSchema,
   updateConteneursSchema,
+  trajetRetourSchema,
 } from "@/lib/validations/trajet";
 
 /**
@@ -187,5 +188,66 @@ export const updateConteneursAction = action
     return {
       success: true,
       message: "Conteneurs mis à jour avec succès",
+    };
+  });
+
+/**
+ * Action: Enregistrer le retour d'un trajet
+ * Met à jour les informations disponibles après le voyage
+ */
+export const enregistrerRetourAction = action
+  .schema(trajetRetourSchema)
+  .bindArgsSchemas([deleteTrajetSchema])
+  .action(async ({ parsedInput, bindArgsParsedInputs: [{ trajetId }] }) => {
+    const supabase = await createClient();
+
+    // Récupérer le trajet actuel pour vérifier qu'il existe et obtenir le km_debut
+    const { data: trajetActuel, error: fetchError } = await supabase
+      .from("trajet")
+      .select("id, km_debut, statut")
+      .eq("id", trajetId)
+      .single();
+
+    if (fetchError || !trajetActuel) {
+      throw new Error("Trajet non trouvé");
+    }
+
+    // Vérifier que km_fin > km_debut
+    if (parsedInput.km_fin <= trajetActuel.km_debut) {
+      throw new Error("Le kilométrage de retour doit être supérieur au kilométrage de départ");
+    }
+
+    // Préparer les données de mise à jour
+    const updateData = {
+      km_fin: parsedInput.km_fin,
+      litrage_station: parsedInput.litrage_station,
+      prix_litre: parsedInput.prix_litre,
+      ...(parsedInput.frais_peage !== undefined && { frais_peage: parsedInput.frais_peage }),
+      ...(parsedInput.autres_frais !== undefined && { autres_frais: parsedInput.autres_frais }),
+      ...(parsedInput.observations !== undefined && { observations: parsedInput.observations }),
+      statut: "termine", // Marquer automatiquement comme terminé
+    };
+
+    const { data: trajet, error } = await supabase
+      .from("trajet")
+      .update(updateData)
+      .eq("id", trajetId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erreur enregistrement retour:", error);
+      throw new Error("Erreur lors de l'enregistrement du retour");
+    }
+
+    // Revalider les caches
+    revalidatePath("/trajets");
+    revalidatePath(`/trajets/${trajetId}`);
+    revalidatePath("/");
+
+    return {
+      success: true,
+      trajet,
+      message: "Retour enregistré avec succès",
     };
   });
