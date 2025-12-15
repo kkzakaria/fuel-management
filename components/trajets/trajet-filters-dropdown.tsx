@@ -5,7 +5,7 @@
 
 "use client";
 
-import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2, Check } from "lucide-react";
+import { Calendar as CalendarIcon, X, User, Truck, MapPin, CheckCircle2, Check, Filter } from "lucide-react";
 import { startOfMonth, endOfMonth, subDays, startOfDay, endOfDay } from "date-fns";
 import type { DateRange, DropdownNavProps, DropdownProps } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -142,6 +142,7 @@ export function TrajetFiltersDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="relative">
+          <Filter className="-ms-1 me-2 opacity-60" size={16} aria-hidden="true" />
           {triggerLabel}
           {activeFiltersCount > 0 && (
             <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-xs">
