@@ -202,6 +202,11 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
                         mode="single"
                         selected={field.value ? new Date(field.value) : undefined}
                         onSelect={(date) => field.onChange(date?.toISOString().split("T")[0])}
+                        disabled={!isEditing ? (date) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          return date < today;
+                        } : undefined}
                         initialFocus
                       />
                     </PopoverContent>
