@@ -1,6 +1,9 @@
 import { Column, ColumnDef, Table } from "@tanstack/react-table"
 import { ReactNode } from "react"
 
+// Re-export pour faciliter l'import
+export type { Column, ColumnDef, Table } from "@tanstack/react-table"
+
 /**
  * Configuration pour une colonne filtrable avec facettes
  */
@@ -109,19 +112,80 @@ export interface DataTableProps<TData> {
 
   /** Callback pour les lignes sélectionnées (si enableSelection = true) */
   onSelectionChange?: (selectedRows: TData[]) => void
+
+  // === Nouvelles props pour mode responsive ===
+
+  /** Configuration de la recherche externe (Nuqs) - remplace searchKey */
+  externalSearch?: ExternalSearchConfig
+
+  /** Configuration des filtres responsives personnalisés */
+  responsiveFilters?: ResponsiveFiltersConfig
+
+  /** Masquer complètement la toolbar (si gestion externe totale) */
+  hideToolbar?: boolean
+}
+
+/**
+ * Configuration pour la recherche externe (via Nuqs ou autre)
+ */
+export interface ExternalSearchConfig {
+  /** Valeur actuelle de la recherche */
+  value: string
+  /** Callback appelé lors du changement de valeur (avec debounce interne) */
+  onChange: (value: string) => void
+  /** Placeholder du champ de recherche */
+  placeholder?: string
+}
+
+/**
+ * Configuration pour les filtres responsives
+ */
+export interface ResponsiveFiltersConfig {
+  /** Contenu des filtres pour mobile/tablette (affiché dans le drawer) */
+  mobileContent: ReactNode
+  /** Contenu des filtres pour desktop (dropdown ou inline) */
+  desktopContent: ReactNode
+  /** Nombre de filtres actifs (pour le badge) */
+  activeCount: number
+  /** Callback pour réinitialiser les filtres */
+  onClear: () => void
+  /** Titre du drawer mobile (optionnel) */
+  drawerTitle?: string
+  /** Description du drawer mobile (optionnel) */
+  drawerDescription?: string
 }
 
 /**
  * Props du composant DataTableToolbar
+ *
+ * Deux modes d'utilisation :
+ * 1. Mode interne : Utiliser avec un DataTable (table requis)
+ * 2. Mode externe standalone : Utiliser seul avec externalSearch/responsiveFilters (table optionnel)
  */
 export interface DataTableToolbarProps<TData> {
-  table: Table<TData>
+  /** Instance TanStack Table - requis en mode interne, optionnel en mode externe */
+  table?: Table<TData>
+  /** @deprecated Utiliser externalSearch à la place pour l'intégration Nuqs */
   searchKey?: string
+  /** @deprecated Utiliser externalSearch.placeholder à la place */
   searchPlaceholder?: string
+  /** Configuration des filtres par colonne (mode interne TanStack) */
   filterColumns?: FilterConfig[]
+  /** Activer le contrôle de visibilité des colonnes (requiert table) */
   enableColumnVisibility?: boolean
+  /** Actions personnalisées affichées dans la toolbar */
   actions?: ReactNode
+  /** Configuration du bouton d'ajout */
   addButton?: AddButtonConfig
+
+  // === Nouvelles props pour mode responsive ===
+
+  /** Configuration de la recherche externe (Nuqs) - remplace searchKey */
+  externalSearch?: ExternalSearchConfig
+  /** Configuration des filtres responsives personnalisés */
+  responsiveFilters?: ResponsiveFiltersConfig
+  /** Masquer la toolbar (si gestion totalement externe) */
+  hideToolbar?: boolean
 }
 
 /**
