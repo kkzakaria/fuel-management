@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { login } from "@/lib/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -45,15 +45,27 @@ export function LoginForm() {
     setError(null);
 
     try {
-      const result = await login(values);
+      // Use client-side Supabase for login (recommended by Supabase docs)
+      // This properly handles cookies in the browser context
+      const supabase = createClient();
 
-      if (result.error) {
-        setError(result.error);
-      } else {
-        // Successful login, redirect to dashboard
-        router.push("/");
-        router.refresh();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (authError) {
+        if (authError.message.includes("Invalid login credentials")) {
+          setError("Email ou mot de passe incorrect");
+        } else {
+          setError(authError.message);
+        }
+        return;
       }
+
+      // Successful login, redirect to dashboard
+      router.push("/");
+      router.refresh();
     } catch {
       setError("Une erreur est survenue. Veuillez réessayer.");
     } finally {
