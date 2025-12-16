@@ -24,7 +24,7 @@ export function ChauffeurCreateTripButton({ chauffeurId }: ChauffeurCreateTripBu
 
   return (
     <Button variant="outline" asChild>
-      <Link href={`/trajets/nouveau?chauffeurId=${chauffeurId}`}>
+      <Link href={`/trajets/nouveau?chauffeurId=${chauffeurId}&returnUrl=/chauffeurs/${chauffeurId}`}>
         <Truck className="mr-2 h-4 w-4" />
         Créer un trajet
       </Link>
