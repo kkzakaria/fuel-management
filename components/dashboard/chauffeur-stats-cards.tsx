@@ -8,17 +8,24 @@
 "use client";
 
 import Link from "next/link";
-import { Users, Truck, Coffee, AlertTriangle, UserX } from "lucide-react";
+import { Users, Truck, Coffee, AlertTriangle, UserX, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ChauffeurStatusStats } from "@/lib/dashboard-types";
 import type { LucideIcon } from "lucide-react";
 
-// Configuration des icônes et styles par statut
+// Configuration des icônes, styles et descriptions par statut
 type StatusConfigItem = {
   icon: LucideIcon;
   bgClass: string;
   borderColor: string;
+  description: string;
+  actionLabel: string;
 };
 
 const STATUS_CONFIG = {
@@ -26,26 +33,36 @@ const STATUS_CONFIG = {
     icon: Users,
     bgClass: "bg-emerald-50 dark:bg-emerald-950/30",
     borderColor: "hsl(142, 76%, 36%)",
+    description: "Chauffeurs disponibles pour des missions",
+    actionLabel: "Voir les chauffeurs disponibles",
   },
   en_voyage: {
     icon: Truck,
     bgClass: "bg-blue-50 dark:bg-blue-950/30",
     borderColor: "hsl(221, 83%, 53%)",
+    description: "Chauffeurs actuellement en mission",
+    actionLabel: "Voir les chauffeurs en mission",
   },
   en_conge: {
     icon: Coffee,
     bgClass: "bg-amber-50 dark:bg-amber-950/30",
     borderColor: "hsl(45, 93%, 47%)",
+    description: "Chauffeurs en période de repos",
+    actionLabel: "Voir les chauffeurs en congé",
   },
   suspendu: {
     icon: AlertTriangle,
     bgClass: "bg-red-50 dark:bg-red-950/30",
     borderColor: "hsl(0, 84%, 60%)",
+    description: "Chauffeurs temporairement suspendus",
+    actionLabel: "Voir les chauffeurs suspendus",
   },
   inactif: {
     icon: UserX,
     bgClass: "bg-slate-100 dark:bg-slate-800/50",
     borderColor: "hsl(215, 14%, 34%)",
+    description: "Chauffeurs ne faisant plus partie de l'équipe",
+    actionLabel: "Voir les chauffeurs inactifs",
   },
 } as const satisfies Record<string, StatusConfigItem>;
 
@@ -85,7 +102,38 @@ function StatsSkeleton() {
   );
 }
 
-// Mini-card de statut individuel (cliquable)
+// Contenu du tooltip personnalisé
+function StatusTooltipContent({
+  stat,
+  config,
+}: {
+  stat: ChauffeurStatusStats;
+  config: StatusConfigItem;
+}) {
+  return (
+    <div className="flex flex-col gap-2 py-1">
+      {/* Header avec indicateur coloré */}
+      <div className="flex items-center gap-2">
+        <span
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ backgroundColor: config.borderColor }}
+        />
+        <span className="font-semibold text-sm">{stat.label}</span>
+      </div>
+      {/* Description */}
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {config.description}
+      </p>
+      {/* Action */}
+      <div className="flex items-center gap-1.5 text-xs font-medium text-primary pt-1 border-t border-border/50">
+        <ExternalLink className="h-3 w-3" />
+        <span>{config.actionLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+// Mini-card de statut individuel (cliquable avec tooltip)
 function StatusMiniCard({
   stat,
   index,
@@ -98,7 +146,7 @@ function StatusMiniCard({
   const config = getStatusConfig(stat.statut);
   const Icon = config.icon;
 
-  return (
+  const cardContent = (
     <Link
       href={`/chauffeurs?statut=${stat.statut}`}
       className={cn(
@@ -143,6 +191,24 @@ function StatusMiniCard({
       )}
     </Link>
   );
+
+  // Only show tooltip on desktop for better mobile UX
+  if (!isDesktop) {
+    return cardContent;
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        className="max-w-[220px] bg-popover text-popover-foreground border shadow-lg"
+        sideOffset={8}
+      >
+        <StatusTooltipContent stat={stat} config={config} />
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 // Card principale avec total (Desktop) - cliquable vers liste complète
@@ -151,7 +217,7 @@ function TotalCard({
 }: {
   totalChauffeurs: number;
 }) {
-  return (
+  const cardContent = (
     <Link href="/chauffeurs" className="block opacity-0 animate-slide-in-up" style={{ animationDelay: "0ms" }}>
       <Card
         className={cn(
@@ -181,6 +247,28 @@ function TotalCard({
         </CardContent>
       </Card>
     </Link>
+  );
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        className="max-w-[200px] bg-popover text-popover-foreground border shadow-lg"
+        sideOffset={8}
+      >
+        <div className="flex flex-col gap-2 py-1">
+          <span className="font-semibold text-sm">Équipe complète</span>
+          <p className="text-xs text-muted-foreground">
+            Vue d&apos;ensemble de tous les chauffeurs
+          </p>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-primary pt-1 border-t border-border/50">
+            <ExternalLink className="h-3 w-3" />
+            <span>Voir tous les chauffeurs</span>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
