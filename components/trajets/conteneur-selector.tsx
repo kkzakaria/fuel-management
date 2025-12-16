@@ -31,6 +31,8 @@ interface ConteneurSelectorProps {
   conteneurs: ConteneurInput[];
   onChange: (conteneurs: ConteneurInput[]) => void;
   error?: string;
+  /** Si true, permet de modifier le statut des conteneurs (mode édition/retour) */
+  isEditMode?: boolean;
 }
 
 export function ConteneurSelector({
@@ -38,6 +40,7 @@ export function ConteneurSelector({
   conteneurs,
   onChange,
   error,
+  isEditMode = false,
 }: ConteneurSelectorProps) {
   const [newConteneur, setNewConteneur] = useState<Partial<ConteneurInput>>({
     statut_livraison: "en_cours",
@@ -123,23 +126,27 @@ export function ConteneurSelector({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Select
-                      value={conteneur.statut_livraison}
-                      onValueChange={(value) =>
-                        handleUpdateConteneur(index, {
-                          statut_livraison: value as "en_cours" | "livre" | "retour",
-                        })
-                      }
-                    >
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en_cours">En cours</SelectItem>
-                        <SelectItem value="livre">Livré</SelectItem>
-                        <SelectItem value="retour">Retour</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {isEditMode ? (
+                      <Select
+                        value={conteneur.statut_livraison}
+                        onValueChange={(value) =>
+                          handleUpdateConteneur(index, {
+                            statut_livraison: value as "en_cours" | "livre" | "retour",
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en_cours">En cours</SelectItem>
+                          <SelectItem value="livre">Livré</SelectItem>
+                          <SelectItem value="retour">Retour</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge variant="secondary">En cours</Badge>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
