@@ -6,7 +6,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Package } from "lucide-react";
+import { Plus, Trash2, Package, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -46,6 +46,10 @@ export function ConteneurSelector({
     statut_livraison: "en_cours",
   });
 
+  // Index du conteneur en cours d'édition (-1 = aucun)
+  const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [editingValues, setEditingValues] = useState<Partial<ConteneurInput>>({});
+
   const handleAddConteneur = () => {
     if (!newConteneur.type_conteneur_id || !newConteneur.numero_conteneur) return;
 
@@ -61,12 +65,42 @@ export function ConteneurSelector({
 
   const handleRemoveConteneur = (index: number) => {
     onChange(conteneurs.filter((_, i) => i !== index));
+    if (editingIndex === index) {
+      setEditingIndex(-1);
+      setEditingValues({});
+    }
   };
 
   const handleUpdateConteneur = (index: number, updates: Partial<ConteneurInput>) => {
     onChange(
       conteneurs.map((c, i) => (i === index ? { ...c, ...updates } : c))
     );
+  };
+
+  const handleStartEdit = (index: number) => {
+    const conteneur = conteneurs[index];
+    if (!conteneur) return;
+    setEditingIndex(index);
+    setEditingValues({
+      type_conteneur_id: conteneur.type_conteneur_id,
+      numero_conteneur: conteneur.numero_conteneur,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(-1);
+    setEditingValues({});
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingValues.type_conteneur_id || !editingValues.numero_conteneur?.trim()) return;
+
+    handleUpdateConteneur(editingIndex, {
+      type_conteneur_id: editingValues.type_conteneur_id,
+      numero_conteneur: editingValues.numero_conteneur.trim().toUpperCase(),
+    });
+    setEditingIndex(-1);
+    setEditingValues({});
   };
 
   const getTypeConteneur = (id: string) => {
@@ -109,52 +143,123 @@ export function ConteneurSelector({
         <div className="space-y-2">
           {conteneurs.map((conteneur, index) => {
             const type = getTypeConteneur(conteneur.type_conteneur_id);
+            const isEditing = editingIndex === index;
+
             return (
               <Card key={index} className="p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium truncate">
-                          {conteneur.numero_conteneur}
-                        </span>
-                        <Badge variant="outline" className="text-xs flex-shrink-0">
-                          {type?.nom || "?"} ({type?.taille_pieds}&apos;)
-                        </Badge>
+                {isEditing ? (
+                  // Mode édition
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Type conteneur</Label>
+                        <Select
+                          value={editingValues.type_conteneur_id}
+                          onValueChange={(value) =>
+                            setEditingValues({ ...editingValues, type_conteneur_id: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {typeConteneurs.map((t) => (
+                              <SelectItem key={t.id} value={t.id}>
+                                {t.nom} ({t.taille_pieds}&apos;)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Numéro conteneur</Label>
+                        <Input
+                          value={editingValues.numero_conteneur || ""}
+                          onChange={(e) =>
+                            setEditingValues({ ...editingValues, numero_conteneur: e.target.value })
+                          }
+                          className="uppercase"
+                        />
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {isEditMode && (
-                      <Select
-                        value={conteneur.statut_livraison}
-                        onValueChange={(value) =>
-                          handleUpdateConteneur(index, {
-                            statut_livraison: value as "en_cours" | "livre" | "retour",
-                          })
-                        }
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelEdit}
                       >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="en_cours">En cours</SelectItem>
-                          <SelectItem value="livre">Livré</SelectItem>
-                          <SelectItem value="retour">Retour</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveConteneur(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                        <X className="h-4 w-4 mr-1" />
+                        Annuler
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveEdit}
+                        disabled={!editingValues.type_conteneur_id || !editingValues.numero_conteneur?.trim()}
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Enregistrer
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  // Mode affichage
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium truncate">
+                            {conteneur.numero_conteneur}
+                          </span>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">
+                            {type?.nom || "?"} ({type?.taille_pieds}&apos;)
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {isEditMode && (
+                        <Select
+                          value={conteneur.statut_livraison}
+                          onValueChange={(value) =>
+                            handleUpdateConteneur(index, {
+                              statut_livraison: value as "en_cours" | "livre" | "retour",
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en_cours">En cours</SelectItem>
+                            <SelectItem value="livre">Livré</SelectItem>
+                            <SelectItem value="retour">Retour</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleStartEdit(index)}
+                        title="Modifier"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveConteneur(index)}
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Card>
             );
           })}
