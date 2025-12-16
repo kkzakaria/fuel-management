@@ -21,7 +21,6 @@ import { TripsChart } from "@/components/dashboard/trips-chart";
 import { ContainersChart } from "@/components/dashboard/containers-chart";
 import { ConsumptionChart } from "@/components/dashboard/consumption-chart";
 import { CostsChart } from "@/components/dashboard/costs-chart";
-import { ChauffeurStatusChart } from "@/components/dashboard/chauffeur-status-chart";
 import { useStats } from "@/hooks/use-stats";
 import { useContainerStats } from "@/hooks/use-container-stats";
 import { useFuelStats } from "@/hooks/use-fuel-stats";
@@ -48,22 +47,27 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Vue d&apos;ensemble de vos opérations
-          </p>
-        </div>
-        <PeriodSelector value={period} onChange={setPeriod} />
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          Vue d&apos;ensemble de vos opérations
+        </p>
       </div>
 
-      {/* Chauffeur Stats Cards - First Row */}
+      {/* Chauffeur Stats Cards - État actuel (non filtré par période) */}
       <ChauffeurStatsCards
         chauffeurStats={chauffeurStats}
         totalChauffeurs={totalChauffeurs}
         loading={chauffeurLoading}
       />
+
+      {/* Period Selector - S'applique aux KPIs et graphiques ci-dessous */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">
+          Statistiques de la période
+        </p>
+        <PeriodSelector value={period} onChange={setPeriod} />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -146,13 +150,6 @@ export default function DashboardPage() {
 
         {/* Consumption Chart */}
         <ConsumptionChart data={vehicleStats} loading={fuelLoading} />
-
-        {/* Chauffeur Status Chart */}
-        <ChauffeurStatusChart
-          data={chauffeurStats}
-          totalChauffeurs={totalChauffeurs}
-          loading={chauffeurLoading}
-        />
       </div>
     </div>
   );
