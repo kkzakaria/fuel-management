@@ -34,8 +34,6 @@ interface TrajetDetails {
   ecart_litrage: number | null;
   prix_litre: number | null;
   consommation_au_100: number | null;
-  frais_peage: number | null;
-  autres_frais: number | null;
   statut: string | null;
   observations?: string | null;
   created_at?: string;
@@ -77,6 +75,11 @@ interface TrajetDetails {
       description?: string | null;
     } | null;
   }> | null;
+  frais?: Array<{
+    id: string;
+    libelle: string;
+    montant: number;
+  }> | null;
 }
 
 interface TrajetDetailsProps {
@@ -116,7 +119,8 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
   };
 
   const montantCarburant = (trajet.litrage_station || 0) * (trajet.prix_litre || 0);
-  const coutTotal = montantCarburant + (trajet.frais_peage || 0) + (trajet.autres_frais || 0);
+  const totalFrais = trajet.frais?.reduce((sum, f) => sum + f.montant, 0) || 0;
+  const coutTotal = montantCarburant + totalFrais;
 
   return (
     <div className="space-y-6">
@@ -319,14 +323,25 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
               <span className="text-muted-foreground">Carburant</span>
               <span className="font-medium">{formatCurrency(montantCarburant)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Frais de péage</span>
-              <span className="font-medium">{formatCurrency(trajet.frais_peage)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Autres frais</span>
-              <span className="font-medium">{formatCurrency(trajet.autres_frais)}</span>
-            </div>
+            {trajet.frais && trajet.frais.length > 0 ? (
+              <>
+                {trajet.frais.map((f) => (
+                  <div key={f.id} className="flex justify-between">
+                    <span className="text-muted-foreground">{f.libelle}</span>
+                    <span className="font-medium">{formatCurrency(f.montant)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between text-sm border-t pt-2">
+                  <span className="text-muted-foreground">Total frais</span>
+                  <span className="font-medium">{formatCurrency(totalFrais)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Frais additionnels</span>
+                <span className="font-medium text-muted-foreground">Aucun</span>
+              </div>
+            )}
             <Separator />
             <div className="flex justify-between">
               <span className="font-semibold">Coût total</span>

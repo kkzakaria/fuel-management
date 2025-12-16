@@ -28,8 +28,8 @@ export const createTrajetAction = action
   .action(async ({ parsedInput }) => {
     const supabase = await createClient();
 
-    // Extraction des conteneurs du input
-    const { conteneurs, ...trajetData } = parsedInput;
+    // Extraction des conteneurs et frais du input
+    const { conteneurs, frais, ...trajetData } = parsedInput;
 
     // 1. Créer le trajet
     const { data: trajet, error: trajetError } = await supabase
@@ -58,6 +58,25 @@ export const createTrajetAction = action
       // Rollback: supprimer le trajet si les conteneurs échouent
       await supabase.from("trajet").delete().eq("id", trajet.id);
       throw new Error("Erreur lors de la création des conteneurs");
+    }
+
+    // 3. Créer les frais associés (si fournis)
+    if (frais && frais.length > 0) {
+      const fraisWithTrajetId = frais.map((f) => ({
+        ...f,
+        trajet_id: trajet.id,
+      }));
+
+      const { error: fraisError } = await supabase
+        .from("frais_trajet")
+        .insert(fraisWithTrajetId);
+
+      if (fraisError) {
+        console.error("Erreur création frais:", fraisError);
+        // Rollback: supprimer le trajet si les frais échouent
+        await supabase.from("trajet").delete().eq("id", trajet.id);
+        throw new Error("Erreur lors de la création des frais");
+      }
     }
 
     // Revalider les caches
@@ -217,14 +236,15 @@ export const enregistrerRetourAction = action
       throw new Error("Le kilométrage de retour doit être supérieur au kilométrage de départ");
     }
 
+    // Extraire les frais du input
+    const { frais, ...retourData } = parsedInput;
+
     // Préparer les données de mise à jour
     const updateData = {
-      km_fin: parsedInput.km_fin,
-      litrage_station: parsedInput.litrage_station,
-      prix_litre: parsedInput.prix_litre,
-      ...(parsedInput.frais_peage !== undefined && { frais_peage: parsedInput.frais_peage }),
-      ...(parsedInput.autres_frais !== undefined && { autres_frais: parsedInput.autres_frais }),
-      ...(parsedInput.observations !== undefined && { observations: parsedInput.observations }),
+      km_fin: retourData.km_fin,
+      litrage_station: retourData.litrage_station,
+      prix_litre: retourData.prix_litre,
+      ...(retourData.observations !== undefined && { observations: retourData.observations }),
       statut: "termine", // Marquer automatiquement comme terminé
     };
 
@@ -238,6 +258,30 @@ export const enregistrerRetourAction = action
     if (error) {
       console.error("Erreur enregistrement retour:", error);
       throw new Error("Erreur lors de l'enregistrement du retour");
+    }
+
+    // Supprimer les anciens frais et créer les nouveaux
+    if (frais && frais.length > 0) {
+      // Supprimer les frais existants
+      await supabase
+        .from("frais_trajet")
+        .delete()
+        .eq("trajet_id", trajetId);
+
+      // Créer les nouveaux frais
+      const fraisWithTrajetId = frais.map((f) => ({
+        ...f,
+        trajet_id: trajetId,
+      }));
+
+      const { error: fraisError } = await supabase
+        .from("frais_trajet")
+        .insert(fraisWithTrajetId);
+
+      if (fraisError) {
+        console.error("Erreur création frais:", fraisError);
+        throw new Error("Erreur lors de l'enregistrement des frais");
+      }
     }
 
     // Revalider les caches

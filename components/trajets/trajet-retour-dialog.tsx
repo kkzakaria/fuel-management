@@ -31,14 +31,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { enregistrerRetourAction } from "@/lib/actions/trajets";
-import { trajetRetourSchema, type TrajetRetourInput } from "@/lib/validations/trajet";
+import { trajetRetourSchema, trajetCalculations, type TrajetRetourInput } from "@/lib/validations/trajet";
+import { FraisSelector } from "./frais-selector";
 
 interface TrajetRetourDialogProps {
   trajetId: string;
   kmDebut: number;
   litragePrevu?: number | null;
-  fraisPeageActuel?: number | null;
-  autresFraisActuel?: number | null;
   onSuccess?: () => void;
 }
 
@@ -46,8 +45,6 @@ export function TrajetRetourDialog({
   trajetId,
   kmDebut,
   litragePrevu,
-  fraisPeageActuel,
-  autresFraisActuel,
   onSuccess,
 }: TrajetRetourDialogProps) {
   const [open, setOpen] = useState(false);
@@ -59,8 +56,7 @@ export function TrajetRetourDialog({
       km_fin: undefined,
       litrage_station: undefined,
       prix_litre: undefined,
-      frais_peage: fraisPeageActuel ?? 0,
-      autres_frais: autresFraisActuel ?? 0,
+      frais: [],
       observations: undefined,
     },
   });
@@ -98,14 +94,13 @@ export function TrajetRetourDialog({
   const kmFin = form.watch("km_fin");
   const litrageStation = form.watch("litrage_station");
   const prixLitre = form.watch("prix_litre");
-  const fraisPeage = form.watch("frais_peage");
-  const autresFrais = form.watch("autres_frais");
+  const fraisWatched = form.watch("frais");
 
   const distance = kmFin && kmFin > kmDebut ? kmFin - kmDebut : 0;
   const ecartLitrage = litragePrevu && litrageStation ? litrageStation - litragePrevu : null;
   const montantCarburant = litrageStation && prixLitre ? litrageStation * prixLitre : 0;
   const consommationAu100 = litrageStation && distance > 0 ? (litrageStation / distance) * 100 : null;
-  const coutTotal = montantCarburant + (fraisPeage || 0) + (autresFrais || 0);
+  const coutTotal = trajetCalculations.calculerCoutTotal(montantCarburant || null, fraisWatched || []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("fr-FR", {
@@ -258,49 +253,22 @@ export function TrajetRetourDialog({
             {/* Frais */}
             <div className="space-y-4">
               <h4 className="font-medium">Frais</h4>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="frais_peage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Frais de péage (XOF)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          {...field}
-                          value={field.value ?? 0}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="autres_frais"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Autres frais (XOF)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          {...field}
-                          value={field.value ?? 0}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="frais"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FraisSelector
+                        frais={field.value || []}
+                        onChange={field.onChange}
+                        error={form.formState.errors.frais?.message}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Coût total */}
               <div className="rounded-lg bg-primary/10 p-3">

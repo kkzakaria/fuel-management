@@ -364,7 +364,8 @@ export async function getTrajetById(id: string) {
       conteneurs:conteneur_trajet(
         *,
         type_conteneur:type_conteneur(nom, taille_pieds)
-      )
+      ),
+      frais:frais_trajet(id, libelle, montant)
     `
     )
     .eq("id", id)
