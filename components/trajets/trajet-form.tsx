@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConteneurSelector } from "./conteneur-selector";
+import { FraisSelector } from "./frais-selector";
 import { createTrajetAction, updateTrajetAction } from "@/lib/actions/trajets";
 import { createTrajetSchema, trajetCalculations, type CreateTrajetInput } from "@/lib/validations/trajet";
 import { toast } from "sonner";
@@ -72,8 +73,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
       litrage_prevu: trajet?.litrage_prevu || undefined,
       litrage_station: trajet?.litrage_station || undefined,
       prix_litre: trajet?.prix_litre || undefined,
-      frais_peage: trajet?.frais_peage || 0,
-      autres_frais: trajet?.autres_frais || 0,
+      frais: [], // Les frais seront chargés depuis la relation frais_trajet
       statut: (trajet?.statut as "en_cours" | "termine" | "annule" | undefined) || "en_cours",
       observations: trajet?.observations || undefined,
       conteneurs: trajet?.conteneur_trajet?.map((c) => ({
@@ -91,8 +91,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
   const litragePrevu = form.watch("litrage_prevu");
   const litrageStation = form.watch("litrage_station");
   const prixLitre = form.watch("prix_litre");
-  const fraisPeage = form.watch("frais_peage");
-  const autresFrais = form.watch("autres_frais");
+  const fraisWatched = form.watch("frais");
 
   // Calculs automatiques
   const [calculs, setCalculs] = useState({
@@ -108,7 +107,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
     const ecartLitrage = trajetCalculations.calculerEcartLitrage(litragePrevu || null, litrageStation || null);
     const montantCarburant = (litrageStation || 0) * (prixLitre || 0);
     const consommationAu100 = trajetCalculations.calculerConsommationAu100(litrageStation || null, distance);
-    const coutTotal = trajetCalculations.calculerCoutTotal(montantCarburant || null, fraisPeage || 0, autresFrais || 0);
+    const coutTotal = trajetCalculations.calculerCoutTotal(montantCarburant || null, fraisWatched || []);
 
     setCalculs({
       distance,
@@ -117,7 +116,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
       montantCarburant,
       coutTotal,
     });
-  }, [kmDebut, kmFin, litragePrevu, litrageStation, prixLitre, fraisPeage, autresFrais]);
+  }, [kmDebut, kmFin, litragePrevu, litrageStation, prixLitre, fraisWatched]);
 
   const onSubmit = async (data: CreateTrajetInput) => {
     setIsSubmitting(true);
@@ -527,61 +526,34 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
             <CardTitle>Frais</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Frais péage */}
-              <FormField
-                control={form.control}
-                name="frais_peage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Frais de péage (XOF)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="1"
-                        placeholder="0"
-                        {...field}
-                        value={field.value || 0}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Autres frais */}
-              <FormField
-                control={form.control}
-                name="autres_frais"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Autres frais (XOF)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="1"
-                        placeholder="0"
-                        {...field}
-                        value={field.value || 0}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="frais"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FraisSelector
+                      frais={field.value || []}
+                      onChange={field.onChange}
+                      error={form.formState.errors.frais?.message}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Coût total */}
-            <div className="rounded-lg bg-primary/10 p-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Coût total du trajet:</span>
-                <span className="text-lg font-bold">
-                  {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(calculs.coutTotal)}
-                </span>
+            {isEditing && (
+              <div className="rounded-lg bg-primary/10 p-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Coût total du trajet:</span>
+                  <span className="text-lg font-bold">
+                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XOF" }).format(calculs.coutTotal)}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 

@@ -147,6 +147,41 @@ export type Database = {
         }
         Relationships: []
       }
+      frais_trajet: {
+        Row: {
+          id: string
+          trajet_id: string
+          libelle: string
+          montant: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          trajet_id: string
+          libelle: string
+          montant: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          trajet_id?: string
+          libelle?: string
+          montant?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "frais_trajet_trajet_id_fkey"
+            columns: ["trajet_id"]
+            isOneToOne: false
+            referencedRelation: "trajet"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_sous_traitance: {
         Row: {
           avance_payee: boolean | null

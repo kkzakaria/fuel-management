@@ -19,6 +19,7 @@ export type TypeConteneur = Database["public"]["Tables"]["type_conteneur"]["Row"
 export type ConteneurTrajet = Database["public"]["Tables"]["conteneur_trajet"]["Row"];
 export type SousTraitant = Database["public"]["Tables"]["sous_traitant"]["Row"];
 export type MissionSousTraitance = Database["public"]["Tables"]["mission_sous_traitance"]["Row"];
+export type FraisTrajet = Database["public"]["Tables"]["frais_trajet"]["Row"];
 
 // Enums (from database)
 export type UserRole = Database["public"]["Enums"]["user_role"];
@@ -43,6 +44,7 @@ export type TypeConteneurInsert = Database["public"]["Tables"]["type_conteneur"]
 export type ConteneurTrajetInsert = Database["public"]["Tables"]["conteneur_trajet"]["Insert"];
 export type SousTraitantInsert = Database["public"]["Tables"]["sous_traitant"]["Insert"];
 export type MissionSousTraitanceInsert = Database["public"]["Tables"]["mission_sous_traitance"]["Insert"];
+export type FraisTrajetInsert = Database["public"]["Tables"]["frais_trajet"]["Insert"];
 
 // Update types (pour les modifications)
 export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
@@ -54,6 +56,7 @@ export type TypeConteneurUpdate = Database["public"]["Tables"]["type_conteneur"]
 export type ConteneurTrajetUpdate = Database["public"]["Tables"]["conteneur_trajet"]["Update"];
 export type SousTraitantUpdate = Database["public"]["Tables"]["sous_traitant"]["Update"];
 export type MissionSousTraitanceUpdate = Database["public"]["Tables"]["mission_sous_traitance"]["Update"];
+export type FraisTrajetUpdate = Database["public"]["Tables"]["frais_trajet"]["Update"];
 
 // Export du type Database complet pour usage avancé
 export type { Database };

@@ -53,8 +53,6 @@ export default async function TrajetPage({ params }: TrajetPageProps) {
           kmDebut={trajet.km_debut}
           kmFin={trajet.km_fin}
           litragePrevu={trajet.litrage_prevu}
-          fraisPeage={trajet.frais_peage}
-          autresFrais={trajet.autres_frais}
         />
       </div>
 

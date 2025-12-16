@@ -26,6 +26,19 @@ export const conteneurSchema = z.object({
 });
 
 /**
+ * Schéma de validation pour les frais d'un trajet
+ */
+export const fraisSchema = z.object({
+  libelle: z.string({
+    required_error: "Le libellé du frais est requis",
+  }).min(1, "Le libellé ne peut pas être vide")
+    .max(100, "Le libellé ne peut pas dépasser 100 caractères"),
+  montant: z.number({
+    required_error: "Le montant est requis",
+  }).nonnegative("Le montant ne peut pas être négatif"),
+});
+
+/**
  * Schéma de validation pour la création d'un trajet
  */
 export const createTrajetSchema = z.object({
@@ -87,11 +100,7 @@ export const createTrajetSchema = z.object({
     .optional()
     .nullable(),
 
-  frais_peage: z.number()
-    .nonnegative("Les frais de péage ne peuvent pas être négatifs"),
-
-  autres_frais: z.number()
-    .nonnegative("Les autres frais ne peuvent pas être négatifs"),
+  frais: z.array(fraisSchema),
 
   statut: z.enum(["en_cours", "termine", "annule"]),
 
@@ -156,12 +165,7 @@ export const updateTrajetSchema = z.object({
     .optional()
     .nullable(),
 
-  frais_peage: z.number()
-    .nonnegative("Les frais de péage ne peuvent pas être négatifs")
-    .optional(),
-
-  autres_frais: z.number()
-    .nonnegative("Les autres frais ne peuvent pas être négatifs")
+  frais: z.array(fraisSchema)
     .optional(),
 
   statut: z.enum(["en_cours", "termine", "annule"])
@@ -221,13 +225,7 @@ export const trajetRetourSchema = z.object({
     required_error: "Le prix au litre est requis",
   }).positive("Le prix au litre doit être positif"),
 
-  frais_peage: z.number()
-    .nonnegative("Les frais de péage ne peuvent pas être négatifs")
-    .optional(),
-
-  autres_frais: z.number()
-    .nonnegative("Les autres frais ne peuvent pas être négatifs")
-    .optional(),
+  frais: z.array(fraisSchema),
 
   observations: z.string()
     .max(1000, "Les observations ne peuvent pas dépasser 1000 caractères")
@@ -264,6 +262,7 @@ export type TrajetRetourInput = z.infer<typeof trajetRetourSchema>;
 export type UpdateConteneursInput = z.infer<typeof updateConteneursSchema>;
 export type TrajetFilters = z.infer<typeof trajetFiltersSchema>;
 export type ConteneurInput = z.infer<typeof conteneurSchema>;
+export type FraisInput = z.infer<typeof fraisSchema>;
 
 /**
  * Fonctions de calcul pour les trajets
@@ -317,10 +316,17 @@ export const trajetCalculations = {
    */
   calculerCoutTotal: (
     montant_carburant: number | null,
-    frais_peage: number,
-    autres_frais: number
+    frais: Array<{ montant: number }>
   ): number => {
-    return (montant_carburant || 0) + frais_peage + autres_frais;
+    const totalFrais = frais.reduce((sum, f) => sum + f.montant, 0);
+    return (montant_carburant || 0) + totalFrais;
+  },
+
+  /**
+   * Calcule le total des frais
+   */
+  calculerTotalFrais: (frais: Array<{ montant: number }>): number => {
+    return frais.reduce((sum, f) => sum + f.montant, 0);
   },
 
   /**

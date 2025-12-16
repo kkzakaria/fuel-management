@@ -17,8 +17,6 @@ interface TrajetActionsProps {
   kmDebut: number;
   kmFin: number | null;
   litragePrevu?: number | null;
-  fraisPeage?: number | null;
-  autresFrais?: number | null;
 }
 
 export function TrajetActions({
@@ -27,8 +25,6 @@ export function TrajetActions({
   kmDebut,
   kmFin,
   litragePrevu,
-  fraisPeage,
-  autresFrais,
 }: TrajetActionsProps) {
   const router = useRouter();
 
@@ -48,8 +44,6 @@ export function TrajetActions({
           trajetId={trajetId}
           kmDebut={kmDebut}
           litragePrevu={litragePrevu}
-          fraisPeageActuel={fraisPeage}
-          autresFraisActuel={autresFrais}
           onSuccess={handleRetourSuccess}
         />
       )}
