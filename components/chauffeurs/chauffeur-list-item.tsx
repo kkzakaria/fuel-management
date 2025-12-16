@@ -20,7 +20,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Chauffeur } from "@/lib/supabase/types";
+import type { StatusVariant } from "@/components/ui/status-badge";
 import { ChauffeurDeleteDialog } from "./chauffeur-delete-dialog";
+
+// Configuration des statuts chauffeur pour StatusBadge
+const STATUT_CONFIG: Record<string, { label: string; variant: StatusVariant }> = {
+  actif: { label: "Disponible", variant: "success" },
+  en_voyage: { label: "En voyage", variant: "info" },
+  en_conge: { label: "En congé", variant: "warning" },
+  suspendu: { label: "Suspendu", variant: "destructive" },
+  inactif: { label: "Inactif", variant: "secondary" },
+};
 
 interface ChauffeurListItemProps {
   chauffeur: Chauffeur;
@@ -57,28 +67,17 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
             <span className="text-base font-semibold truncate">
               {chauffeur.prenom} {chauffeur.nom}
             </span>
-            <StatusBadge
-              variant={
-                chauffeur.statut === "actif"
-                  ? "success"
-                  : chauffeur.statut === "en_voyage"
-                    ? "info"
-                    : chauffeur.statut === "en_conge"
-                      ? "warning"
-                      : chauffeur.statut === "inactif"
-                        ? "secondary"
-                        : "destructive"
-              }
-              className="text-sm shrink-0"
-            >
-              {chauffeur.statut === "actif"
-                ? "Disponible"
-                : chauffeur.statut === "en_voyage"
-                  ? "En voyage"
-                  : chauffeur.statut === "en_conge"
-                    ? "En congé"
-                    : chauffeur.statut}
-            </StatusBadge>
+            {(() => {
+              const config = STATUT_CONFIG[chauffeur.statut || ""] || {
+                label: chauffeur.statut,
+                variant: "secondary" as StatusVariant,
+              };
+              return (
+                <StatusBadge variant={config.variant} className="text-sm shrink-0">
+                  {config.label}
+                </StatusBadge>
+              );
+            })()}
           </div>
 
           {/* Ligne 2 : Téléphone */}
