@@ -49,10 +49,11 @@ import type { Trajet, ConteneurTrajet } from "@/lib/supabase/types";
 
 interface TrajetFormProps {
   trajet?: Trajet & { conteneur_trajet?: ConteneurTrajet[] };
+  defaultChauffeurId?: string;
   onSuccess?: () => void;
 }
 
-export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
+export function TrajetForm({ trajet, defaultChauffeurId, onSuccess }: TrajetFormProps) {
   const isEditing = Boolean(trajet);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +65,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
     resolver: zodResolver(createTrajetSchema),
     defaultValues: {
       date_trajet: trajet?.date_trajet || new Date().toISOString().split("T")[0],
-      chauffeur_id: trajet?.chauffeur_id || "",
+      chauffeur_id: trajet?.chauffeur_id || defaultChauffeurId || "",
       vehicule_id: trajet?.vehicule_id || "",
       localite_depart_id: trajet?.localite_depart_id || "",
       localite_arrivee_id: trajet?.localite_arrivee_id || "",

@@ -3,7 +3,7 @@
 import { ColumnDef, Row } from "@tanstack/react-table"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react"
+import { Edit, Eye, MoreVertical, Trash2, Truck } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -72,6 +72,12 @@ function ChauffeurRowActions({ chauffeur }: { chauffeur: Chauffeur }) {
               <Link href={`/chauffeurs/${chauffeur.id}/modifier`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}`}>
+                <Truck className="mr-2 h-4 w-4" />
+                Créer un trajet
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem

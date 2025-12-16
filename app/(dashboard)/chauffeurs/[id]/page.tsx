@@ -3,7 +3,7 @@
  */
 
 import Link from "next/link";
-import { ChevronLeft, Pencil } from "lucide-react";
+import { ChevronLeft, Pencil, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChauffeurDetails } from "@/components/chauffeurs/chauffeur-details";
 
@@ -31,6 +31,12 @@ export default async function ChauffeurPage({ params }: ChauffeurPageProps) {
         </div>
 
         <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/trajets/nouveau?chauffeurId=${id}`}>
+              <Truck className="mr-2 h-4 w-4" />
+              Créer un trajet
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/chauffeurs/${id}/modifier`}>
               <Pencil className="mr-2 h-4 w-4" />
