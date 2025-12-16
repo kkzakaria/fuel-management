@@ -123,6 +123,41 @@ export type Database = {
           },
         ]
       }
+      frais_trajet: {
+        Row: {
+          created_at: string | null
+          id: string
+          libelle: string
+          montant: number
+          trajet_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          libelle: string
+          montant?: number
+          trajet_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          libelle?: string
+          montant?: number
+          trajet_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "frais_trajet_trajet_id_fkey"
+            columns: ["trajet_id"]
+            isOneToOne: false
+            referencedRelation: "trajet"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       localite: {
         Row: {
           created_at: string | null
@@ -146,41 +181,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      frais_trajet: {
-        Row: {
-          id: string
-          trajet_id: string
-          libelle: string
-          montant: number
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          trajet_id: string
-          libelle: string
-          montant: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          trajet_id?: string
-          libelle?: string
-          montant?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "frais_trajet_trajet_id_fkey"
-            columns: ["trajet_id"]
-            isOneToOne: false
-            referencedRelation: "trajet"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       mission_sous_traitance: {
         Row: {
@@ -374,7 +374,7 @@ export type Database = {
           frais_peage: number | null
           id: string
           km_debut: number
-          km_fin: number
+          km_fin: number | null
           litrage_prevu: number | null
           litrage_station: number | null
           localite_arrivee_id: string
@@ -398,7 +398,7 @@ export type Database = {
           frais_peage?: number | null
           id?: string
           km_debut: number
-          km_fin: number
+          km_fin?: number | null
           litrage_prevu?: number | null
           litrage_station?: number | null
           localite_arrivee_id: string
@@ -422,7 +422,7 @@ export type Database = {
           frais_peage?: number | null
           id?: string
           km_debut?: number
-          km_fin?: number
+          km_fin?: number | null
           litrage_prevu?: number | null
           litrage_station?: number | null
           localite_arrivee_id?: string
@@ -545,7 +545,12 @@ export type Database = {
       is_gestionnaire_or_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      user_role: "admin" | "gestionnaire" | "chauffeur" | "personnel"
+      user_role:
+        | "admin"
+        | "gestionnaire"
+        | "chauffeur"
+        | "personnel"
+        | "visiteur"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -676,7 +681,13 @@ export const Constants = {
   },
   public: {
     Enums: {
-      user_role: ["admin", "gestionnaire", "chauffeur", "personnel"],
+      user_role: [
+        "admin",
+        "gestionnaire",
+        "chauffeur",
+        "personnel",
+        "visiteur",
+      ],
     },
   },
 } as const

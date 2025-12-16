@@ -25,10 +25,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTrajets } from "@/hooks/use-trajets"
 import { useTrajetFormData } from "@/hooks/use-trajet-form-data"
+import { useUserRole } from "@/hooks/use-user-role"
 import type { TrajetListItem } from "@/components/trajets/trajet-table"
 
 export default function TrajetsPage() {
   const router = useRouter()
+  const { canCreateTrips } = useUserRole()
 
   // Hook pour mobile (infinite scroll)
   const mobileData = useTrajets({
@@ -128,11 +130,11 @@ export default function TrajetsPage() {
           drawerTitle: "Filtres des trajets",
           drawerDescription: "Filtrer par date, chauffeur, véhicule, destination ou statut",
         }}
-        addButton={{
+        addButton={canCreateTrips ? {
           type: "link",
           href: "/trajets/nouveau",
           label: "Nouveau trajet",
-        }}
+        } : undefined}
         enableColumnVisibility={false}
       />
 
