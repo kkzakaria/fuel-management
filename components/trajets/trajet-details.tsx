@@ -65,8 +65,7 @@ interface TrajetDetails {
   } | null;
   conteneurs?: Array<{
     id: string;
-    numero_conteneur?: string | null;
-    quantite?: number | null;
+    numero_conteneur: string;
     statut_livraison?: string | null;
     type_conteneur?: {
       id: string;
@@ -359,7 +358,7 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Conteneurs transportés
+              Conteneurs transportés ({trajet.conteneurs.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -372,36 +371,29 @@ export function TrajetDetails({ trajet }: TrajetDetailsProps) {
                   <div className="flex items-center gap-3">
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">
-                        {c.type_conteneur?.nom || "Type inconnu"}
+                      <p className="font-medium font-mono">
+                        {c.numero_conteneur}
                       </p>
-                      {c.numero_conteneur && (
-                        <p className="text-sm text-muted-foreground">
-                          N° {c.numero_conteneur}
-                        </p>
-                      )}
+                      <p className="text-sm text-muted-foreground">
+                        {c.type_conteneur?.nom || "Type inconnu"} ({c.type_conteneur?.taille_pieds}&apos;)
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      Quantité: {c.quantite}
-                    </span>
-                    <Badge
-                      variant={
-                        c.statut_livraison === "livre"
-                          ? "default"
-                          : c.statut_livraison === "en_cours"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {c.statut_livraison === "livre"
-                        ? "Livré"
+                  <Badge
+                    variant={
+                      c.statut_livraison === "livre"
+                        ? "default"
                         : c.statut_livraison === "en_cours"
-                          ? "En cours"
-                          : "Retour"}
-                    </Badge>
-                  </div>
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {c.statut_livraison === "livre"
+                      ? "Livré"
+                      : c.statut_livraison === "en_cours"
+                        ? "En cours"
+                        : "Retour"}
+                  </Badge>
                 </div>
               ))}
             </div>
