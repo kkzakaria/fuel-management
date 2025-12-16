@@ -39,6 +39,10 @@ interface TrajetRetourDialogProps {
   kmDebut: number;
   litragePrevu?: number | null;
   onSuccess?: () => void;
+  /** Mode contrôlé: état d'ouverture du dialog */
+  open?: boolean;
+  /** Mode contrôlé: callback pour changer l'état d'ouverture */
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function TrajetRetourDialog({
@@ -46,8 +50,15 @@ export function TrajetRetourDialog({
   kmDebut,
   litragePrevu,
   onSuccess,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: TrajetRetourDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Support mode contrôlé et non-contrôlé
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (controlledOnOpenChange ?? (() => {})) : setInternalOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<TrajetRetourInput>({
@@ -113,12 +124,15 @@ export function TrajetRetourDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <TruckIcon className="mr-2 h-4 w-4" />
-          Enregistrer le retour
-        </Button>
-      </DialogTrigger>
+      {/* En mode non-contrôlé, afficher le bouton trigger */}
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button>
+            <TruckIcon className="mr-2 h-4 w-4" />
+            Enregistrer le retour
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Enregistrer le retour du trajet</DialogTitle>

@@ -6,9 +6,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Eye, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { Eye, Pencil, Trash2, MoreVertical, TruckIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,11 +23,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useUserRole } from "@/hooks/use-user-role";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 import { TrajetDeleteDialog } from "./trajet-delete-dialog";
+import { TrajetRetourDialog } from "./trajet-retour-dialog";
 
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
@@ -72,7 +76,19 @@ interface TrajetTableProps {
 }
 
 export function TrajetTable({ trajets, loading }: TrajetTableProps) {
+  const router = useRouter();
   const [trajetToDelete, setTrajetToDelete] = useState<string | null>(null);
+  const [trajetRetourOpen, setTrajetRetourOpen] = useState<string | null>(null);
+  const { canEditTrips, canDeleteTrips, canRegisterReturn, loading: roleLoading } = useUserRole();
+
+  const handleRetourSuccess = () => {
+    router.refresh();
+  };
+
+  // Vérifier si le retour peut être enregistré pour un trajet
+  const canShowRetour = (trajet: TrajetListItem) => {
+    return canRegisterReturn && trajet.statut === "en_cours" && (!trajet.km_fin || trajet.km_fin === 0);
+  };
 
   const getStatutBadge = (statut: string | null) => {
     if (!statut) return <Badge variant="outline">Inconnu</Badge>;
@@ -223,19 +239,37 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
                           Voir détails
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/trajets/${trajet.id}/modifier`}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Modifier
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => setTrajetToDelete(trajet.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Supprimer
-                      </DropdownMenuItem>
+
+                      {canShowRetour(trajet) && !roleLoading && (
+                        <DropdownMenuItem
+                          onClick={() => setTrajetRetourOpen(trajet.id)}
+                        >
+                          <TruckIcon className="mr-2 h-4 w-4" />
+                          Enregistrer le retour
+                        </DropdownMenuItem>
+                      )}
+
+                      {canEditTrips && !roleLoading && (
+                        <DropdownMenuItem asChild>
+                          <Link href={`/trajets/${trajet.id}/modifier`}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Modifier
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
+                      {canDeleteTrips && !roleLoading && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setTrajetToDelete(trajet.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -244,6 +278,22 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog de retour */}
+      {trajetRetourOpen && (() => {
+        const trajet = trajets.find(t => t.id === trajetRetourOpen);
+        if (!trajet) return null;
+        return (
+          <TrajetRetourDialog
+            trajetId={trajet.id}
+            kmDebut={trajet.km_debut}
+            litragePrevu={trajet.litrage_prevu}
+            onSuccess={handleRetourSuccess}
+            open={true}
+            onOpenChange={(open) => !open && setTrajetRetourOpen(null)}
+          />
+        );
+      })()}
 
       <TrajetDeleteDialog
         trajetId={trajetToDelete}

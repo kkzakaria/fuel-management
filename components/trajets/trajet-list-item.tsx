@@ -10,17 +10,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ChevronRight, Eye, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Eye, Pencil, Trash2, TruckIcon } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUserRole } from "@/hooks/use-user-role";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 import { TrajetDeleteDialog } from "./trajet-delete-dialog";
+import { TrajetRetourDialog } from "./trajet-retour-dialog";
 import type { TrajetListItem } from "./trajet-table";
 
 interface TrajetListItemProps {
@@ -30,10 +33,19 @@ interface TrajetListItemProps {
 export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [retourDialogOpen, setRetourDialogOpen] = useState(false);
+  const { canEditTrips, canDeleteTrips, canRegisterReturn, loading: roleLoading } = useUserRole();
 
   const handleClick = () => {
     router.push(`/trajets/${trajet.id}`);
   };
+
+  const handleRetourSuccess = () => {
+    router.refresh();
+  };
+
+  // Vérifier si le retour peut être enregistré
+  const showEnregistrerRetour = canRegisterReturn && trajet.statut === "en_cours" && (!trajet.km_fin || trajet.km_fin === 0);
 
   const getStatutBadge = (statut: string | null) => {
     if (!statut) return <StatusBadge variant="outline" className="text-sm">Inconnu</StatusBadge>;
@@ -110,23 +122,51 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
                   Voir détails
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/trajets/${trajet.id}/modifier`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Modifier
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
+
+              {showEnregistrerRetour && !roleLoading && (
+                <DropdownMenuItem onClick={() => setRetourDialogOpen(true)}>
+                  <TruckIcon className="mr-2 h-4 w-4" />
+                  Enregistrer le retour
+                </DropdownMenuItem>
+              )}
+
+              {canEditTrips && !roleLoading && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/trajets/${trajet.id}/modifier`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Modifier
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
+              {canDeleteTrips && !roleLoading && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => setDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Dialog de retour */}
+      {showEnregistrerRetour && (
+        <TrajetRetourDialog
+          trajetId={trajet.id}
+          kmDebut={trajet.km_debut}
+          litragePrevu={trajet.litrage_prevu}
+          onSuccess={handleRetourSuccess}
+          open={retourDialogOpen}
+          onOpenChange={setRetourDialogOpen}
+        />
+      )}
 
       <TrajetDeleteDialog
         trajetId={trajet.id}
