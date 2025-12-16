@@ -3,9 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Eye, MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { Eye, MoreVertical, Pencil, Trash2, TruckIcon } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { DataTableColumnHeader } from "@/components/data-table"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -14,11 +15,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useUserRole } from "@/hooks/use-user-role"
 
 import { TrajetAlertBadge } from "./trajet-alert-badge"
 import { TrajetDeleteDialog } from "./trajet-delete-dialog"
+import { TrajetRetourDialog } from "./trajet-retour-dialog"
 
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
@@ -81,10 +85,23 @@ function getStatutBadge(statut: string | null) {
 }
 
 /**
- * Composant d'actions de ligne avec dialog de suppression
+ * Composant d'actions de ligne avec dialog de suppression et enregistrement retour
  */
 function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
+  const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [retourDialogOpen, setRetourDialogOpen] = useState(false)
+  const { canEditTrips, canDeleteTrips, canRegisterReturn, loading } = useUserRole()
+
+  // Le bouton "Enregistrer le retour" n'est visible que si:
+  // - L'utilisateur a la permission (admin, gestionnaire, personnel)
+  // - Le trajet est en cours
+  // - Le km_fin n'est pas encore renseigné (null ou 0)
+  const showEnregistrerRetour = canRegisterReturn && trajet.statut === "en_cours" && (!trajet.km_fin || trajet.km_fin === 0)
+
+  const handleRetourSuccess = () => {
+    router.refresh()
+  }
 
   return (
     <>
@@ -103,31 +120,65 @@ function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
                 Voir détails
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/trajets/${trajet.id}/modifier`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Modifier
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation()
-                setDeleteDialogOpen(true)
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </DropdownMenuItem>
+
+            {showEnregistrerRetour && !loading && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setRetourDialogOpen(true)
+                }}
+              >
+                <TruckIcon className="mr-2 h-4 w-4" />
+                Enregistrer le retour
+              </DropdownMenuItem>
+            )}
+
+            {canEditTrips && !loading && (
+              <DropdownMenuItem asChild>
+                <Link href={`/trajets/${trajet.id}/modifier`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Modifier
+                </Link>
+              </DropdownMenuItem>
+            )}
+
+            {canDeleteTrips && !loading && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteDialogOpen(true)
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Supprimer
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <TrajetDeleteDialog
-        trajetId={trajet.id}
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-      />
+      {showEnregistrerRetour && (
+        <TrajetRetourDialog
+          trajetId={trajet.id}
+          kmDebut={trajet.km_debut}
+          litragePrevu={trajet.litrage_prevu}
+          onSuccess={handleRetourSuccess}
+          open={retourDialogOpen}
+          onOpenChange={setRetourDialogOpen}
+        />
+      )}
+
+      {canDeleteTrips && (
+        <TrajetDeleteDialog
+          trajetId={trajet.id}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+        />
+      )}
     </>
   )
 }
