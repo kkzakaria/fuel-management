@@ -9,17 +9,15 @@ import { z } from "zod";
 
 /**
  * Schéma de validation pour les conteneurs d'un trajet
+ * Chaque entrée représente un conteneur individuel avec son propre numéro
  */
 export const conteneurSchema = z.object({
   type_conteneur_id: z.string({
     required_error: "Le type de conteneur est requis",
   }).uuid("ID de type conteneur invalide"),
-  numero_conteneur: z.string().optional().nullable(),
-  quantite: z.number({
-    required_error: "La quantité est requise",
-  }).int("La quantité doit être un nombre entier")
-    .positive("La quantité doit être positive")
-    .max(10, "Maximum 10 conteneurs par type"),
+  numero_conteneur: z.string()
+    .min(1, "Le numéro de conteneur est requis")
+    .max(20, "Le numéro ne peut pas dépasser 20 caractères"),
   statut_livraison: z.enum(["en_cours", "livre", "retour"], {
     required_error: "Le statut de livraison est requis",
   }),

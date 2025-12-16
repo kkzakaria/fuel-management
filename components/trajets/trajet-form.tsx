@@ -78,8 +78,7 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
       observations: trajet?.observations || undefined,
       conteneurs: trajet?.conteneur_trajet?.map((c) => ({
         type_conteneur_id: c.type_conteneur_id,
-        numero_conteneur: c.numero_conteneur || undefined,
-        quantite: c.quantite || 1,
+        numero_conteneur: c.numero_conteneur || "",
         statut_livraison: (c.statut_livraison as "en_cours" | "livre" | "retour") || "en_cours",
       })) || [],
     },

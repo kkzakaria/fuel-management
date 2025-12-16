@@ -1,12 +1,12 @@
 /**
  * Composant de sélection multiple de conteneurs pour un trajet
- * Permet d'ajouter plusieurs types de conteneurs avec leurs quantités
+ * Chaque conteneur est une entrée individuelle avec son propre numéro
  */
 
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { ConteneurInput } from "@/lib/validations/trajet";
 
 interface ConteneurSelectorProps {
@@ -39,22 +40,20 @@ export function ConteneurSelector({
   error,
 }: ConteneurSelectorProps) {
   const [newConteneur, setNewConteneur] = useState<Partial<ConteneurInput>>({
-    quantite: 1,
     statut_livraison: "en_cours",
   });
 
   const handleAddConteneur = () => {
-    if (!newConteneur.type_conteneur_id) return;
+    if (!newConteneur.type_conteneur_id || !newConteneur.numero_conteneur) return;
 
     const conteneur: ConteneurInput = {
       type_conteneur_id: newConteneur.type_conteneur_id,
-      numero_conteneur: newConteneur.numero_conteneur || null,
-      quantite: newConteneur.quantite || 1,
+      numero_conteneur: newConteneur.numero_conteneur.trim().toUpperCase(),
       statut_livraison: newConteneur.statut_livraison || "en_cours",
     };
 
     onChange([...conteneurs, conteneur]);
-    setNewConteneur({ quantite: 1, statut_livraison: "en_cours" });
+    setNewConteneur({ statut_livraison: "en_cours" });
   };
 
   const handleRemoveConteneur = (index: number) => {
@@ -67,66 +66,63 @@ export function ConteneurSelector({
     );
   };
 
-  const getTypeConteneurNom = (id: string) => {
-    return typeConteneurs.find((t) => t.id === id)?.nom || "Inconnu";
+  const getTypeConteneur = (id: string) => {
+    return typeConteneurs.find((t) => t.id === id);
   };
+
+  // Compter les conteneurs par type
+  const countByType = conteneurs.reduce((acc, c) => {
+    const type = getTypeConteneur(c.type_conteneur_id);
+    const key = type?.nom || "Inconnu";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <div className="space-y-4">
       <div>
         <Label>Conteneurs</Label>
         <p className="text-sm text-muted-foreground">
-          Ajoutez les conteneurs transportés lors de ce trajet
+          Ajoutez chaque conteneur individuellement avec son numéro unique
         </p>
       </div>
+
+      {/* Résumé des conteneurs */}
+      {conteneurs.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(countByType).map(([type, count]) => (
+            <Badge key={type} variant="outline" className="text-xs">
+              {count}x {type}
+            </Badge>
+          ))}
+          <Badge variant="secondary" className="text-xs">
+            Total: {conteneurs.length} conteneur{conteneurs.length > 1 ? "s" : ""}
+          </Badge>
+        </div>
+      )}
 
       {/* Liste des conteneurs ajoutés */}
       {conteneurs.length > 0 && (
         <div className="space-y-2">
-          {conteneurs.map((conteneur, index) => (
-            <Card key={index} className="p-3">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                <div>
-                  <Label className="text-xs">Type</Label>
-                  <p className="text-sm font-medium">
-                    {getTypeConteneurNom(conteneur.type_conteneur_id)}
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor={`numero-${index}`} className="text-xs">
-                    Numéro (optionnel)
-                  </Label>
-                  <Input
-                    id={`numero-${index}`}
-                    value={conteneur.numero_conteneur || ""}
-                    onChange={(e) =>
-                      handleUpdateConteneur(index, { numero_conteneur: e.target.value })
-                    }
-                    placeholder="ABC123..."
-                  />
-                </div>
-                <div>
-                  <Label htmlFor={`quantite-${index}`} className="text-xs">
-                    Quantité
-                  </Label>
-                  <Input
-                    id={`quantite-${index}`}
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={conteneur.quantite}
-                    onChange={(e) =>
-                      handleUpdateConteneur(index, {
-                        quantite: parseInt(e.target.value) || 1,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor={`statut-${index}`} className="text-xs">
-                    Statut
-                  </Label>
-                  <div className="flex gap-2">
+          {conteneurs.map((conteneur, index) => {
+            const type = getTypeConteneur(conteneur.type_conteneur_id);
+            return (
+              <Card key={index} className="p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium truncate">
+                          {conteneur.numero_conteneur}
+                        </span>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          {type?.nom || "?"} ({type?.taille_pieds}&apos;)
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Select
                       value={conteneur.statut_livraison}
                       onValueChange={(value) =>
@@ -135,7 +131,7 @@ export function ConteneurSelector({
                         })
                       }
                     >
-                      <SelectTrigger id={`statut-${index}`}>
+                      <SelectTrigger className="w-[120px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -154,17 +150,17 @@ export function ConteneurSelector({
                     </Button>
                   </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Formulaire d'ajout */}
       <Card className="p-3 border-dashed">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
           <div>
-            <Label htmlFor="type-conteneur">Type conteneur</Label>
+            <Label htmlFor="type-conteneur">Type conteneur *</Label>
             <Select
               value={newConteneur.type_conteneur_id}
               onValueChange={(value) =>
@@ -184,36 +180,21 @@ export function ConteneurSelector({
             </Select>
           </div>
           <div>
-            <Label htmlFor="nouveau-numero">Numéro (optionnel)</Label>
+            <Label htmlFor="nouveau-numero">Numéro conteneur *</Label>
             <Input
               id="nouveau-numero"
               value={newConteneur.numero_conteneur || ""}
               onChange={(e) =>
                 setNewConteneur({ ...newConteneur, numero_conteneur: e.target.value })
               }
-              placeholder="ABC123..."
-            />
-          </div>
-          <div>
-            <Label htmlFor="nouvelle-quantite">Quantité</Label>
-            <Input
-              id="nouvelle-quantite"
-              type="number"
-              min="1"
-              max="10"
-              value={newConteneur.quantite}
-              onChange={(e) =>
-                setNewConteneur({
-                  ...newConteneur,
-                  quantite: parseInt(e.target.value) || 1,
-                })
-              }
+              placeholder="Ex: ABCD1234567"
+              className="uppercase"
             />
           </div>
           <Button
             type="button"
             onClick={handleAddConteneur}
-            disabled={!newConteneur.type_conteneur_id}
+            disabled={!newConteneur.type_conteneur_id || !newConteneur.numero_conteneur?.trim()}
           >
             <Plus className="mr-2 h-4 w-4" />
             Ajouter
