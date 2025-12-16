@@ -1,13 +1,20 @@
 /**
  * Page de création d'un nouveau trajet
+ * Supporte la pré-sélection du chauffeur via ?chauffeurId=xxx
  */
 
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrajetForm } from "@/components/trajets/trajet-form";
 
 export default function NouveauTrajetPage() {
+  const searchParams = useSearchParams();
+  const chauffeurId = searchParams.get("chauffeurId");
+
   return (
     <div className="container py-6 space-y-6">
       {/* Navigation */}
@@ -26,7 +33,7 @@ export default function NouveauTrajetPage() {
       </div>
 
       {/* Formulaire */}
-      <TrajetForm />
+      <TrajetForm defaultChauffeurId={chauffeurId || undefined} />
     </div>
   );
 }

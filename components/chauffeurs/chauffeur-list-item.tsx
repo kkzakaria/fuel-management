@@ -8,7 +8,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Eye, Edit, Trash2, Phone } from "lucide-react";
+import { ChevronRight, Eye, Edit, Trash2, Phone, Truck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -109,6 +109,12 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
                 <Link href={`/chauffeurs/${chauffeur.id}/modifier`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Modifier
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}`}>
+                  <Truck className="mr-2 h-4 w-4" />
+                  Créer un trajet
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
