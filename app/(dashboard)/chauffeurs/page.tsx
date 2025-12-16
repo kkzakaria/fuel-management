@@ -1,58 +1,46 @@
 /**
  * Page de liste des chauffeurs
- * Utilise le nouveau système de toolbar responsive intégré
- *
- * Mobile : Recherche + Filtres drawer + Liste cards
- * Tablette/Desktop : Recherche + Filtres dropdown + DataTable
+ * Design "Fleet Command Center" avec:
+ * - Header stats banner
+ * - Filtres visuels par chips
+ * - Grille de cartes responsive
  */
 
 "use client";
 
-import { useCallback, useState, startTransition, useMemo } from "react";
-import { useRouter } from "next/navigation";
-
-import { DataTable, DataTableToolbar } from "@/components/data-table";
-import { chauffeurColumns } from "@/components/chauffeurs/chauffeur-columns";
-import { ChauffeurListItem } from "@/components/chauffeurs/chauffeur-list-item";
-import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form";
-import { ChauffeurFiltersStacked } from "@/components/chauffeurs/chauffeur-filters-stacked";
-import { ChauffeurFiltersDropdown } from "@/components/chauffeurs/chauffeur-filters-dropdown";
+import { useCallback, useState, useMemo } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChauffeurPageHeader } from "@/components/chauffeurs/chauffeur-page-header";
+import { ChauffeurCardGrid } from "@/components/chauffeurs/chauffeur-card";
+import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
 import { useUserRole } from "@/hooks/use-user-role";
-import type { Chauffeur } from "@/lib/supabase/types";
+
+type StatusKey = "actif" | "en_voyage" | "en_conge" | "suspendu" | "inactif";
 
 export default function ChauffeursPage() {
-  const router = useRouter();
   const { canManageDrivers } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { chauffeurs, loading, error, filters, updateFilters, clearFilters, refresh } = useChauffeurs({
+
+  const {
+    chauffeurs,
+    loading,
+    error,
+    filters,
+    updateFilters,
+    count,
+    refresh,
+  } = useChauffeurs({
     pageSize: 100,
     autoRefresh: 60000,
   });
-
-  // Calculer le nombre de filtres actifs
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filters.statut) count++;
-    if (filters.search) count++;
-    return count;
-  }, [filters]);
-
-  // Handler pour la navigation vers les détails
-  const handleRowClick = useCallback((chauffeur: Chauffeur) => {
-    startTransition(() => {
-      router.push(`/chauffeurs/${chauffeur.id}`);
-    });
-  }, [router]);
 
   // Handler pour fermer le dialogue et rafraîchir les données
   const handleSuccess = useCallback(() => {
@@ -60,102 +48,79 @@ export default function ChauffeursPage() {
     refresh();
   }, [refresh]);
 
+  // Handle status filter change
+  const handleStatusChange = useCallback((status: StatusKey | null) => {
+    updateFilters({ statut: status });
+  }, [updateFilters]);
+
+  // Handle search change
+  const handleSearchChange = useCallback((value: string) => {
+    updateFilters({ search: value });
+  }, [updateFilters]);
+
+  // Filtrer les chauffeurs côté client pour les stats (on a déjà tous les chauffeurs)
+  const allChauffeurs = useMemo(() => {
+    // Pour les stats, on veut tous les chauffeurs sans filtre
+    return chauffeurs;
+  }, [chauffeurs]);
+
   if (error) {
     return (
-      <div className="container py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              <p className="font-semibold">Erreur de chargement</p>
-              <p className="text-sm">{error.message}</p>
-              <Button onClick={refresh} variant="outline" className="mt-4">
-                Réessayer
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="container pt-0 pb-6 space-y-4">
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
+            <span className="text-3xl">⚠️</span>
+          </div>
+          <h3 className="text-lg font-semibold mb-1">Erreur de chargement</h3>
+          <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
+            {error.message}
+          </p>
+          <Button onClick={refresh} variant="outline">
+            Réessayer
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container space-y-4 py-4 sm:space-y-6 sm:py-6">
-      {/* === TOOLBAR RESPONSIVE UNIFIÉE === */}
-      <DataTableToolbar
-        externalSearch={{
-          value: filters.search ?? "",
-          onChange: (value) => updateFilters({ search: value }),
-          placeholder: "Rechercher un chauffeur...",
-        }}
-        responsiveFilters={{
-          mobileContent: (
-            <ChauffeurFiltersStacked
-              filters={filters}
-              onFiltersChange={updateFilters}
-            />
-          ),
-          desktopContent: (
-            <ChauffeurFiltersDropdown
-              filters={filters}
-              onFiltersChange={updateFilters}
-              onClearFilters={clearFilters}
-              activeFiltersCount={activeFiltersCount}
-              triggerLabel="Filtrer"
-            />
-          ),
-          activeCount: activeFiltersCount,
-          onClear: clearFilters,
-          drawerTitle: "Filtres des chauffeurs",
-          drawerDescription: "Filtrer par statut",
-        }}
-        addButton={
-          canManageDrivers
-            ? {
-                type: "dialog",
-                onClick: () => setDialogOpen(true),
-                label: "Nouveau chauffeur",
-              }
-            : undefined
-        }
-        enableColumnVisibility={false}
+    <div className="container pt-0 pb-6 space-y-6">
+      {/* Header with stats and filters */}
+      <ChauffeurPageHeader
+        chauffeurs={allChauffeurs}
+        totalCount={count}
+        searchValue={filters.search ?? ""}
+        onSearchChange={handleSearchChange}
+        activeStatus={(filters.statut as StatusKey) ?? null}
+        onStatusChange={handleStatusChange}
+        loading={loading}
       />
 
-      {/* === MOBILE : Liste cards === */}
-      <div className="md:hidden">
-        {loading ? (
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : chauffeurs.length === 0 ? (
-          <div className="rounded-md border p-8 text-center">
-            <p className="text-muted-foreground">Aucun chauffeur trouvé</p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-md border">
-            {chauffeurs.map((chauffeur) => (
-              <ChauffeurListItem key={chauffeur.id} chauffeur={chauffeur} />
-            ))}
-          </div>
+      {/* Action bar */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {loading ? (
+            <span className="inline-block w-24 h-4 bg-muted rounded animate-pulse" />
+          ) : (
+            <>
+              {chauffeurs.length} chauffeur{chauffeurs.length !== 1 ? "s" : ""} affiché{chauffeurs.length !== 1 ? "s" : ""}
+            </>
+          )}
+        </p>
+
+        {canManageDrivers && (
+          <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nouveau chauffeur</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
         )}
       </div>
 
-      {/* === TABLETTE & DESKTOP : DataTable === */}
-      <div className="hidden md:block">
-        <DataTable
-          columns={chauffeurColumns}
-          data={chauffeurs}
-          isLoading={loading}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
-          hideToolbar // La toolbar est gérée séparément ci-dessus
-        />
-      </div>
+      {/* Cards grid */}
+      <ChauffeurCardGrid chauffeurs={chauffeurs} loading={loading} />
 
-      {/* Dialogue de création */}
+      {/* Create dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
