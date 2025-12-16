@@ -2,17 +2,16 @@
  * Chauffeur Page Header
  *
  * "Fleet Command Center" design with:
- * - Stats overview banner
+ * - Stats overview banner (from database view)
  * - Visual status filter chips
  * - Search integrated
  */
 
 "use client";
 
-import { useMemo } from "react";
 import { Search, Users, Truck, Coffee, AlertTriangle, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Chauffeur } from "@/lib/supabase/types";
+import type { ChauffeurStatusStats } from "@/lib/dashboard-types";
 
 // Status configuration with colors and icons
 const STATUS_CONFIG = {
@@ -76,7 +75,7 @@ const STATUS_CONFIG = {
 type StatusKey = keyof typeof STATUS_CONFIG;
 
 interface ChauffeurPageHeaderProps {
-  chauffeurs: Chauffeur[];
+  statusStats: ChauffeurStatusStats[];
   totalCount: number;
   searchValue: string;
   onSearchChange: (value: string) => void;
@@ -86,7 +85,7 @@ interface ChauffeurPageHeaderProps {
 }
 
 export function ChauffeurPageHeader({
-  chauffeurs,
+  statusStats,
   totalCount,
   searchValue,
   onSearchChange,
@@ -94,25 +93,11 @@ export function ChauffeurPageHeader({
   onStatusChange,
   loading,
 }: ChauffeurPageHeaderProps) {
-  // Calculate status counts from chauffeurs data
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      actif: 0,
-      en_voyage: 0,
-      en_conge: 0,
-      suspendu: 0,
-      inactif: 0,
-    };
-
-    chauffeurs.forEach((c) => {
-      const statut = c.statut as string;
-      if (statut && statut in counts) {
-        counts[statut] = (counts[statut] || 0) + 1;
-      }
-    });
-
-    return counts;
-  }, [chauffeurs]);
+  // Build counts map from stats
+  const statusCounts: Record<string, number> = {};
+  statusStats.forEach((stat) => {
+    statusCounts[stat.statut] = stat.count;
+  });
 
   const statuses = Object.values(STATUS_CONFIG);
 
