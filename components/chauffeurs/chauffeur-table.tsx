@@ -31,6 +31,18 @@ import type { Chauffeur } from "@/lib/supabase/types";
 import { ChauffeurDeleteDialog } from "./chauffeur-delete-dialog";
 import { useState } from "react";
 
+// Configuration des statuts chauffeur
+const STATUT_CONFIG: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive"; className?: string }
+> = {
+  actif: { label: "Disponible", variant: "default" },
+  en_voyage: { label: "En voyage", variant: "default", className: "bg-blue-600 text-white border-transparent" },
+  en_conge: { label: "En congé", variant: "default", className: "bg-yellow-600 text-white border-transparent" },
+  suspendu: { label: "Suspendu", variant: "destructive" },
+  inactif: { label: "Inactif", variant: "secondary" },
+};
+
 interface ChauffeurTableProps {
   chauffeurs: Chauffeur[];
   loading?: boolean;
@@ -114,30 +126,18 @@ export function ChauffeurTable({ chauffeurs, loading }: ChauffeurTableProps) {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      chauffeur.statut === "actif"
-                        ? "default"
-                        : chauffeur.statut === "inactif"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                    className={
-                      chauffeur.statut === "en_voyage"
-                        ? "bg-blue-600 text-white border-transparent"
-                        : chauffeur.statut === "en_conge"
-                          ? "bg-yellow-600 text-white border-transparent"
-                          : undefined
-                    }
-                  >
-                    {chauffeur.statut === "actif"
-                      ? "Disponible"
-                      : chauffeur.statut === "en_voyage"
-                        ? "En voyage"
-                        : chauffeur.statut === "en_conge"
-                          ? "En congé"
-                          : chauffeur.statut}
-                  </Badge>
+                  {(() => {
+                    const config = STATUT_CONFIG[chauffeur.statut || ""] || {
+                      label: chauffeur.statut,
+                      variant: "secondary" as const,
+                      className: undefined,
+                    };
+                    return (
+                      <Badge variant={config.variant} className={config.className}>
+                        {config.label}
+                      </Badge>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
