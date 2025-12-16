@@ -7,6 +7,7 @@
 
 "use client";
 
+import Link from "next/link";
 import { Users, Truck, Coffee, AlertTriangle, UserX } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -84,7 +85,7 @@ function StatsSkeleton() {
   );
 }
 
-// Mini-card de statut individuel
+// Mini-card de statut individuel (cliquable)
 function StatusMiniCard({
   stat,
   index,
@@ -98,10 +99,11 @@ function StatusMiniCard({
   const Icon = config.icon;
 
   return (
-    <div
+    <Link
+      href={`/chauffeurs?statut=${stat.statut}`}
       className={cn(
-        "relative overflow-hidden rounded-lg transition-all duration-300",
-        "hover:scale-[1.02] hover:shadow-md",
+        "block relative overflow-hidden rounded-lg transition-all duration-300",
+        "hover:scale-[1.02] hover:shadow-md cursor-pointer",
         "opacity-0 animate-slide-in-up",
         isDesktop ? "p-4" : "p-3",
         config.bgClass
@@ -139,43 +141,46 @@ function StatusMiniCard({
           {stat.percentage.toFixed(0)}% de l&apos;équipe
         </p>
       )}
-    </div>
+    </Link>
   );
 }
 
-// Card principale avec total (Desktop)
+// Card principale avec total (Desktop) - cliquable vers liste complète
 function TotalCard({
   totalChauffeurs,
 }: {
   totalChauffeurs: number;
 }) {
   return (
-    <Card
-      className={cn(
-        "relative overflow-hidden border-0",
-        "bg-gradient-to-br from-slate-900 to-slate-800",
-        "dark:from-slate-800 dark:to-slate-900",
-        "opacity-0 animate-slide-in-up"
-      )}
-      style={{ animationDelay: "0ms" }}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-white/10">
-            <Users className="h-6 w-6 text-white" />
+    <Link href="/chauffeurs" className="block opacity-0 animate-slide-in-up" style={{ animationDelay: "0ms" }}>
+      <Card
+        className={cn(
+          "relative overflow-hidden border-0 h-full",
+          "bg-gradient-to-br from-slate-900 to-slate-800",
+          "dark:from-slate-800 dark:to-slate-900",
+          "hover:from-slate-800 hover:to-slate-700",
+          "dark:hover:from-slate-700 dark:hover:to-slate-800",
+          "transition-all duration-300 cursor-pointer"
+        )}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/10">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-300 uppercase tracking-wider">
+                Équipe
+              </p>
+              <p className="text-3xl font-bold text-white tabular-nums">
+                {totalChauffeurs}
+              </p>
+              <p className="text-xs text-slate-400">chauffeurs</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-medium text-slate-300 uppercase tracking-wider">
-              Équipe
-            </p>
-            <p className="text-3xl font-bold text-white tabular-nums">
-              {totalChauffeurs}
-            </p>
-            <p className="text-xs text-slate-400">chauffeurs</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
@@ -217,22 +222,25 @@ export function ChauffeurStatsCards({
         style={{ animationDelay: "0ms" }}
       >
         <CardContent className="p-5">
-          {/* Header avec total */}
-          <div className="flex items-center justify-between mb-5">
+          {/* Header avec total - cliquable vers liste complète */}
+          <Link
+            href="/chauffeurs"
+            className="flex items-center justify-between mb-5 group"
+          >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-slate-900 dark:bg-slate-700">
+              <div className="p-2.5 rounded-xl bg-slate-900 dark:bg-slate-700 group-hover:bg-slate-800 dark:group-hover:bg-slate-600 transition-colors">
                 <Users className="h-5 w-5 text-white" />
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Équipe Chauffeurs
                 </p>
-                <p className="text-4xl font-bold tabular-nums tracking-tight">
+                <p className="text-4xl font-bold tabular-nums tracking-tight group-hover:text-primary transition-colors">
                   {totalChauffeurs}
                 </p>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Grid des statuts */}
           <div className="grid grid-cols-2 gap-3">
@@ -248,16 +256,17 @@ export function ChauffeurStatsCards({
                 {sortedStats.slice(4).map((stat) => {
                   const config = getStatusConfig(stat.statut);
                   return (
-                    <span
+                    <Link
                       key={stat.statut}
-                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-muted"
+                      href={`/chauffeurs?statut=${stat.statut}`}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
                     >
                       <span
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: config.borderColor }}
                       />
                       {stat.label}: {stat.count}
-                    </span>
+                    </Link>
                   );
                 })}
               </div>
