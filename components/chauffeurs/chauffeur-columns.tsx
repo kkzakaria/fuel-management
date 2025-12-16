@@ -17,8 +17,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Chauffeur } from "@/lib/supabase/types"
+import type { StatusVariant } from "@/components/ui/status-badge"
 
 import { ChauffeurDeleteDialog } from "./chauffeur-delete-dialog"
+
+// Configuration des statuts chauffeur
+const STATUT_CONFIG: Record<string, { label: string; variant: StatusVariant }> = {
+  actif: { label: "Disponible", variant: "success" },
+  en_voyage: { label: "En voyage", variant: "info" },
+  en_conge: { label: "En congé", variant: "warning" },
+  suspendu: { label: "Suspendu", variant: "destructive" },
+  inactif: { label: "Inactif", variant: "secondary" },
+}
 
 /**
  * Fonction de filtrage personnalisée pour rechercher dans prénom ET nom
@@ -145,16 +155,11 @@ export const chauffeurColumns: ColumnDef<Chauffeur>[] = [
     header: "Statut",
     cell: ({ row }) => {
       const statut = row.getValue("statut") as string
-
-      const variantMap: Record<string, "success" | "secondary" | "destructive"> = {
-        actif: "success",
-        inactif: "secondary",
-        suspendu: "destructive",
-      }
+      const config = STATUT_CONFIG[statut] || { label: statut, variant: "secondary" as StatusVariant }
 
       return (
-        <StatusBadge variant={variantMap[statut] || "secondary"}>
-          {statut}
+        <StatusBadge variant={config.variant}>
+          {config.label}
         </StatusBadge>
       )
     },
