@@ -8,13 +8,8 @@
 "use client";
 
 import Link from "next/link";
-import { Users, Truck, Coffee, AlertTriangle, UserX, ExternalLink } from "lucide-react";
+import { Users, Truck, Coffee, AlertTriangle, UserX } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ChauffeurStatusStats } from "@/lib/dashboard-types";
 import type { LucideIcon } from "lucide-react";
@@ -102,38 +97,7 @@ function StatsSkeleton() {
   );
 }
 
-// Contenu du tooltip personnalisé
-function StatusTooltipContent({
-  stat,
-  config,
-}: {
-  stat: ChauffeurStatusStats;
-  config: StatusConfigItem;
-}) {
-  return (
-    <div className="flex flex-col gap-2 py-1">
-      {/* Header avec indicateur coloré */}
-      <div className="flex items-center gap-2">
-        <span
-          className="w-2 h-2 rounded-full shrink-0"
-          style={{ backgroundColor: config.borderColor }}
-        />
-        <span className="font-semibold text-sm">{stat.label}</span>
-      </div>
-      {/* Description */}
-      <p className="text-xs text-muted-foreground leading-relaxed">
-        {config.description}
-      </p>
-      {/* Action */}
-      <div className="flex items-center gap-1.5 text-xs font-medium text-primary pt-1 border-t border-border/50">
-        <ExternalLink className="h-3 w-3" />
-        <span>{config.actionLabel}</span>
-      </div>
-    </div>
-  );
-}
-
-// Mini-card de statut individuel (cliquable avec tooltip)
+// Mini-card de statut individuel (cliquable)
 function StatusMiniCard({
   stat,
   index,
@@ -192,23 +156,8 @@ function StatusMiniCard({
     </Link>
   );
 
-  // Only show tooltip on desktop for better mobile UX
-  if (!isDesktop) {
-    return cardContent;
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        className="max-w-[220px] bg-popover text-popover-foreground border shadow-lg"
-        sideOffset={8}
-      >
-        <StatusTooltipContent stat={stat} config={config} />
-      </TooltipContent>
-    </Tooltip>
-  );
+  // Tooltips désactivés pour le moment
+  return cardContent;
 }
 
 // Card principale avec total (Desktop) - cliquable vers liste complète
@@ -249,27 +198,8 @@ function TotalCard({
     </Link>
   );
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        className="max-w-[200px] bg-popover text-popover-foreground border shadow-lg"
-        sideOffset={8}
-      >
-        <div className="flex flex-col gap-2 py-1">
-          <span className="font-semibold text-sm">Équipe complète</span>
-          <p className="text-xs text-muted-foreground">
-            Vue d&apos;ensemble de tous les chauffeurs
-          </p>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-primary pt-1 border-t border-border/50">
-            <ExternalLink className="h-3 w-3" />
-            <span>Voir tous les chauffeurs</span>
-          </div>
-        </div>
-      </TooltipContent>
-    </Tooltip>
-  );
+  // Tooltips désactivés pour le moment
+  return cardContent;
 }
 
 export function ChauffeurStatsCards({
