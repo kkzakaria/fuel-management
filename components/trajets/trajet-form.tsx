@@ -50,10 +50,11 @@ import type { Trajet, ConteneurTrajet } from "@/lib/supabase/types";
 interface TrajetFormProps {
   trajet?: Trajet & { conteneur_trajet?: ConteneurTrajet[] };
   defaultChauffeurId?: string;
+  returnUrl?: string;
   onSuccess?: () => void;
 }
 
-export function TrajetForm({ trajet, defaultChauffeurId, onSuccess }: TrajetFormProps) {
+export function TrajetForm({ trajet, defaultChauffeurId, returnUrl, onSuccess }: TrajetFormProps) {
   const isEditing = Boolean(trajet);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,7 +153,8 @@ export function TrajetForm({ trajet, defaultChauffeurId, onSuccess }: TrajetForm
           if (isEditing && trajet) {
             router.push(`/trajets/${trajet.id}`);
           } else {
-            router.push("/trajets");
+            // Rediriger vers returnUrl si fourni, sinon vers la liste des trajets
+            router.push(returnUrl || "/trajets");
           }
           router.refresh();
         }
