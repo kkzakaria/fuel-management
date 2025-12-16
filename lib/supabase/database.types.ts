@@ -535,7 +535,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      chauffeur_status_stats: {
+        Row: {
+          count: number | null
+          percentage: number | null
+          statut: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_test_profiles: { Args: never; Returns: undefined }

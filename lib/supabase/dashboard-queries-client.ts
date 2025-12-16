@@ -355,7 +355,7 @@ export async function getCostChartData(
 // Chauffeur Status Statistics
 // =============================================================================
 
-// Configuration des statuts chauffeur
+// Configuration des statuts chauffeur (labels et couleurs)
 const CHAUFFEUR_STATUT_CONFIG: Record<
   string,
   { label: string; color: string }
@@ -370,24 +370,16 @@ const CHAUFFEUR_STATUT_CONFIG: Record<
 export async function getChauffeurStatusStats(): Promise<ChauffeurStatusStats[]> {
   const supabase = getClient();
 
-  const { data } = await supabase
-    .from("chauffeur")
-    .select("statut");
+  // Use the database view for efficient aggregation
+  const { data, error } = await supabase
+    .from("chauffeur_status_stats")
+    .select("statut, count, percentage");
 
-  if (!data) return [];
+  if (error || !data) return [];
 
-  // Count by status
-  const statusCounts: Record<string, number> = {};
-  let total = 0;
-
-  data.forEach((chauffeur) => {
-    const statut = chauffeur.statut || "inactif";
-    statusCounts[statut] = (statusCounts[statut] || 0) + 1;
-    total += 1;
-  });
-
-  // Convert to array with percentages and labels
-  return Object.entries(statusCounts).map(([statut, count]) => {
+  // Add labels and colors from config
+  return data.map((row) => {
+    const statut = row.statut || "inactif";
     const config = CHAUFFEUR_STATUT_CONFIG[statut] || {
       label: statut,
       color: "hsl(var(--chart-5))",
@@ -395,8 +387,8 @@ export async function getChauffeurStatusStats(): Promise<ChauffeurStatusStats[]>
     return {
       statut,
       label: config.label,
-      count,
-      percentage: total > 0 ? (count / total) * 100 : 0,
+      count: row.count ?? 0,
+      percentage: Number(row.percentage) || 0,
       color: config.color,
     };
   });
