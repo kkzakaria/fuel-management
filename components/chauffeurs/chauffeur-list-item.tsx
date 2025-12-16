@@ -113,7 +113,7 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
               </DropdownMenuItem>
               {chauffeur.statut === "actif" && (
                 <DropdownMenuItem asChild>
-                  <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}&returnUrl=/chauffeurs/${chauffeur.id}`}>
+                  <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}&returnUrl=/chauffeurs`}>
                     <Truck className="mr-2 h-4 w-4" />
                     Créer un trajet
                   </Link>
