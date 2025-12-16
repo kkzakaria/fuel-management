@@ -1,7 +1,7 @@
 /**
  * Page de liste des chauffeurs
  * Design "Fleet Command Center" avec:
- * - Header stats banner
+ * - Header stats banner (depuis la vue DB chauffeur_status_stats)
  * - Filtres visuels par chips
  * - Grille de cartes responsive
  */
@@ -21,7 +21,9 @@ import { ChauffeurPageHeader } from "@/components/chauffeurs/chauffeur-page-head
 import { ChauffeurCardGrid } from "@/components/chauffeurs/chauffeur-card";
 import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
+import { useChauffeurStatusStats } from "@/hooks/use-chauffeur-status-stats";
 import { useUserRole } from "@/hooks/use-user-role";
+import type { Chauffeur } from "@/lib/supabase/types";
 
 type StatusKey = "actif" | "en_voyage" | "en_conge" | "suspendu" | "inactif";
 
@@ -29,40 +31,76 @@ export default function ChauffeursPage() {
   const { canManageDrivers } = useUserRole();
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Local filter state for client-side filtering
+  const [activeStatus, setActiveStatus] = useState<StatusKey | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+
+  // Fetch status stats from database view (always accurate)
   const {
-    chauffeurs,
-    loading,
+    chauffeurStats,
+    totalChauffeurs,
+    loading: loadingStats,
+    refetch: refetchStats,
+  } = useChauffeurStatusStats();
+
+  // Fetch ALL chauffeurs (no server-side filtering)
+  const {
+    chauffeurs: allChauffeurs,
+    loading: loadingChauffeurs,
     error,
-    filters,
-    updateFilters,
-    count,
-    refresh,
+    refresh: refreshChauffeurs,
   } = useChauffeurs({
-    pageSize: 100,
+    pageSize: 200, // Get all
     autoRefresh: 60000,
   });
+
+  const loading = loadingStats || loadingChauffeurs;
 
   // Handler pour fermer le dialogue et rafraîchir les données
   const handleSuccess = useCallback(() => {
     setDialogOpen(false);
-    refresh();
-  }, [refresh]);
+    refreshChauffeurs();
+    refetchStats();
+  }, [refreshChauffeurs, refetchStats]);
 
-  // Handle status filter change
+  // Handle status filter change (client-side)
   const handleStatusChange = useCallback((status: StatusKey | null) => {
-    updateFilters({ statut: status });
-  }, [updateFilters]);
+    setActiveStatus(status);
+  }, []);
 
-  // Handle search change
+  // Handle search change (client-side)
   const handleSearchChange = useCallback((value: string) => {
-    updateFilters({ search: value });
-  }, [updateFilters]);
+    setSearchValue(value);
+  }, []);
 
-  // Filtrer les chauffeurs côté client pour les stats (on a déjà tous les chauffeurs)
-  const allChauffeurs = useMemo(() => {
-    // Pour les stats, on veut tous les chauffeurs sans filtre
-    return chauffeurs;
-  }, [chauffeurs]);
+  // Filter chauffeurs client-side
+  const filteredChauffeurs = useMemo(() => {
+    let result: Chauffeur[] = allChauffeurs;
+
+    // Filter by status
+    if (activeStatus) {
+      result = result.filter((c) => c.statut === activeStatus);
+    }
+
+    // Filter by search
+    if (searchValue.trim()) {
+      const search = searchValue.toLowerCase().trim();
+      result = result.filter((c) => {
+        const nom = c.nom?.toLowerCase() || "";
+        const prenom = c.prenom?.toLowerCase() || "";
+        const telephone = c.telephone?.toLowerCase() || "";
+        const permis = c.numero_permis?.toLowerCase() || "";
+        return (
+          nom.includes(search) ||
+          prenom.includes(search) ||
+          telephone.includes(search) ||
+          permis.includes(search)
+        );
+      });
+    }
+
+    return result;
+  }, [allChauffeurs, activeStatus, searchValue]);
 
   if (error) {
     return (
@@ -75,7 +113,7 @@ export default function ChauffeursPage() {
           <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
             {error.message}
           </p>
-          <Button onClick={refresh} variant="outline">
+          <Button onClick={refreshChauffeurs} variant="outline">
             Réessayer
           </Button>
         </div>
@@ -85,13 +123,13 @@ export default function ChauffeursPage() {
 
   return (
     <div className="container pt-0 pb-6 space-y-6">
-      {/* Header with stats and filters */}
+      {/* Header with stats from DB view and filters */}
       <ChauffeurPageHeader
-        chauffeurs={allChauffeurs}
-        totalCount={count}
-        searchValue={filters.search ?? ""}
+        statusStats={chauffeurStats}
+        totalCount={totalChauffeurs}
+        searchValue={searchValue}
         onSearchChange={handleSearchChange}
-        activeStatus={(filters.statut as StatusKey) ?? null}
+        activeStatus={activeStatus}
         onStatusChange={handleStatusChange}
         loading={loading}
       />
@@ -103,7 +141,10 @@ export default function ChauffeursPage() {
             <span className="inline-block w-24 h-4 bg-muted rounded animate-pulse" />
           ) : (
             <>
-              {chauffeurs.length} chauffeur{chauffeurs.length !== 1 ? "s" : ""} affiché{chauffeurs.length !== 1 ? "s" : ""}
+              {filteredChauffeurs.length} chauffeur{filteredChauffeurs.length !== 1 ? "s" : ""} affiché{filteredChauffeurs.length !== 1 ? "s" : ""}
+              {(activeStatus || searchValue) && (
+                <span className="text-muted-foreground/60"> sur {totalChauffeurs}</span>
+              )}
             </>
           )}
         </p>
@@ -117,8 +158,8 @@ export default function ChauffeursPage() {
         )}
       </div>
 
-      {/* Cards grid */}
-      <ChauffeurCardGrid chauffeurs={chauffeurs} loading={loading} />
+      {/* Cards grid (filtered) */}
+      <ChauffeurCardGrid chauffeurs={filteredChauffeurs} loading={loading} />
 
       {/* Create dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
