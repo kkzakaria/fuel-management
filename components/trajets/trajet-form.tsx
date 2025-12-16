@@ -122,10 +122,21 @@ export function TrajetForm({ trajet, onSuccess }: TrajetFormProps) {
     try {
       let result;
       if (isEditing && trajet) {
-        // Mode édition
+        // Mode édition - extraire uniquement les champs autorisés par updateTrajetSchema
+        const updateData = {
+          date_trajet: data.date_trajet,
+          km_debut: data.km_debut,
+          km_fin: data.km_fin,
+          litrage_prevu: data.litrage_prevu,
+          litrage_station: data.litrage_station,
+          prix_litre: data.prix_litre,
+          frais: data.frais,
+          statut: data.statut,
+          observations: data.observations,
+        };
         result = await updateTrajetAction(
           { trajetId: trajet.id },
-          data
+          updateData
         );
       } else {
         // Mode création

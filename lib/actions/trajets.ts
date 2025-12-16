@@ -99,9 +99,12 @@ export const updateTrajetAction = action
   .action(async ({ parsedInput, bindArgsParsedInputs: [{ trajetId }] }) => {
     const supabase = await createClient();
 
+    // Extraire les frais du input (ils sont gérés séparément)
+    const { frais, ...trajetData } = parsedInput;
+
     const { data: trajet, error } = await supabase
       .from("trajet")
-      .update(parsedInput)
+      .update(trajetData)
       .eq("id", trajetId)
       .select()
       .single();
@@ -109,6 +112,32 @@ export const updateTrajetAction = action
     if (error) {
       console.error("Erreur mise à jour trajet:", error);
       throw new Error("Erreur lors de la mise à jour du trajet");
+    }
+
+    // Mettre à jour les frais si fournis
+    if (frais !== undefined) {
+      // Supprimer les anciens frais
+      await supabase
+        .from("frais_trajet")
+        .delete()
+        .eq("trajet_id", trajetId);
+
+      // Créer les nouveaux frais
+      if (frais.length > 0) {
+        const fraisWithTrajetId = frais.map((f) => ({
+          ...f,
+          trajet_id: trajetId,
+        }));
+
+        const { error: fraisError } = await supabase
+          .from("frais_trajet")
+          .insert(fraisWithTrajetId);
+
+        if (fraisError) {
+          console.error("Erreur mise à jour frais:", fraisError);
+          // On ne throw pas car le trajet a été mis à jour
+        }
+      }
     }
 
     // Revalider les caches

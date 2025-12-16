@@ -18,9 +18,16 @@ interface UseUserRoleReturn {
   isGestionnaire: boolean;
   isChauffeur: boolean;
   isPersonnel: boolean;
+  isVisiteur: boolean;
   canManageDrivers: boolean;
   canManageVehicles: boolean;
   canManageSubcontractors: boolean;
+  // Permissions trajets
+  canCreateTrips: boolean;
+  canEditTrips: boolean;
+  canDeleteTrips: boolean;
+  canRegisterReturn: boolean;
+  canViewTrips: boolean;
 }
 
 export function useUserRole(): UseUserRoleReturn {
@@ -70,11 +77,23 @@ export function useUserRole(): UseUserRoleReturn {
   const isGestionnaire = role === "gestionnaire";
   const isChauffeur = role === "chauffeur";
   const isPersonnel = role === "personnel";
+  const isVisiteur = role === "visiteur";
 
   // Permissions métier
   const canManageDrivers = isAdmin || isGestionnaire;
   const canManageVehicles = isAdmin || isGestionnaire;
   const canManageSubcontractors = isAdmin || isGestionnaire || isPersonnel;
+
+  // Permissions trajets
+  // - admin et gestionnaire: accès complet (CRUD)
+  // - personnel: peut créer des trajets et enregistrer le retour (pas de modification/suppression)
+  // - chauffeur: lecture seule (voit uniquement ses trajets via RLS)
+  // - visiteur: lecture seule
+  const canCreateTrips = isAdmin || isGestionnaire || isPersonnel;
+  const canEditTrips = isAdmin || isGestionnaire;
+  const canDeleteTrips = isAdmin || isGestionnaire;
+  const canRegisterReturn = isAdmin || isGestionnaire || isPersonnel;
+  const canViewTrips = isAdmin || isGestionnaire || isPersonnel || isChauffeur || isVisiteur;
 
   return {
     role,
@@ -83,8 +102,14 @@ export function useUserRole(): UseUserRoleReturn {
     isGestionnaire,
     isChauffeur,
     isPersonnel,
+    isVisiteur,
     canManageDrivers,
     canManageVehicles,
     canManageSubcontractors,
+    canCreateTrips,
+    canEditTrips,
+    canDeleteTrips,
+    canRegisterReturn,
+    canViewTrips,
   };
 }
