@@ -126,7 +126,7 @@ export function ConteneurSelector({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {isEditMode ? (
+                    {isEditMode && (
                       <Select
                         value={conteneur.statut_livraison}
                         onValueChange={(value) =>
@@ -144,8 +144,6 @@ export function ConteneurSelector({
                           <SelectItem value="retour">Retour</SelectItem>
                         </SelectContent>
                       </Select>
-                    ) : (
-                      <Badge variant="secondary">En cours</Badge>
                     )}
                     <Button
                       type="button"
