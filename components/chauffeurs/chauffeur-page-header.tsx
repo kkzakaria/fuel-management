@@ -6,10 +6,12 @@
  * - Inline mini stat badges
  * - Integrated search, filters, and actions
  * - Minimal height footprint
+ * - Enhanced background on scroll
  */
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { Search, Users, Truck, Coffee, AlertTriangle, UserX, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -91,6 +93,21 @@ export function ChauffeurPageHeader({
   canAdd = false,
   loading,
 }: ChauffeurPageHeaderProps) {
+  // Track scroll position for enhanced background
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    // Check initial scroll position
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Build counts map from stats
   const statusCounts: Record<string, number> = {};
   statusStats.forEach((stat) => {
@@ -104,9 +121,12 @@ export function ChauffeurPageHeader({
     <div className={cn(
       "sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8",
       "pt-3 pb-3",
-      "bg-background/80 backdrop-blur-xl",
-      "border-b border-border/50",
-      "shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+      "backdrop-blur-xl",
+      "border-b transition-all duration-300",
+      // Background changes based on scroll
+      isScrolled
+        ? "bg-background/95 border-border shadow-md"
+        : "bg-background/60 border-transparent shadow-none"
     )}>
       {/* Main command bar */}
       <div className="flex flex-col gap-3">
