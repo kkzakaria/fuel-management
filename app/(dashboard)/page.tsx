@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { PeriodSelector } from "@/components/dashboard/period-selector";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { ChauffeurStatsCards } from "@/components/dashboard/chauffeur-stats-cards";
 import { TripsChart } from "@/components/dashboard/trips-chart";
 import { ContainersChart } from "@/components/dashboard/containers-chart";
 import { ConsumptionChart } from "@/components/dashboard/consumption-chart";
@@ -56,6 +57,13 @@ export default function DashboardPage() {
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
+
+      {/* Chauffeur Stats Cards - First Row */}
+      <ChauffeurStatsCards
+        chauffeurStats={chauffeurStats}
+        totalChauffeurs={totalChauffeurs}
+        loading={chauffeurLoading}
+      />
 
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
