@@ -20,9 +20,11 @@ import { TripsChart } from "@/components/dashboard/trips-chart";
 import { ContainersChart } from "@/components/dashboard/containers-chart";
 import { ConsumptionChart } from "@/components/dashboard/consumption-chart";
 import { CostsChart } from "@/components/dashboard/costs-chart";
+import { ChauffeurStatusChart } from "@/components/dashboard/chauffeur-status-chart";
 import { useStats } from "@/hooks/use-stats";
 import { useContainerStats } from "@/hooks/use-container-stats";
 import { useFuelStats } from "@/hooks/use-fuel-stats";
+import { useChauffeurStatusStats } from "@/hooks/use-chauffeur-status-stats";
 import { formatCurrency, formatConsumption } from "@/lib/format-utils";
 import type { PeriodPreset } from "@/lib/dashboard-types";
 
@@ -39,6 +41,8 @@ export default function DashboardPage() {
     period,
     limit: 5,
   });
+  const { chauffeurStats, totalChauffeurs, loading: chauffeurLoading } =
+    useChauffeurStatusStats();
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -134,6 +138,13 @@ export default function DashboardPage() {
 
         {/* Consumption Chart */}
         <ConsumptionChart data={vehicleStats} loading={fuelLoading} />
+
+        {/* Chauffeur Status Chart */}
+        <ChauffeurStatusChart
+          data={chauffeurStats}
+          totalChauffeurs={totalChauffeurs}
+          loading={chauffeurLoading}
+        />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import type {
   VehicleConsumption,
   TripChartData,
   CostChartData,
+  ChauffeurStatusStats,
 } from "../dashboard-types";
 import { formatDateForQuery } from "../date-utils";
 
@@ -348,4 +349,55 @@ export async function getCostChartData(
       totalCost,
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// =============================================================================
+// Chauffeur Status Statistics
+// =============================================================================
+
+// Configuration des statuts chauffeur
+const CHAUFFEUR_STATUT_CONFIG: Record<
+  string,
+  { label: string; color: string }
+> = {
+  actif: { label: "Disponible", color: "hsl(142, 76%, 36%)" }, // Green
+  en_voyage: { label: "En voyage", color: "hsl(221, 83%, 53%)" }, // Blue
+  en_conge: { label: "En congé", color: "hsl(45, 93%, 47%)" }, // Yellow/Orange
+  suspendu: { label: "Suspendu", color: "hsl(0, 84%, 60%)" }, // Red
+  inactif: { label: "Inactif", color: "hsl(215, 14%, 34%)" }, // Gray
+};
+
+export async function getChauffeurStatusStats(): Promise<ChauffeurStatusStats[]> {
+  const supabase = getClient();
+
+  const { data } = await supabase
+    .from("chauffeur")
+    .select("statut");
+
+  if (!data) return [];
+
+  // Count by status
+  const statusCounts: Record<string, number> = {};
+  let total = 0;
+
+  data.forEach((chauffeur) => {
+    const statut = chauffeur.statut || "inactif";
+    statusCounts[statut] = (statusCounts[statut] || 0) + 1;
+    total += 1;
+  });
+
+  // Convert to array with percentages and labels
+  return Object.entries(statusCounts).map(([statut, count]) => {
+    const config = CHAUFFEUR_STATUT_CONFIG[statut] || {
+      label: statut,
+      color: "hsl(var(--chart-5))",
+    };
+    return {
+      statut,
+      label: config.label,
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+      color: config.color,
+    };
+  });
 }

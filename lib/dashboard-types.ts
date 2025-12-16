@@ -71,6 +71,15 @@ export interface CostChartData {
   subcontracting?: number;
 }
 
+export interface ChauffeurStatusStats {
+  statut: string;
+  label: string;
+  count: number;
+  percentage: number;
+  color: string;
+  [key: string]: string | number; // Index signature for chart compatibility
+}
+
 // =============================================================================
 // Alert Types
 // =============================================================================
