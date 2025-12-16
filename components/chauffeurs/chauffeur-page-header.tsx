@@ -1,74 +1,66 @@
 /**
- * Chauffeur Page Header
+ * Chauffeur Page Header - Floating Command Bar
  *
- * "Fleet Command Center" design with:
- * - Stats overview banner (from database view)
- * - Visual status filter chips
- * - Search integrated
+ * Compact, sticky design with:
+ * - Glassmorphism floating bar
+ * - Inline mini stat badges
+ * - Integrated search, filters, and actions
+ * - Minimal height footprint
  */
 
 "use client";
 
-import { Search, Users, Truck, Coffee, AlertTriangle, UserX } from "lucide-react";
+import { Search, Users, Truck, Coffee, AlertTriangle, UserX, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { ChauffeurStatusStats } from "@/lib/dashboard-types";
 
-// Status configuration with colors and icons
+// Compact status configuration
 const STATUS_CONFIG = {
   actif: {
     key: "actif",
     label: "Disponible",
+    shortLabel: "Dispo",
     icon: Users,
-    color: "emerald",
-    bgClass: "bg-emerald-500",
-    textClass: "text-emerald-600 dark:text-emerald-400",
-    chipBg: "bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50",
-    chipBgActive: "bg-emerald-500 text-white hover:bg-emerald-600",
-    borderClass: "border-emerald-200 dark:border-emerald-800",
+    dotClass: "bg-emerald-500",
+    activeClass: "bg-emerald-500 text-white shadow-emerald-500/25",
+    inactiveClass: "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50",
   },
   en_voyage: {
     key: "en_voyage",
     label: "En voyage",
+    shortLabel: "Voyage",
     icon: Truck,
-    color: "blue",
-    bgClass: "bg-blue-500",
-    textClass: "text-blue-600 dark:text-blue-400",
-    chipBg: "bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50",
-    chipBgActive: "bg-blue-500 text-white hover:bg-blue-600",
-    borderClass: "border-blue-200 dark:border-blue-800",
+    dotClass: "bg-blue-500",
+    activeClass: "bg-blue-500 text-white shadow-blue-500/25",
+    inactiveClass: "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
   },
   en_conge: {
     key: "en_conge",
     label: "En congé",
+    shortLabel: "Congé",
     icon: Coffee,
-    color: "amber",
-    bgClass: "bg-amber-500",
-    textClass: "text-amber-600 dark:text-amber-400",
-    chipBg: "bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50",
-    chipBgActive: "bg-amber-500 text-white hover:bg-amber-600",
-    borderClass: "border-amber-200 dark:border-amber-800",
+    dotClass: "bg-amber-500",
+    activeClass: "bg-amber-500 text-white shadow-amber-500/25",
+    inactiveClass: "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50",
   },
   suspendu: {
     key: "suspendu",
     label: "Suspendu",
+    shortLabel: "Susp.",
     icon: AlertTriangle,
-    color: "red",
-    bgClass: "bg-red-500",
-    textClass: "text-red-600 dark:text-red-400",
-    chipBg: "bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50",
-    chipBgActive: "bg-red-500 text-white hover:bg-red-600",
-    borderClass: "border-red-200 dark:border-red-800",
+    dotClass: "bg-red-500",
+    activeClass: "bg-red-500 text-white shadow-red-500/25",
+    inactiveClass: "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50",
   },
   inactif: {
     key: "inactif",
     label: "Inactif",
+    shortLabel: "Inact.",
     icon: UserX,
-    color: "slate",
-    bgClass: "bg-slate-400",
-    textClass: "text-slate-600 dark:text-slate-400",
-    chipBg: "bg-slate-100 dark:bg-slate-800/40 hover:bg-slate-200 dark:hover:bg-slate-700/50",
-    chipBgActive: "bg-slate-500 text-white hover:bg-slate-600",
-    borderClass: "border-slate-200 dark:border-slate-700",
+    dotClass: "bg-slate-400",
+    activeClass: "bg-slate-500 text-white shadow-slate-500/25",
+    inactiveClass: "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50",
   },
 } as const;
 
@@ -77,20 +69,26 @@ type StatusKey = keyof typeof STATUS_CONFIG;
 interface ChauffeurPageHeaderProps {
   statusStats: ChauffeurStatusStats[];
   totalCount: number;
+  filteredCount: number;
   searchValue: string;
   onSearchChange: (value: string) => void;
   activeStatus: StatusKey | null;
   onStatusChange: (status: StatusKey | null) => void;
+  onAddClick?: () => void;
+  canAdd?: boolean;
   loading?: boolean;
 }
 
 export function ChauffeurPageHeader({
   statusStats,
   totalCount,
+  filteredCount,
   searchValue,
   onSearchChange,
   activeStatus,
   onStatusChange,
+  onAddClick,
+  canAdd = false,
   loading,
 }: ChauffeurPageHeaderProps) {
   // Build counts map from stats
@@ -100,167 +98,181 @@ export function ChauffeurPageHeader({
   });
 
   const statuses = Object.values(STATUS_CONFIG);
+  const hasActiveFilter = activeStatus !== null || searchValue.trim() !== "";
 
   return (
-    <div className="space-y-4">
-      {/* Hero Banner */}
-      <div className={cn(
-        "relative overflow-hidden rounded-2xl",
-        "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
-        "dark:from-slate-800 dark:via-slate-900 dark:to-slate-950"
-      )}>
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
-
-        <div className="relative px-5 py-6 sm:px-6 sm:py-8">
-          {/* Title row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                Équipe Chauffeurs
+    <div className={cn(
+      "sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8",
+      "pt-3 pb-3",
+      "bg-background/80 backdrop-blur-xl",
+      "border-b border-border/50",
+      "shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+    )}>
+      {/* Main command bar */}
+      <div className="flex flex-col gap-3">
+        {/* Row 1: Title + Stats + Search + Add (Desktop) */}
+        <div className="flex items-center gap-3">
+          {/* Title & count - compact */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center",
+              "bg-gradient-to-br from-slate-800 to-slate-900",
+              "dark:from-slate-700 dark:to-slate-800"
+            )}>
+              <Users className="h-4 w-4 text-white" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-semibold text-foreground leading-none">
+                Chauffeurs
               </h1>
-              <p className="text-slate-400 text-sm mt-1">
-                {loading ? (
-                  <span className="inline-block w-32 h-4 bg-slate-700 rounded animate-pulse" />
-                ) : (
-                  <>{totalCount} chauffeurs dans votre flotte</>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {loading ? "..." : (
+                  hasActiveFilter
+                    ? `${filteredCount}/${totalCount}`
+                    : `${totalCount} total`
                 )}
               </p>
             </div>
+          </div>
 
-            {/* Search bar - integrated in header */}
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchValue}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Rechercher..."
+          {/* Mini stat badges - Desktop only */}
+          <div className="hidden lg:flex items-center gap-1 ml-2">
+            {statuses.map((status) => {
+              const count = statusCounts[status.key] || 0;
+              return (
+                <div
+                  key={status.key}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50"
+                  title={status.label}
+                >
+                  <span className={cn("w-2 h-2 rounded-full", status.dotClass)} />
+                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                    {loading ? "-" : count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Search bar */}
+          <div className="relative w-full max-w-[200px] sm:max-w-[240px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Rechercher..."
+              className={cn(
+                "w-full h-8 pl-8 pr-8 text-sm rounded-lg",
+                "bg-muted/50 border border-border/50",
+                "placeholder:text-muted-foreground/60",
+                "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
+                "transition-all duration-200"
+              )}
+            />
+            {searchValue && (
+              <button
+                onClick={() => onSearchChange("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted"
+              >
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
+          {/* Add button */}
+          {canAdd && (
+            <Button
+              onClick={onAddClick}
+              size="sm"
+              className="h-8 gap-1.5 shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Nouveau</span>
+            </Button>
+          )}
+        </div>
+
+        {/* Row 2: Filter chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 -mb-0.5 scrollbar-hide">
+          {/* All filter */}
+          <button
+            onClick={() => onStatusChange(null)}
+            className={cn(
+              "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium shrink-0",
+              "border transition-all duration-200",
+              activeStatus === null
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-transparent text-muted-foreground border-border/60 hover:bg-muted/50 hover:border-border"
+            )}
+          >
+            <span>Tous</span>
+            <span className={cn(
+              "px-1.5 py-0.5 rounded-full text-[10px] font-semibold tabular-nums",
+              activeStatus === null ? "bg-white/20" : "bg-muted"
+            )}>
+              {loading ? "-" : totalCount}
+            </span>
+          </button>
+
+          {/* Divider */}
+          <div className="w-px h-4 bg-border/60 mx-0.5 shrink-0" />
+
+          {/* Status filters */}
+          {statuses.map((status) => {
+            const Icon = status.icon;
+            const count = statusCounts[status.key] || 0;
+            const isActive = activeStatus === status.key;
+
+            return (
+              <button
+                key={status.key}
+                onClick={() => onStatusChange(isActive ? null : status.key)}
                 className={cn(
-                  "w-full pl-10 pr-4 py-2.5 rounded-xl",
-                  "bg-white/10 backdrop-blur-sm border border-white/10",
-                  "text-white placeholder:text-slate-400",
-                  "focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent",
+                  "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium shrink-0",
+                  "border border-transparent transition-all duration-200",
+                  isActive
+                    ? cn(status.activeClass, "shadow-sm")
+                    : status.inactiveClass
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                <span className="hidden sm:inline">{status.label}</span>
+                <span className="sm:hidden">{status.shortLabel}</span>
+                <span className={cn(
+                  "px-1.5 py-0.5 rounded-full text-[10px] font-semibold tabular-nums",
+                  isActive ? "bg-white/20" : "bg-current/10"
+                )}>
+                  {loading ? "-" : count}
+                </span>
+              </button>
+            );
+          })}
+
+          {/* Clear filters button */}
+          {hasActiveFilter && (
+            <>
+              <div className="w-px h-4 bg-border/60 mx-0.5 shrink-0" />
+              <button
+                onClick={() => {
+                  onStatusChange(null);
+                  onSearchChange("");
+                }}
+                className={cn(
+                  "inline-flex items-center gap-1 h-7 px-2 rounded-full text-xs font-medium shrink-0",
+                  "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   "transition-all duration-200"
                 )}
-              />
-            </div>
-          </div>
-
-          {/* Status stats row - Desktop */}
-          <div className="hidden sm:grid grid-cols-5 gap-3">
-            {statuses.map((status) => {
-              const Icon = status.icon;
-              const count = statusCounts[status.key] || 0;
-
-              return (
-                <div
-                  key={status.key}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 backdrop-blur-sm"
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center",
-                    status.bgClass
-                  )}>
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white tabular-nums">
-                      {loading ? "-" : count}
-                    </p>
-                    <p className="text-xs text-slate-400">{status.label}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Status stats row - Mobile (scrollable) */}
-          <div className="sm:hidden flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
-            {statuses.map((status) => {
-              const Icon = status.icon;
-              const count = statusCounts[status.key] || 0;
-
-              return (
-                <div
-                  key={status.key}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 backdrop-blur-sm shrink-0"
-                >
-                  <div className={cn(
-                    "w-8 h-8 rounded-md flex items-center justify-center",
-                    status.bgClass
-                  )}>
-                    <Icon className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-white tabular-nums leading-none">
-                      {loading ? "-" : count}
-                    </p>
-                    <p className="text-[10px] text-slate-400">{status.label}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex flex-wrap gap-2">
-        {/* All filter */}
-        <button
-          onClick={() => onStatusChange(null)}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-            "border transition-all duration-200",
-            activeStatus === null
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+              >
+                <X className="h-3 w-3" />
+                <span className="hidden sm:inline">Effacer</span>
+              </button>
+            </>
           )}
-        >
-          <Users className="h-4 w-4" />
-          Tous
-          <span className={cn(
-            "px-1.5 py-0.5 rounded-full text-xs",
-            activeStatus === null ? "bg-white/20" : "bg-muted-foreground/20"
-          )}>
-            {loading ? "-" : totalCount}
-          </span>
-        </button>
-
-        {/* Status filters */}
-        {statuses.map((status) => {
-          const Icon = status.icon;
-          const count = statusCounts[status.key] || 0;
-          const isActive = activeStatus === status.key;
-
-          return (
-            <button
-              key={status.key}
-              onClick={() => onStatusChange(isActive ? null : status.key)}
-              className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-                "border transition-all duration-200",
-                isActive
-                  ? status.chipBgActive + " border-transparent"
-                  : status.chipBg + " " + status.borderClass + " " + status.textClass
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{status.label}</span>
-              <span className={cn(
-                "px-1.5 py-0.5 rounded-full text-xs",
-                isActive ? "bg-white/20" : "bg-current/10"
-              )}>
-                {loading ? "-" : count}
-              </span>
-            </button>
-          );
-        })}
+        </div>
       </div>
     </div>
   );

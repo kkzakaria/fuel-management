@@ -1,16 +1,13 @@
 /**
  * Page de liste des chauffeurs
- * Design "Fleet Command Center" avec:
- * - Header stats banner (depuis la vue DB chauffeur_status_stats)
- * - Filtres visuels par chips
- * - Grille de cartes responsive
+ * Design "Floating Command Bar" avec:
+ * - Header sticky compact avec stats, filtres et actions
+ * - Grille de cartes responsive avec scroll
  */
 
 "use client";
 
 import { useCallback, useState, useMemo } from "react";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +20,7 @@ import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
 import { useChauffeurStatusStats } from "@/hooks/use-chauffeur-status-stats";
 import { useUserRole } from "@/hooks/use-user-role";
+import { Button } from "@/components/ui/button";
 import type { Chauffeur } from "@/lib/supabase/types";
 
 type StatusKey = "actif" | "en_voyage" | "en_conge" | "suspendu" | "inactif";
@@ -122,44 +120,25 @@ export default function ChauffeursPage() {
   }
 
   return (
-    <div className="container pt-0 pb-6 space-y-6">
-      {/* Header with stats from DB view and filters */}
+    <div className="container pt-0 pb-6">
+      {/* Sticky header with stats, filters, search, and add button */}
       <ChauffeurPageHeader
         statusStats={chauffeurStats}
         totalCount={totalChauffeurs}
+        filteredCount={filteredChauffeurs.length}
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         activeStatus={activeStatus}
         onStatusChange={handleStatusChange}
+        onAddClick={() => setDialogOpen(true)}
+        canAdd={canManageDrivers}
         loading={loading}
       />
 
-      {/* Action bar */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {loading ? (
-            <span className="inline-block w-24 h-4 bg-muted rounded animate-pulse" />
-          ) : (
-            <>
-              {filteredChauffeurs.length} chauffeur{filteredChauffeurs.length !== 1 ? "s" : ""} affiché{filteredChauffeurs.length !== 1 ? "s" : ""}
-              {(activeStatus || searchValue) && (
-                <span className="text-muted-foreground/60"> sur {totalChauffeurs}</span>
-              )}
-            </>
-          )}
-        </p>
-
-        {canManageDrivers && (
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nouveau chauffeur</span>
-            <span className="sm:hidden">Nouveau</span>
-          </Button>
-        )}
+      {/* Cards grid with top padding for sticky header */}
+      <div className="pt-4">
+        <ChauffeurCardGrid chauffeurs={filteredChauffeurs} loading={loading} />
       </div>
-
-      {/* Cards grid (filtered) */}
-      <ChauffeurCardGrid chauffeurs={filteredChauffeurs} loading={loading} />
 
       {/* Create dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
