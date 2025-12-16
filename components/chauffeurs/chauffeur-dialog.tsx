@@ -31,12 +31,14 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -472,6 +474,9 @@ export function ChauffeurDialog({
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            <DrawerDescription className="sr-only">
+              {isEditing ? "Modifier les informations du chauffeur" : "Ajouter un nouveau chauffeur à la flotte"}
+            </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-6 overflow-y-auto">
             {FormContent}
@@ -489,6 +494,9 @@ export function ChauffeurDialog({
           <DialogTitle className="text-xl font-semibold">
             {isEditing ? "Modifier le chauffeur" : "Nouveau chauffeur"}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {isEditing ? "Modifier les informations du chauffeur" : "Ajouter un nouveau chauffeur à la flotte"}
+          </DialogDescription>
         </DialogHeader>
         <div className="px-6 pb-6 pt-4 overflow-y-auto flex-1">
           {FormContent}
