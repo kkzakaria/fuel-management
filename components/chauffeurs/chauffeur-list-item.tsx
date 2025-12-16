@@ -111,12 +111,14 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
                   Modifier
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}`}>
-                  <Truck className="mr-2 h-4 w-4" />
-                  Créer un trajet
-                </Link>
-              </DropdownMenuItem>
+              {chauffeur.statut === "actif" && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/trajets/nouveau?chauffeurId=${chauffeur.id}`}>
+                    <Truck className="mr-2 h-4 w-4" />
+                    Créer un trajet
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
