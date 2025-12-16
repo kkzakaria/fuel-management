@@ -122,8 +122,21 @@ export function ChauffeurTable({ chauffeurs, loading }: ChauffeurTableProps) {
                           ? "secondary"
                           : "destructive"
                     }
+                    className={
+                      chauffeur.statut === "en_voyage"
+                        ? "bg-blue-600 text-white border-transparent"
+                        : chauffeur.statut === "en_conge"
+                          ? "bg-yellow-600 text-white border-transparent"
+                          : undefined
+                    }
                   >
-                    {chauffeur.statut}
+                    {chauffeur.statut === "actif"
+                      ? "Disponible"
+                      : chauffeur.statut === "en_voyage"
+                        ? "En voyage"
+                        : chauffeur.statut === "en_conge"
+                          ? "En congé"
+                          : chauffeur.statut}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>

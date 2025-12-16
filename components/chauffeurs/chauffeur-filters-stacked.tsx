@@ -36,7 +36,7 @@ export function ChauffeurFiltersStacked({
               statut:
                 value === "tous"
                   ? undefined
-                  : (value as "actif" | "inactif" | "suspendu"),
+                  : (value as "actif" | "inactif" | "suspendu" | "en_voyage" | "en_conge"),
             })
           }
         >
@@ -45,9 +45,11 @@ export function ChauffeurFiltersStacked({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="tous">Tous les statuts</SelectItem>
-            <SelectItem value="actif">Actif</SelectItem>
-            <SelectItem value="inactif">Inactif</SelectItem>
+            <SelectItem value="actif">Disponible</SelectItem>
+            <SelectItem value="en_voyage">En voyage</SelectItem>
+            <SelectItem value="en_conge">En congé</SelectItem>
             <SelectItem value="suspendu">Suspendu</SelectItem>
+            <SelectItem value="inactif">Inactif</SelectItem>
           </SelectContent>
         </Select>
       </div>

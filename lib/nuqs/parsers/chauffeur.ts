@@ -7,7 +7,7 @@ import { createEnumSearchParam } from "../serializers/enum";
 import { paginationSearchParams, searchSearchParam } from "../hooks";
 
 // Enum pour le statut des chauffeurs
-const CHAUFFEUR_STATUT_VALUES = ["actif", "inactif", "suspendu"] as const;
+const CHAUFFEUR_STATUT_VALUES = ["actif", "inactif", "suspendu", "en_voyage", "en_conge"] as const;
 
 /**
  * Définition des paramètres URL pour la page Chauffeurs
