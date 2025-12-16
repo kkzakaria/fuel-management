@@ -76,18 +76,28 @@ export function ChauffeurDetails({ chauffeurId }: ChauffeurDetailsProps) {
 
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       actif: "default",
-      conge: "secondary",
-      inactif: "destructive",
+      inactif: "secondary",
+      suspendu: "destructive",
+    };
+
+    const customStyles: Record<string, string> = {
+      en_voyage: "bg-blue-600 text-white border-transparent",
+      en_conge: "bg-yellow-600 text-white border-transparent",
     };
 
     const labels: Record<string, string> = {
-      actif: "Actif",
-      conge: "En congé",
+      actif: "Disponible",
+      en_voyage: "En voyage",
+      en_conge: "En congé",
+      suspendu: "Suspendu",
       inactif: "Inactif",
     };
 
     return (
-      <Badge variant={variants[statut] || "default"}>
+      <Badge
+        variant={variants[statut] || "default"}
+        className={customStyles[statut]}
+      >
         {labels[statut] || statut}
       </Badge>
     );

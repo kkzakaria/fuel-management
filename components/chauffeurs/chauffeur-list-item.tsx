@@ -61,13 +61,23 @@ export function ChauffeurListItem({ chauffeur }: ChauffeurListItemProps) {
               variant={
                 chauffeur.statut === "actif"
                   ? "success"
-                  : chauffeur.statut === "inactif"
-                    ? "secondary"
-                    : "destructive"
+                  : chauffeur.statut === "en_voyage"
+                    ? "info"
+                    : chauffeur.statut === "en_conge"
+                      ? "warning"
+                      : chauffeur.statut === "inactif"
+                        ? "secondary"
+                        : "destructive"
               }
               className="text-sm shrink-0"
             >
-              {chauffeur.statut}
+              {chauffeur.statut === "actif"
+                ? "Disponible"
+                : chauffeur.statut === "en_voyage"
+                  ? "En voyage"
+                  : chauffeur.statut === "en_conge"
+                    ? "En congé"
+                    : chauffeur.statut}
             </StatusBadge>
           </div>
 

@@ -26,7 +26,7 @@ export type UserRole = Database["public"]["Enums"]["user_role"];
 
 // Enums (inferred from database constraints - not PostgreSQL ENUMs)
 // Ces types sont basés sur les contraintes CHECK dans la base de données
-export type StatutChauffeur = "actif" | "inactif" | "suspendu";
+export type StatutChauffeur = "actif" | "inactif" | "suspendu" | "en_voyage" | "en_conge";
 export type StatutVehicule = "actif" | "maintenance" | "inactif" | "vendu";
 export type StatutSousTraitant = "actif" | "inactif" | "blackliste";
 export type StatutTrajet = "en_cours" | "termine" | "annule";

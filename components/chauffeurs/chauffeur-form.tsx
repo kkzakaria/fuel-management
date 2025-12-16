@@ -58,7 +58,7 @@ export function ChauffeurForm({ chauffeur, onSuccess }: ChauffeurFormProps) {
       numero_permis: chauffeur?.numero_permis || "",
       date_embauche: chauffeur?.date_embauche || undefined,
       statut:
-        (chauffeur?.statut as "actif" | "inactif" | "suspendu" | null) ||
+        (chauffeur?.statut as "actif" | "inactif" | "suspendu" | "en_voyage" | "en_conge" | null) ||
         "actif",
     },
   });
@@ -207,9 +207,11 @@ export function ChauffeurForm({ chauffeur, onSuccess }: ChauffeurFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="actif">Actif</SelectItem>
-                  <SelectItem value="inactif">Inactif</SelectItem>
+                  <SelectItem value="actif">Disponible</SelectItem>
+                  <SelectItem value="en_voyage">En voyage</SelectItem>
+                  <SelectItem value="en_conge">En congé</SelectItem>
                   <SelectItem value="suspendu">Suspendu</SelectItem>
+                  <SelectItem value="inactif">Inactif</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

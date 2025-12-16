@@ -70,7 +70,7 @@ export const createChauffeurSchema = z.object({
       "La date d'embauche ne peut pas être dans le futur"
     ),
 
-  statut: z.enum(["actif", "inactif", "suspendu"], {
+  statut: z.enum(["actif", "inactif", "suspendu", "en_voyage", "en_conge"], {
     required_error: "Le statut est requis",
   }),
 });
@@ -91,7 +91,7 @@ export const deleteChauffeurSchema = z.object({
  * Schéma de validation pour les filtres de recherche
  */
 export const chauffeurFiltersSchema = z.object({
-  statut: z.enum(["actif", "inactif", "suspendu"]).optional(),
+  statut: z.enum(["actif", "inactif", "suspendu", "en_voyage", "en_conge"]).optional(),
   search: z.string().optional(),
 });
 

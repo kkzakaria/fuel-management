@@ -62,7 +62,7 @@ export function useChauffeurs(options?: UseChauffeursOptions) {
   const totalPages = data?.totalPages ?? 0;
 
   const updateFilters = (newFilters: {
-    statut?: "actif" | "inactif" | "suspendu" | null;
+    statut?: "actif" | "inactif" | "suspendu" | "en_voyage" | "en_conge" | null;
     search?: string;
   }) => {
     setSearchParams({ ...newFilters, page: 1 });
