@@ -53,57 +53,60 @@ export default function NouveauTrajetPage() {
             : "border-transparent bg-background/60 shadow-none"
         )}
       >
-        <div className="flex items-center gap-4">
-          {/* Back button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="shrink-0 rounded-lg"
-          >
-            <Link href={backUrl}>
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Retour</span>
-            </Link>
-          </Button>
-
-          {/* Title section */}
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                "bg-gradient-to-br from-amber-500 to-orange-600",
-                "shadow-lg shadow-amber-500/20"
-              )}
+        {/* Header content centered with same max-width as form */}
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center gap-4">
+            {/* Back button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="shrink-0 rounded-lg"
             >
-              <Route className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold leading-none sm:text-xl">
-                Nouveau trajet
-              </h1>
-              <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
-                Créer un trajet de livraison
-              </p>
-            </div>
-          </div>
+              <Link href={backUrl}>
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Retour</span>
+              </Link>
+            </Button>
 
-          {/* Spacer */}
-          <div className="flex-1" />
+            {/* Title section */}
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-xl",
+                  "bg-gradient-to-br from-amber-500 to-orange-600",
+                  "shadow-lg shadow-amber-500/20"
+                )}
+              >
+                <Route className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold leading-none sm:text-xl">
+                  Nouveau trajet
+                </h1>
+                <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
+                  Créer un trajet de livraison
+                </p>
+              </div>
+            </div>
 
-          {/* Quick tip - Desktop only */}
-          <div className="hidden items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950/30 lg:flex">
-            <Sparkles className="h-4 w-4 text-amber-600" />
-            <span className="text-amber-700 dark:text-amber-400">
-              Les sections avec{" "}
-              <span className="font-medium">*</span> sont obligatoires
-            </span>
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Quick tip - Desktop only */}
+            <div className="hidden items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950/30 lg:flex">
+              <Sparkles className="h-4 w-4 text-amber-600" />
+              <span className="text-amber-700 dark:text-amber-400">
+                Les sections avec{" "}
+                <span className="font-medium">*</span> sont obligatoires
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="container max-w-4xl py-6">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <TrajetFormRedesign
           defaultChauffeurId={chauffeurId || undefined}
           returnUrl={returnUrl || undefined}

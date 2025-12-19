@@ -337,47 +337,48 @@ export function TrajetFormRedesign({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {/* Progress bar - Desktop */}
         <div className="hidden lg:block">
-          <div className="flex items-center justify-between rounded-xl border bg-card p-4">
-            {SECTIONS.map((section, index) => {
-              const Icon = section.icon;
-              const isCompleted = sectionStatus[section.id];
-              const isLast = index === SECTIONS.length - 1;
+          <div className="overflow-x-auto rounded-xl border bg-card p-3">
+            <div className="flex items-center justify-center gap-1">
+              {SECTIONS.map((section, index) => {
+                const Icon = section.icon;
+                const isCompleted = sectionStatus[section.id];
+                const isLast = index === SECTIONS.length - 1;
 
-              return (
-                <div key={section.id} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(section.id)}
-                    className={cn(
-                      "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-                      isCompleted
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                        : "text-muted-foreground hover:bg-muted"
-                    )}
-                  >
-                    <div
+                return (
+                  <div key={section.id} className="flex shrink-0 items-center">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(section.id)}
                       className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-full",
+                        "flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all",
                         isCompleted
-                          ? "bg-emerald-500 text-white"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                          : "text-muted-foreground hover:bg-muted"
                       )}
                     >
-                      {isCompleted ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        <Icon className="h-3.5 w-3.5" />
-                      )}
-                    </div>
-                    <span className="hidden xl:inline">{section.title}</span>
-                    <span className="xl:hidden">{section.shortTitle}</span>
-                  </button>
-                  {!isLast && (
-                    <div className="mx-2 h-px w-8 bg-border xl:w-12" />
-                  )}
-                </div>
-              );
-            })}
+                      <div
+                        className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded-full",
+                          isCompleted
+                            ? "bg-emerald-500 text-white"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {isCompleted ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Icon className="h-3 w-3" />
+                        )}
+                      </div>
+                      <span>{section.shortTitle}</span>
+                    </button>
+                    {!isLast && (
+                      <div className="mx-1 h-px w-4 bg-border" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
