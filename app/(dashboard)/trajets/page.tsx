@@ -11,7 +11,6 @@
 "use client";
 
 import { useCallback, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 
 import {
   TrajetPageHeader,
@@ -19,6 +18,7 @@ import {
 } from "@/components/trajets/trajet-page-header";
 import { TrajetCardList, TrajetCardGrid } from "@/components/trajets/trajet-card";
 import { TrajetTableEnhanced } from "@/components/trajets/trajet-table-enhanced";
+import { TrajetCreateDialog } from "@/components/trajets/trajet-create-dialog";
 import { InfiniteScroll } from "@/components/ui/infinite-scroll";
 import { Button } from "@/components/ui/button";
 import { useTrajets } from "@/hooks/use-trajets";
@@ -29,12 +29,14 @@ import type { TrajetListItem } from "@/components/trajets/trajet-table";
 type StatusKey = "en_cours" | "termine" | "annule";
 
 export default function TrajetsPage() {
-  const router = useRouter();
   const { canCreateTrips } = useUserRole();
 
   // Local filter state for client-side filtering
   const [activeStatus, setActiveStatus] = useState<StatusKey | null>(null);
   const [searchValue, setSearchValue] = useState("");
+
+  // Dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Fetch ALL trajets (client-side filtering for instant response)
   const {
@@ -119,8 +121,8 @@ export default function TrajetsPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
-    router.push("/trajets/nouveau");
-  }, [router]);
+    setCreateDialogOpen(true);
+  }, []);
 
   // Error state
   if (error) {
@@ -181,6 +183,13 @@ export default function TrajetsPage() {
           <TrajetTableEnhanced trajets={filteredTrajets} loading={loading && filteredTrajets.length === 0} />
         </div>
       </div>
+
+      {/* Create dialog */}
+      <TrajetCreateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={refresh}
+      />
     </div>
   );
 }
