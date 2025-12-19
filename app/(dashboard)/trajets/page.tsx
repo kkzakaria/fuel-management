@@ -1,189 +1,186 @@
 /**
- * Page de liste des trajets
- * Affiche la table avec filtres et pagination via DataTable
- * Utilise le nouveau système de toolbar responsive intégré
+ * Page de liste des trajets - Industrial Design
  *
- * Mobile : Recherche + Filtres drawer + Infinite scroll + Cards
- * Tablette : Recherche + Filtres drawer + Table simplifiée
- * Desktop : Recherche + Filtres dropdown + DataTable complet
+ * Design responsive avec:
+ * - Header sticky avec stats et filtres intégrés
+ * - Mobile: Cards avec infinite scroll
+ * - Tablette: Grille 2 colonnes
+ * - Desktop: Table enrichie avec indicateurs visuels
  */
 
-"use client"
+"use client";
 
-import { useCallback, startTransition, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
-import { DataTable, DataTableToolbar } from "@/components/data-table"
-import { trajetColumns } from "@/components/trajets/trajet-columns"
-import { TrajetListItemComponent } from "@/components/trajets/trajet-list-item"
-import { TrajetTabletTable } from "@/components/trajets/trajet-tablet-table"
-import { TrajetFiltersStacked } from "@/components/trajets/trajet-filters-stacked"
-import { TrajetFiltersDropdown } from "@/components/trajets/trajet-filters-dropdown"
-import { InfiniteScroll } from "@/components/ui/infinite-scroll"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useTrajets } from "@/hooks/use-trajets"
-import { useTrajetFormData } from "@/hooks/use-trajet-form-data"
-import { useUserRole } from "@/hooks/use-user-role"
-import type { TrajetListItem } from "@/components/trajets/trajet-table"
+import {
+  TrajetPageHeader,
+  type TrajetStatusStats,
+} from "@/components/trajets/trajet-page-header";
+import { TrajetCardList, TrajetCardGrid } from "@/components/trajets/trajet-card";
+import { TrajetTableEnhanced } from "@/components/trajets/trajet-table-enhanced";
+import { InfiniteScroll } from "@/components/ui/infinite-scroll";
+import { Button } from "@/components/ui/button";
+import { useTrajets } from "@/hooks/use-trajets";
+import { useUserRole } from "@/hooks/use-user-role";
+import { AlertTriangle } from "lucide-react";
+import type { TrajetListItem } from "@/components/trajets/trajet-table";
+
+type StatusKey = "en_cours" | "termine" | "annule";
 
 export default function TrajetsPage() {
-  const router = useRouter()
-  const { canCreateTrips } = useUserRole()
+  const router = useRouter();
+  const { canCreateTrips } = useUserRole();
 
-  // Hook pour mobile (infinite scroll)
-  const mobileData = useTrajets({
+  // Local filter state for client-side filtering
+  const [activeStatus, setActiveStatus] = useState<StatusKey | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+
+  // Fetch ALL trajets (client-side filtering for instant response)
+  const {
+    trajets: allTrajets,
+    loading,
+    error,
+    refresh,
+    loadMore,
+    hasNextPage,
+  } = useTrajets({
     mode: "infinite",
-    pageSize: 20,
+    pageSize: 50,
     autoRefresh: 60000,
-  })
+  });
 
-  // Hook pour tablette/desktop (pagination normale)
-  const desktopData = useTrajets({
-    mode: "paginated",
-    pageSize: 100, // DataTable gère la pagination en local
-    autoRefresh: 60000,
-  })
+  // Calculate stats from all trajets
+  const stats = useMemo<TrajetStatusStats>(() => {
+    const result = {
+      en_cours: 0,
+      termine: 0,
+      annule: 0,
+      with_alerts: 0,
+    };
 
-  // Charger les données pour les filtres
-  const { chauffeurs, vehicules, localites } = useTrajetFormData()
+    allTrajets.forEach((t) => {
+      if (t.statut === "en_cours") result.en_cours++;
+      else if (t.statut === "termine") result.termine++;
+      else if (t.statut === "annule") result.annule++;
 
-  // Calculer le nombre de filtres actifs (mobile + desktop utilisent les mêmes filtres)
-  const activeFiltersCount = useMemo(() => {
-    const filters = mobileData.filters
-    let count = 0
-    if (filters.chauffeur_id && filters.chauffeur_id.length > 0) {
-      count += filters.chauffeur_id.split(",").length
+      // Check for fuel alerts
+      const hasEcartAlert = t.ecart_litrage && Math.abs(t.ecart_litrage) > 10;
+      const hasConsommationAlert = t.consommation_au_100 && t.consommation_au_100 > 40;
+      if (hasEcartAlert || hasConsommationAlert) {
+        result.with_alerts++;
+      }
+    });
+
+    return result;
+  }, [allTrajets]);
+
+  // Filter trajets client-side
+  const filteredTrajets = useMemo(() => {
+    let result: TrajetListItem[] = allTrajets;
+
+    // Filter by status
+    if (activeStatus) {
+      result = result.filter((t) => t.statut === activeStatus);
     }
-    if (filters.vehicule_id && filters.vehicule_id.length > 0) {
-      count += filters.vehicule_id.split(",").length
-    }
-    if (filters.localite_arrivee_id && filters.localite_arrivee_id.length > 0) {
-      count += filters.localite_arrivee_id.split(",").length
-    }
-    if (filters.date_debut || filters.date_fin) count++
-    if (filters.statut) count++
-    return count
-  }, [mobileData.filters])
 
-  // Handler pour la navigation vers les détails (desktop)
-  const handleRowClick = useCallback((trajet: TrajetListItem) => {
-    startTransition(() => {
-      router.push(`/trajets/${trajet.id}`)
-    })
-  }, [router])
+    // Filter by search
+    if (searchValue.trim()) {
+      const search = searchValue.toLowerCase().trim();
+      result = result.filter((t) => {
+        const numero = t.numero_trajet?.toLowerCase() || "";
+        const chauffeurNom = t.chauffeur?.nom?.toLowerCase() || "";
+        const chauffeurPrenom = t.chauffeur?.prenom?.toLowerCase() || "";
+        const vehicule = t.vehicule?.immatriculation?.toLowerCase() || "";
+        const depart = t.localite_depart?.nom?.toLowerCase() || "";
+        const arrivee = t.localite_arrivee?.nom?.toLowerCase() || "";
 
-  // Gestion d'erreur
-  const error = mobileData.error || desktopData.error
+        return (
+          numero.includes(search) ||
+          chauffeurNom.includes(search) ||
+          chauffeurPrenom.includes(search) ||
+          vehicule.includes(search) ||
+          depart.includes(search) ||
+          arrivee.includes(search)
+        );
+      });
+    }
+
+    return result;
+  }, [allTrajets, activeStatus, searchValue]);
+
+  // Handlers
+  const handleStatusChange = useCallback((status: StatusKey | null) => {
+    setActiveStatus(status);
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
+
+  const handleAddClick = useCallback(() => {
+    router.push("/trajets/nouveau");
+  }, [router]);
+
+  // Error state
   if (error) {
     return (
-      <div className="container py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              <p className="font-semibold">Erreur de chargement</p>
-              <p className="text-sm">{error.message}</p>
-              <Button onClick={() => mobileData.refresh()} variant="outline" className="mt-4">
-                Réessayer
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="container pb-6 pt-0">
+        <div className="flex flex-col items-center justify-center px-4 py-16">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
+          </div>
+          <h3 className="mb-1 text-lg font-semibold">Erreur de chargement</h3>
+          <p className="mb-4 max-w-sm text-center text-sm text-muted-foreground">
+            {error.message}
+          </p>
+          <Button onClick={refresh} variant="outline">
+            Réessayer
+          </Button>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="container space-y-4 py-4 sm:space-y-6 sm:py-6">
-      {/* === TOOLBAR RESPONSIVE UNIFIÉE === */}
-      <DataTableToolbar
-        externalSearch={{
-          value: mobileData.filters.search ?? "",
-          onChange: (value) => mobileData.updateFilters({ search: value }),
-          placeholder: "Rechercher un trajet...",
-        }}
-        responsiveFilters={{
-          mobileContent: (
-            <TrajetFiltersStacked
-              filters={mobileData.filters}
-              onFiltersChange={mobileData.updateFilters}
-              chauffeurs={chauffeurs}
-              vehicules={vehicules}
-              localites={localites}
-            />
-          ),
-          desktopContent: (
-            <TrajetFiltersDropdown
-              filters={desktopData.filters}
-              onFiltersChange={desktopData.updateFilters}
-              onClearFilters={desktopData.clearFilters}
-              chauffeurs={chauffeurs}
-              vehicules={vehicules}
-              localites={localites}
-              activeFiltersCount={activeFiltersCount}
-              triggerLabel="Filtrer"
-            />
-          ),
-          activeCount: activeFiltersCount,
-          onClear: mobileData.clearFilters,
-          drawerTitle: "Filtres des trajets",
-          drawerDescription: "Filtrer par date, chauffeur, véhicule, destination ou statut",
-        }}
-        addButton={canCreateTrips ? {
-          type: "link",
-          href: "/trajets/nouveau",
-          label: "Nouveau trajet",
-        } : undefined}
-        enableColumnVisibility={false}
+    <div className="container pb-6 pt-0">
+      {/* Sticky header with stats, filters, search, and add button */}
+      <TrajetPageHeader
+        stats={stats}
+        totalCount={allTrajets.length}
+        filteredCount={filteredTrajets.length}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
+        activeStatus={activeStatus}
+        onStatusChange={handleStatusChange}
+        onAddClick={handleAddClick}
+        canAdd={canCreateTrips}
+        loading={loading && allTrajets.length === 0}
       />
 
-      {/* === MOBILE : Liste avec infinite scroll (cards) === */}
-      <div className="md:hidden">
-        {mobileData.loading && mobileData.trajets.length === 0 ? (
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : mobileData.trajets.length === 0 ? (
-          <div className="rounded-md border p-8 text-center">
-            <p className="text-muted-foreground">Aucun trajet trouvé</p>
-          </div>
-        ) : (
+      {/* Content with top padding for sticky header */}
+      <div className="pt-4">
+        {/* === MOBILE: Card list with infinite scroll === */}
+        <div className="md:hidden">
           <InfiniteScroll
-            onLoadMore={mobileData.loadMore}
-            hasMore={mobileData.hasNextPage}
-            loading={mobileData.loading}
+            onLoadMore={loadMore}
+            hasMore={hasNextPage && !activeStatus && !searchValue}
+            loading={loading}
           >
-            {mobileData.trajets.map((trajet) => (
-              <TrajetListItemComponent key={trajet.id} trajet={trajet} />
-            ))}
+            <TrajetCardList trajets={filteredTrajets} loading={loading && filteredTrajets.length === 0} />
           </InfiniteScroll>
-        )}
-      </div>
+        </div>
 
-      {/* === TABLETTE : Table simplifiée 5 colonnes === */}
-      <div className="hidden md:block xl:hidden">
-        <TrajetTabletTable
-          trajets={desktopData.trajets}
-          loading={desktopData.loading}
-        />
-      </div>
+        {/* === TABLET: 2-column card grid === */}
+        <div className="hidden md:block xl:hidden">
+          <TrajetCardGrid trajets={filteredTrajets} loading={loading && filteredTrajets.length === 0} />
+        </div>
 
-      {/* === DESKTOP : DataTable complet === */}
-      <div className="hidden xl:block">
-        <DataTable
-          columns={trajetColumns}
-          data={desktopData.trajets}
-          isLoading={desktopData.loading}
-          onRowClick={handleRowClick}
-          pageSize={20}
-          pageSizeOptions={[10, 20, 50, 100]}
-          stickyHeader
-          hideToolbar // La toolbar est gérée séparément ci-dessus
-        />
+        {/* === DESKTOP: Enhanced table === */}
+        <div className="hidden xl:block">
+          <TrajetTableEnhanced trajets={filteredTrajets} loading={loading && filteredTrajets.length === 0} />
+        </div>
       </div>
     </div>
-  )
+  );
 }
