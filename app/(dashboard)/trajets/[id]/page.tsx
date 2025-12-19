@@ -47,13 +47,7 @@ export default async function TrajetPage({ params }: TrajetPageProps) {
           </div>
         </div>
 
-        <TrajetActions
-          trajetId={id}
-          statut={trajet.statut}
-          kmDebut={trajet.km_debut}
-          kmFin={trajet.km_fin}
-          litragePrevu={trajet.litrage_prevu}
-        />
+        <TrajetActions trajet={trajet} />
       </div>
 
       {/* Détails */}
