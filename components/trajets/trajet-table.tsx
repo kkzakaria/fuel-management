@@ -31,6 +31,7 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 import { TrajetDeleteDialog } from "./trajet-delete-dialog";
 import { TrajetRetourDialog } from "./trajet-retour-dialog";
+import { TrajetEditDialogTrigger } from "./trajet-edit-dialog-trigger";
 
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
@@ -79,6 +80,7 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
   const router = useRouter();
   const [trajetToDelete, setTrajetToDelete] = useState<string | null>(null);
   const [trajetRetourOpen, setTrajetRetourOpen] = useState<string | null>(null);
+  const [trajetEditOpen, setTrajetEditOpen] = useState<string | null>(null);
   const { canEditTrips, canDeleteTrips, canRegisterReturn, loading: roleLoading } = useUserRole();
 
   const handleRetourSuccess = () => {
@@ -250,11 +252,11 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
                       )}
 
                       {canEditTrips && !roleLoading && (
-                        <DropdownMenuItem asChild>
-                          <Link href={`/trajets/${trajet.id}/modifier`}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Modifier
-                          </Link>
+                        <DropdownMenuItem
+                          onClick={() => setTrajetEditOpen(trajet.id)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Modifier
                         </DropdownMenuItem>
                       )}
 
@@ -300,6 +302,15 @@ export function TrajetTable({ trajets, loading }: TrajetTableProps) {
         open={trajetToDelete !== null}
         onOpenChange={(open) => !open && setTrajetToDelete(null)}
       />
+
+      {trajetEditOpen && (
+        <TrajetEditDialogTrigger
+          trajetId={trajetEditOpen}
+          open={true}
+          onOpenChange={(open) => !open && setTrajetEditOpen(null)}
+          onSuccess={() => router.refresh()}
+        />
+      )}
     </>
   );
 }

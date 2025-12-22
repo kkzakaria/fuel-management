@@ -23,6 +23,7 @@ import { useUserRole } from "@/hooks/use-user-role"
 import { TrajetAlertBadge } from "./trajet-alert-badge"
 import { TrajetDeleteDialog } from "./trajet-delete-dialog"
 import { TrajetRetourDialog } from "./trajet-retour-dialog"
+import { TrajetEditDialogTrigger } from "./trajet-edit-dialog-trigger"
 
 // Type pour les trajets dans le tableau
 export interface TrajetListItem {
@@ -91,6 +92,7 @@ function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [retourDialogOpen, setRetourDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const { canEditTrips, canDeleteTrips, canRegisterReturn, loading } = useUserRole()
 
   // Le bouton "Enregistrer le retour" n'est visible que si:
@@ -134,11 +136,14 @@ function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
             )}
 
             {canEditTrips && !loading && (
-              <DropdownMenuItem asChild>
-                <Link href={`/trajets/${trajet.id}/modifier`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Modifier
-                </Link>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setEditDialogOpen(true)
+                }}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Modifier
               </DropdownMenuItem>
             )}
 
@@ -179,6 +184,13 @@ function TrajetRowActions({ trajet }: { trajet: TrajetListItem }) {
           onOpenChange={setDeleteDialogOpen}
         />
       )}
+
+      <TrajetEditDialogTrigger
+        trajetId={trajet.id}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => router.refresh()}
+      />
     </>
   )
 }
