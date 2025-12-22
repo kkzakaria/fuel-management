@@ -24,6 +24,7 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { TrajetAlertBadge } from "./trajet-alert-badge";
 import { TrajetDeleteDialog } from "./trajet-delete-dialog";
 import { TrajetRetourDialog } from "./trajet-retour-dialog";
+import { TrajetEditDialogTrigger } from "./trajet-edit-dialog-trigger";
 import type { TrajetListItem } from "./trajet-table";
 
 interface TrajetListItemProps {
@@ -34,6 +35,7 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [retourDialogOpen, setRetourDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { canEditTrips, canDeleteTrips, canRegisterReturn, loading: roleLoading } = useUserRole();
 
   const handleClick = () => {
@@ -131,11 +133,9 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
               )}
 
               {canEditTrips && !roleLoading && (
-                <DropdownMenuItem asChild>
-                  <Link href={`/trajets/${trajet.id}/modifier`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Modifier
-                  </Link>
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Modifier
                 </DropdownMenuItem>
               )}
 
@@ -172,6 +172,13 @@ export function TrajetListItemComponent({ trajet }: TrajetListItemProps) {
         trajetId={trajet.id}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
+      />
+
+      <TrajetEditDialogTrigger
+        trajetId={trajet.id}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => router.refresh()}
       />
     </>
   );
