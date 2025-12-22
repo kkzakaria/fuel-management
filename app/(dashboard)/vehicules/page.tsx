@@ -11,6 +11,8 @@
 import { useCallback, useState, startTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import { Truck } from "lucide-react";
+
 import { DataTable, DataTableToolbar } from "@/components/data-table";
 import { vehiculeColumns } from "@/components/vehicules/vehicule-columns";
 import { VehiculeListItem } from "@/components/vehicules/vehicule-list-item";
@@ -25,7 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useVehicules } from "@/hooks/use-vehicules";
 import { useUserRole } from "@/hooks/use-user-role";
 import type { Vehicule } from "@/lib/supabase/types";
@@ -124,19 +125,29 @@ export default function VehiculesPage() {
       {/* === MOBILE : Liste cards === */}
       <div className="md:hidden">
         {loading ? (
-          <div className="space-y-3">
+          <div className="overflow-hidden rounded-lg border">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+              <div
+                key={i}
+                className="h-24 animate-pulse border-b border-l-4 border-l-slate-300 bg-muted last:border-b-0"
+                style={{ animationDelay: `${i * 80}ms` }}
+              />
             ))}
           </div>
         ) : vehicules.length === 0 ? (
-          <div className="rounded-md border p-8 text-center">
-            <p className="text-muted-foreground">Aucun véhicule trouvé</p>
+          <div className="flex flex-col items-center justify-center rounded-lg border px-4 py-16">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+              <Truck className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="mb-1 text-lg font-semibold">Aucun véhicule trouvé</h3>
+            <p className="max-w-sm text-center text-sm text-muted-foreground">
+              Aucun véhicule ne correspond à vos critères de recherche.
+            </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-md border">
-            {vehicules.map((vehicule) => (
-              <VehiculeListItem key={vehicule.id} vehicule={vehicule} />
+          <div className="overflow-hidden rounded-lg border">
+            {vehicules.map((vehicule, index) => (
+              <VehiculeListItem key={vehicule.id} vehicule={vehicule} index={index} />
             ))}
           </div>
         )}
