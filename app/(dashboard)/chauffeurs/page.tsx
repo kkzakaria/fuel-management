@@ -8,15 +8,9 @@
 "use client";
 
 import { useCallback, useState, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ChauffeurPageHeader } from "@/components/chauffeurs/chauffeur-page-header";
 import { ChauffeurCardGrid } from "@/components/chauffeurs/chauffeur-card";
-import { ChauffeurForm } from "@/components/chauffeurs/chauffeur-form";
+import { ChauffeurDialog } from "@/components/chauffeurs/chauffeur-dialog";
 import { useChauffeurs } from "@/hooks/use-chauffeurs";
 import { useChauffeurStatusStats } from "@/hooks/use-chauffeur-status-stats";
 import { useUserRole } from "@/hooks/use-user-role";
@@ -54,9 +48,8 @@ export default function ChauffeursPage() {
 
   const loading = loadingStats || loadingChauffeurs;
 
-  // Handler pour fermer le dialogue et rafraîchir les données
+  // Handler pour rafraîchir les données après création/modification
   const handleSuccess = useCallback(() => {
-    setDialogOpen(false);
     refreshChauffeurs();
     refetchStats();
   }, [refreshChauffeurs, refetchStats]);
@@ -140,15 +133,12 @@ export default function ChauffeursPage() {
         <ChauffeurCardGrid chauffeurs={filteredChauffeurs} loading={loading} />
       </div>
 
-      {/* Create dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nouveau chauffeur</DialogTitle>
-          </DialogHeader>
-          <ChauffeurForm onSuccess={handleSuccess} />
-        </DialogContent>
-      </Dialog>
+      {/* Create/Edit dialog */}
+      <ChauffeurDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 }

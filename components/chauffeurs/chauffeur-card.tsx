@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChauffeurDeleteDialog } from "./chauffeur-delete-dialog";
+import { ChauffeurDialog } from "./chauffeur-dialog";
 import type { Chauffeur } from "@/lib/supabase/types";
 
 // Status configuration
@@ -85,6 +86,7 @@ interface ChauffeurCardProps {
 export function ChauffeurCard({ chauffeur, index = 0 }: ChauffeurCardProps) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const statusConfig = STATUS_CONFIG[chauffeur.statut as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.inactif;
   const initiales = `${chauffeur.prenom?.charAt(0) || ""}${chauffeur.nom?.charAt(0) || ""}`.toUpperCase();
@@ -165,11 +167,9 @@ export function ChauffeurCard({ chauffeur, index = 0 }: ChauffeurCardProps) {
                       Voir détails
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href={`/chauffeurs/${chauffeur.id}/modifier`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Modifier
-                    </Link>
+                  <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier
                   </DropdownMenuItem>
                   {chauffeur.statut === "actif" && (
                     <DropdownMenuItem asChild>
@@ -234,6 +234,13 @@ export function ChauffeurCard({ chauffeur, index = 0 }: ChauffeurCardProps) {
         chauffeur={chauffeur}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
+      />
+
+      <ChauffeurDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        chauffeur={chauffeur}
+        onSuccess={() => router.refresh()}
       />
     </>
   );

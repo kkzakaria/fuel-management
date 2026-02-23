@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import { useChauffeur, useChauffeurTrajets } from "@/hooks/use-chauffeur";
 import { useChauffeurStats } from "@/hooks/use-chauffeur-stats";
 import { ChauffeurCreateTripButton } from "./chauffeur-create-trip-button";
+import { ChauffeurDialog } from "./chauffeur-dialog";
 
 // Type pour les trajets avec jointures
 type TrajetWithDetails = {
@@ -96,9 +97,16 @@ interface ChauffeurDetailsProps {
 
 export function ChauffeurDetails({ chauffeurId }: ChauffeurDetailsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("informations");
-  const { chauffeur, loading: loadingChauffeur } = useChauffeur(chauffeurId);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const { chauffeur, loading: loadingChauffeur, refresh: refreshChauffeur } = useChauffeur(chauffeurId);
   const { trajets, loading: loadingTrajets, count: trajetsCount } = useChauffeurTrajets(chauffeurId, 10);
-  const { stats, loading: loadingStats } = useChauffeurStats(chauffeurId);
+  const { stats, loading: loadingStats, refresh: refreshStats } = useChauffeurStats(chauffeurId);
+
+  // Callback pour rafraîchir les données après modification
+  const handleEditSuccess = useCallback(() => {
+    refreshChauffeur();
+    refreshStats();
+  }, [refreshChauffeur, refreshStats]);
 
   // Loading state
   if (loadingChauffeur) {
@@ -211,11 +219,13 @@ export function ChauffeurDetails({ chauffeurId }: ChauffeurDetailsProps) {
               {/* Action buttons */}
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-4">
                 <ChauffeurCreateTripButton chauffeurId={chauffeurId} />
-                <Button variant="secondary" size="sm" asChild>
-                  <Link href={`/chauffeurs/${chauffeurId}/modifier`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Modifier
-                  </Link>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditDialogOpen(true)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Modifier
                 </Button>
               </div>
             </div>
@@ -465,6 +475,14 @@ export function ChauffeurDetails({ chauffeurId }: ChauffeurDetailsProps) {
           </div>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <ChauffeurDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        chauffeur={chauffeur}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }
